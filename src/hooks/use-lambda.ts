@@ -6,7 +6,9 @@ import { useActiveProfile } from "@/store/profiles";
 import { getFunctionConfig, listFunctions } from "@/lib/lambda";
 export const lambdaKeys = {
   functions: (profileId: string, region?: string) =>
-    ["lambda", "functions", profileId, region ?? ""] as const,
+    region
+      ? (["lambda", "functions", profileId, region] as const)
+      : (["lambda", "functions", profileId] as const),
   config: (profileId: string, name: string) =>
     ["lambda", "config", profileId, name] as const,
 };

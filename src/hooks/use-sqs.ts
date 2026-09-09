@@ -7,7 +7,9 @@ import { listQueues } from "@/lib/sqs";
 
 export const sqsKeys = {
   queues: (profileId: string, region?: string) =>
-    ["sqs", "queues", profileId, region ?? ""] as const,
+    region
+      ? (["sqs", "queues", profileId, region] as const)
+      : (["sqs", "queues", profileId] as const),
 };
 
 export function useSqsClient(): SQSClient {

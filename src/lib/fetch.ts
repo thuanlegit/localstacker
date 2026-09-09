@@ -151,7 +151,16 @@ export async function platformFetch(
             ? window.location.origin
             : "http://localhost:1420";
         const targetUrl = new URL(rewritten, base).href;
-        return fetch(new Request(targetUrl, input), init);
+        const hasBody = input.method !== "GET" && input.method !== "HEAD";
+        const body = hasBody ? await input.clone().arrayBuffer() : undefined;
+        return fetch(
+          new Request(targetUrl, {
+            method: input.method,
+            headers: input.headers,
+            body,
+            signal: input.signal,
+          })
+        );
       }
     }
   }

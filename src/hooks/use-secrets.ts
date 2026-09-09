@@ -6,7 +6,9 @@ import { useActiveProfile } from "@/store/profiles";
 import { listSecrets, listSecretVersions } from "@/lib/secrets";
 export const secretsKeys = {
   secrets: (profileId: string, region?: string) =>
-    ["secrets", "secrets", profileId, region ?? ""] as const,
+    region
+      ? (["secrets", "secrets", profileId, region] as const)
+      : (["secrets", "secrets", profileId] as const),
   versions: (profileId: string, name: string) =>
     ["secrets", "versions", profileId, name] as const,
 };
