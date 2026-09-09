@@ -1,0 +1,235 @@
+import { describe, it, expect, vi } from "vitest";
+import type { LambdaClient } from "@aws-sdk/client-lambda";
+import {
+  listFunctions,
+  getFunctionConfig,
+  invokeFunction,
+  updateFunctionEnvVars,
+} from "./lambda";
+
+describe("lambda data plane", () => {
+  describe("listFunctions", () => {
+    it("handles single-page responses and maps fields", async () => {
+      const lastMod = "2026-01-01T00:00:00.000+0000";
+      const send = vi.fn().mockResolvedValue({
+        Functions: [
+          {
+            FunctionName: "hello",
+            Runtime: "nodejs22.x",
+            Handler: "index.handler",
+            Description: "Hello function",
+            CodeSize: 1024,
+            LastModified: lastMod,
+          },
+        ],
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const fns = await listFunctions(client);
+
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0][0].input).toEqual({});
+      expect(fns).toEqual([
+        {
+          name: "hello",
+          runtime: "nodejs22.x",
+          handler: "index.handler",
+          description: "Hello function",
+          codeSize: 1024,
+          lastModified: new Date(lastMod),
+        },
+      ]);
+    });
+
+    it("paginates when NextMarker is returned", async () => {
+      const send = vi
+        .fn()
+        .mockResolvedValueOnce({
+          Functions: [{ FunctionName: "fn-1" }],
+          NextMarker: "marker-123",
+        })
+        .mockResolvedValueOnce({
+          Functions: [{ FunctionName: "fn-2" }],
+        });
+      const client = { send } as unknown as LambdaClient;
+
+      const fns = await listFunctions(client);
+
+      expect(send).toHaveBeenCalledTimes(2);
+      expect(send.mock.calls[0][0].input).toEqual({});
+      expect(send.mock.calls[1][0].input).toEqual({ Marker: "marker-123" });
+      expect(fns.map((f) => f.name)).toEqual(["fn-1", "fn-2"]);
+    });
+
+    it("propagates client rejection", async () => {
+      const send = vi.fn().mockRejectedValue(new Error("Lambda list error"));
+      const client = { send } as unknown as LambdaClient;
+
+      await expect(listFunctions(client)).rejects.toThrow("Lambda list error");
+    });
+  });
+
+  describe("getFunctionConfig", () => {
+    it("maps config and applies defaults for Timeout (3), MemorySize (128), and envVars ({})", async () => {
+      const send = vi.fn().mockResolvedValue({
+        FunctionName: "hello",
+        Runtime: "python3.12",
+        Handler: "app.handler",
+        Description: "Python func",
+        Role: "arn:aws:iam::000000000000:role/lambda-role",
+        State: "Active",
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const config = await getFunctionConfig(client, "hello");
+
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0][0].input).toEqual({
+        FunctionName: "hello",
+      });
+      expect(config).toEqual({
+        name: "hello",
+        runtime: "python3.12",
+        handler: "app.handler",
+        description: "Python func",
+        role: "arn:aws:iam::000000000000:role/lambda-role",
+        timeoutSeconds: 3,
+        memorySize: 128,
+        envVars: {},
+        lastModified: undefined,
+        state: "Active",
+      });
+    });
+
+    it("maps explicit Timeout, MemorySize, Environment, and LastModified", async () => {
+      const lastMod = "2026-01-02T12:00:00.000+0000";
+      const send = vi.fn().mockResolvedValue({
+        FunctionName: "custom",
+        Timeout: 30,
+        MemorySize: 512,
+        Environment: {
+          Variables: {
+            NODE_ENV: "production",
+            API_KEY: "secret",
+          },
+        },
+        LastModified: lastMod,
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const config = await getFunctionConfig(client, "custom");
+
+      expect(config.timeoutSeconds).toBe(30);
+      expect(config.memorySize).toBe(512);
+      expect(config.envVars).toEqual({
+        NODE_ENV: "production",
+        API_KEY: "secret",
+      });
+      expect(config.lastModified).toEqual(new Date(lastMod));
+    });
+
+    it("propagates client rejection", async () => {
+      const send = vi.fn().mockRejectedValue(new Error("Function not found"));
+      const client = { send } as unknown as LambdaClient;
+
+      await expect(getFunctionConfig(client, "missing")).rejects.toThrow(
+        "Function not found",
+      );
+    });
+  });
+
+  describe("invokeFunction", () => {
+    it("sends RequestResponse, LogType: Tail, decodes payload and base64 logs, and measures durationMs", async () => {
+      const logText = "START RequestId: 1\nHello from Lambda!\nEND RequestId: 1";
+      const encodedLogs = btoa(logText);
+      const payloadBytes = new TextEncoder().encode('{"message":"success"}');
+
+      const send = vi.fn().mockResolvedValue({
+        StatusCode: 200,
+        ExecutedVersion: "$LATEST",
+        Payload: payloadBytes,
+        LogResult: encodedLogs,
+        $metadata: {
+          requestId: "req-123",
+          httpHeaders: {
+            "x-amzn-requestid": "req-123",
+          },
+        },
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const res = await invokeFunction(client, {
+        functionName: "hello",
+        payload: '{"name":"world"}',
+      });
+
+      expect(send).toHaveBeenCalledOnce();
+      const input = send.mock.calls[0][0].input;
+      expect(input.FunctionName).toBe("hello");
+      expect(input.InvocationType).toBe("RequestResponse");
+      expect(input.LogType).toBe("Tail");
+      expect(new TextDecoder().decode(input.Payload)).toBe('{"name":"world"}');
+
+      expect(res.statusCode).toBe(200);
+      expect(res.executedVersion).toBe("$LATEST");
+      expect(res.payload).toBe('{"message":"success"}');
+      expect(res.logs).toBe(logText);
+      expect(res.durationMs).toBeGreaterThanOrEqual(0);
+      expect(res.requestId).toBe("req-123");
+    });
+
+    it("sets logs to undefined when LogResult is absent", async () => {
+      const send = vi.fn().mockResolvedValue({
+        StatusCode: 200,
+        Payload: new TextEncoder().encode("{}"),
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const res = await invokeFunction(client, { functionName: "hello" });
+
+      expect(res.logs).toBeUndefined();
+      expect(res.payload).toBe("{}");
+    });
+
+    it("propagates client rejection", async () => {
+      const send = vi.fn().mockRejectedValue(new Error("Invoke failed"));
+      const client = { send } as unknown as LambdaClient;
+
+      await expect(
+        invokeFunction(client, { functionName: "hello" }),
+      ).rejects.toThrow("Invoke failed");
+    });
+  });
+
+  describe("updateFunctionEnvVars", () => {
+    it("replaces environment variables completely", async () => {
+      const send = vi.fn().mockResolvedValue({});
+      const client = { send } as unknown as LambdaClient;
+
+      await updateFunctionEnvVars(client, {
+        functionName: "hello",
+        envVars: { FOO: "bar", NUM: "42" },
+      });
+
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0][0].input).toEqual({
+        FunctionName: "hello",
+        Environment: {
+          Variables: { FOO: "bar", NUM: "42" },
+        },
+      });
+    });
+
+    it("propagates client rejection", async () => {
+      const send = vi.fn().mockRejectedValue(new Error("Update failed"));
+      const client = { send } as unknown as LambdaClient;
+
+      await expect(
+        updateFunctionEnvVars(client, {
+          functionName: "hello",
+          envVars: {},
+        }),
+      ).rejects.toThrow("Update failed");
+    });
+  });
+});
