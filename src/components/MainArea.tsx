@@ -1,34 +1,14 @@
 import { Boxes, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { serviceMeta } from "@/lib/services";
 import { useTabs } from "@/store/tabs";
 import { S3ServiceView } from "@/components/s3/S3ServiceView";
 import { BucketView } from "@/components/s3/BucketView";
 import { SqsServiceView } from "@/components/sqs/SqsServiceView";
 import { QueueView } from "@/components/sqs/QueueView";
-import type { ServiceKind } from "@/types";
-function ServicePlaceholder({ service }: { service: ServiceKind }) {
-  const meta = serviceMeta(service);
-  const Icon = meta.icon;
-
-  return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-      <div className="flex size-14 items-center justify-center rounded-xl border bg-muted/50">
-        <Icon className="size-7 text-muted-foreground" />
-      </div>
-      <h2 className="text-lg font-semibold">{meta.label}</h2>
-      <p className="text-sm text-muted-foreground">Coming in {meta.milestone}</p>
-      <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-        {meta.planned.map((item) => (
-          <li key={item} className="flex items-start gap-2">
-            <span aria-hidden className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/60" />
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+import { SecretsServiceView } from "@/components/secrets/SecretsServiceView";
+import { SecretView } from "@/components/secrets/SecretView";
+import { LambdaServiceView } from "@/components/lambda/LambdaServiceView";
+import { FunctionView } from "@/components/lambda/FunctionView";
 
 function EmptyState() {
   return (
@@ -76,8 +56,14 @@ export function MainArea() {
             <SqsServiceView />
           ) : tab.kind === "queue" && tab.queueName ? (
             <QueueView queueName={tab.queueName} />
-          ) : tab.kind === "service" && tab.service ? (
-            <ServicePlaceholder service={tab.service} />
+          ) : tab.kind === "service" && tab.service === "secrets" ? (
+            <SecretsServiceView />
+          ) : tab.kind === "secret" && tab.secretName ? (
+            <SecretView secretName={tab.secretName} />
+          ) : tab.kind === "service" && tab.service === "lambda" ? (
+            <LambdaServiceView />
+          ) : tab.kind === "function" && tab.functionName ? (
+            <FunctionView functionName={tab.functionName} />
           ) : null}
         </TabsContent>
       ))}

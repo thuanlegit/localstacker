@@ -7,8 +7,6 @@ export interface ServiceMeta {
   shortLabel: string;
   icon: LucideIcon;
   blurb: string;
-  milestone: string;
-  planned: string[];
 }
 
 export const SERVICES: readonly ServiceMeta[] = [
@@ -18,12 +16,6 @@ export const SERVICES: readonly ServiceMeta[] = [
     shortLabel: "S3",
     icon: HardDrive,
     blurb: "Buckets & objects",
-    milestone: "M1",
-    planned: [
-      "Folder-style object browsing with previews",
-      "Drag & drop upload, download, delete",
-      "Create/delete buckets, copy presigned URLs",
-    ],
   },
   {
     kind: "sqs",
@@ -31,12 +23,6 @@ export const SERVICES: readonly ServiceMeta[] = [
     shortLabel: "SQS",
     icon: ListOrdered,
     blurb: "Queues",
-    milestone: "M2",
-    planned: [
-      "Queue list with depth & DLQ badges",
-      "Peek without consuming, send with JSON editor",
-      "Purge, delete message, DLQ redrive",
-    ],
   },
   {
     kind: "secrets",
@@ -44,12 +30,6 @@ export const SERVICES: readonly ServiceMeta[] = [
     shortLabel: "Secrets",
     icon: KeyRound,
     blurb: "Secrets",
-    milestone: "M3",
-    planned: [
-      "Secret list, value reveal, versions",
-      "Create / update / delete secrets",
-      "Requires a LocalStack auth token (Hobby+)",
-    ],
   },
   {
     kind: "lambda",
@@ -57,12 +37,6 @@ export const SERVICES: readonly ServiceMeta[] = [
     shortLabel: "Lambda",
     icon: Zap,
     blurb: "Functions",
-    milestone: "M3",
-    planned: [
-      "Function list & configuration",
-      "Invoke with test payload — response, duration, logs",
-      "Edit environment variables",
-    ],
   },
 ] as const;
 

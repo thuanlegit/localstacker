@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HardDrive, ListOrdered, Moon, Sun } from "lucide-react";
+import { HardDrive, KeyRound, ListOrdered, Moon, Sun, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -15,6 +15,8 @@ import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
 import { useBuckets } from "@/hooks/use-s3";
 import { useQueues } from "@/hooks/use-sqs";
+import { useSecrets } from "@/hooks/use-secrets";
+import { useFunctions } from "@/hooks/use-lambda";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -22,6 +24,8 @@ export function CommandPalette() {
   const openTab = useTabs((s) => s.openTab);
   const { data: buckets } = useBuckets(profile.id, { enabled: open });
   const { data: queues } = useQueues(profile.id, { enabled: open });
+  const { data: secrets } = useSecrets(profile.id, { enabled: open });
+  const { data: functions } = useFunctions(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -100,6 +104,52 @@ export function CommandPalette() {
               >
                 <ListOrdered />
                 {q.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {secrets && secrets.length > 0 && (
+          <CommandGroup heading="Secrets">
+            {secrets.map((s) => (
+              <CommandItem
+                key={s.name}
+                value={s.name}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `secret:${s.name}`,
+                      kind: "secret",
+                      secretName: s.name,
+                      title: s.name,
+                    }),
+                  )
+                }
+              >
+                <KeyRound />
+                {s.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {functions && functions.length > 0 && (
+          <CommandGroup heading="Functions">
+            {functions.map((f) => (
+              <CommandItem
+                key={f.name}
+                value={f.name}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `function:${f.name}`,
+                      kind: "function",
+                      functionName: f.name,
+                      title: f.name,
+                    }),
+                  )
+                }
+              >
+                <Zap />
+                {f.name}
               </CommandItem>
             ))}
           </CommandGroup>

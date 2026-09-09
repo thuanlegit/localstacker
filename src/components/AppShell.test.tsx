@@ -29,7 +29,7 @@ vi.mock("@/hooks/use-s3", () => ({
     objects: (id: string, b: string, p?: string) => ["s3", "objects", id, b, p ?? ""],
   },
 }));
-const { demoQueue } = vi.hoisted(() => ({
+const { demoQueue, demoSecret, demoFunction } = vi.hoisted(() => ({
   demoQueue: {
     url: "http://localhost:4566/000000000000/demo-queue",
     name: "demo-queue",
@@ -40,6 +40,19 @@ const { demoQueue } = vi.hoisted(() => ({
       delayed: 0,
       createdTimestamp: new Date("2026-01-01T00:00:00Z"),
     },
+  },
+  demoSecret: {
+    name: "db-password",
+    arn: "arn:aws:secretsmanager:us-east-1:000000000000:secret:db-password-AbCd",
+    description: "Main DB",
+    createdDate: new Date("2026-01-01T00:00:00Z"),
+  },
+  demoFunction: {
+    name: "hello",
+    runtime: "nodejs22.x",
+    handler: "index.handler",
+    codeSize: 512,
+    lastModified: new Date("2026-01-01T00:00:00Z"),
   },
 }));
 
@@ -69,6 +82,100 @@ vi.mock("@/lib/sqs", async (importOriginal) => {
     deleteMessage: vi.fn().mockResolvedValue(undefined),
     purgeQueue: vi.fn().mockResolvedValue(undefined),
     redriveMessages: vi.fn().mockResolvedValue({ moved: 0 }),
+  };
+});
+vi.mock("@/hooks/use-secrets", () => ({
+  useSecretsClient: vi.fn(),
+  useSecrets: vi.fn(() => ({
+    data: [demoSecret],
+    isPending: false,
+    isFetching: false,
+    error: null,
+    refetch: vi.fn(),
+  })),
+  useSecretVersions: vi.fn(() => ({
+    data: [
+      {
+        versionId: "v1",
+        createdDate: new Date("2026-01-01T00:00:00Z"),
+        stages: ["AWSCURRENT"],
+      },
+    ],
+    isPending: false,
+    isFetching: false,
+    error: null,
+    refetch: vi.fn(),
+  })),
+  secretsKeys: {
+    secrets: (id: string) => ["secrets", "secrets", id],
+    versions: (id: string, name: string) => ["secrets", "versions", id, name],
+  },
+}));
+
+vi.mock("@/lib/secrets", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/secrets")>();
+  return {
+    ...actual,
+    createSecret: vi.fn().mockResolvedValue({
+      name: demoSecret.name,
+      arn: demoSecret.arn,
+      versionId: "v1",
+    }),
+    deleteSecret: vi.fn().mockResolvedValue(undefined),
+    getSecretValue: vi.fn().mockResolvedValue({
+      name: demoSecret.name,
+      versionId: "v1",
+      secretString: "secret-value-123",
+      createdDate: demoSecret.createdDate,
+    }),
+    putSecretValue: vi.fn().mockResolvedValue({
+      versionId: "v2",
+      versionStages: ["AWSCURRENT"],
+    }),
+  };
+});
+
+vi.mock("@/hooks/use-lambda", () => ({
+  useLambdaClient: vi.fn(),
+  useFunctions: vi.fn(() => ({
+    data: [demoFunction],
+    isPending: false,
+    isFetching: false,
+    error: null,
+    refetch: vi.fn(),
+  })),
+  useFunctionConfig: vi.fn(() => ({
+    data: {
+      name: demoFunction.name,
+      runtime: demoFunction.runtime,
+      handler: demoFunction.handler,
+      timeoutSeconds: 3,
+      memorySize: 128,
+      envVars: {},
+    },
+    isPending: false,
+    isFetching: false,
+    error: null,
+    refetch: vi.fn(),
+  })),
+  lambdaKeys: {
+    functions: (id: string) => ["lambda", "functions", id],
+    config: (id: string, name: string) => ["lambda", "config", id, name],
+  },
+}));
+
+vi.mock("@/lib/lambda", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/lambda")>();
+  return {
+    ...actual,
+    invokeFunction: vi.fn().mockResolvedValue({
+      statusCode: 200,
+      executedVersion: "$LATEST",
+      payload: '{"res":"ok"}',
+      logs: "logs...",
+      durationMs: 10,
+    }),
+    updateFunctionEnvVars: vi.fn().mockResolvedValue(undefined),
   };
 });
 vi.mock("@/lib/s3", async (importOriginal) => {
@@ -146,6 +253,35 @@ describe("AppShell", () => {
     expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("demo-queue");
   });
 
+  it("opens the Secrets tab and navigates into a secret", async () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^Secrets Manager/ }));
+    expect(screen.getByText("db-password")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Secrets");
+
+    fireEvent.click(screen.getByText("db-password"));
+
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual([
+      "service:secrets",
+      "secret:db-password",
+    ]);
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("db-password");
+  });
+
+  it("opens the Lambda tab and navigates into a function", async () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^Lambda/ }));
+    expect(screen.getByText("hello")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Lambda");
+
+    fireEvent.click(screen.getByText("hello"));
+
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual([
+      "service:lambda",
+      "function:hello",
+    ]);
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("hello");
+  });
 
   it("opens the palette with Cmd-K and navigates to SQS from it", () => {
     renderApp();
