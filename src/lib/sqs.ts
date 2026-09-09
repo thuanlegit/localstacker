@@ -22,6 +22,7 @@ export interface QueueAttributes {
   delayed: number;
   createdTimestamp?: Date;
   dlqName?: string;
+  arn: string;
 }
 
 export interface QueueSummary {
@@ -77,12 +78,15 @@ export async function getQueueAttributes(
     }
   }
 
+  const arn = attrs.QueueArn ?? "";
+
   return {
     depth,
     inFlight,
     delayed,
     createdTimestamp,
     dlqName,
+    arn,
   };
 }
 

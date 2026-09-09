@@ -26,6 +26,7 @@ describe("sqs data plane", () => {
             deadLetterTargetArn: "arn:aws:sqs:us-east-1:000000000000:my-dlq",
             maxReceiveCount: 3,
           }),
+          QueueArn: "arn:aws:sqs:us-east-1:000000000000:orders",
         },
       });
       const client = { send } as unknown as SQSClient;
@@ -46,6 +47,7 @@ describe("sqs data plane", () => {
         delayed: 1,
         createdTimestamp: new Date(1700000000 * 1000),
         dlqName: "my-dlq",
+        arn: "arn:aws:sqs:us-east-1:000000000000:orders",
       });
     });
 
@@ -70,6 +72,7 @@ describe("sqs data plane", () => {
       expect(attrs.depth).toBe(0);
       expect(attrs.inFlight).toBe(0);
       expect(attrs.delayed).toBe(0);
+      expect(attrs.arn).toBe("");
     });
   });
 
@@ -84,6 +87,7 @@ describe("sqs data plane", () => {
                 ApproximateNumberOfMessages: "10",
                 ApproximateNumberOfMessagesNotVisible: "0",
                 ApproximateNumberOfMessagesDelayed: "0",
+                QueueArn: "arn:aws:sqs:us-east-1:000000000000:zeta",
               },
             };
           }
@@ -93,6 +97,7 @@ describe("sqs data plane", () => {
                 ApproximateNumberOfMessages: "2",
                 ApproximateNumberOfMessagesNotVisible: "1",
                 ApproximateNumberOfMessagesDelayed: "0",
+                QueueArn: "arn:aws:sqs:us-east-1:000000000000:alpha.fifo",
               },
             };
           }
@@ -131,6 +136,7 @@ describe("sqs data plane", () => {
           delayed: 0,
           createdTimestamp: undefined,
           dlqName: undefined,
+          arn: "arn:aws:sqs:us-east-1:000000000000:alpha.fifo",
         },
       });
       expect(queues[1]).toEqual({
@@ -143,6 +149,7 @@ describe("sqs data plane", () => {
           delayed: 0,
           createdTimestamp: undefined,
           dlqName: undefined,
+          arn: "arn:aws:sqs:us-east-1:000000000000:zeta",
         },
       });
     });

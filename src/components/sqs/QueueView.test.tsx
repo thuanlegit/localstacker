@@ -41,6 +41,7 @@ const demoQueue: QueueSummary = {
     delayed: 0,
     dlqName: "demo-dlq",
     createdTimestamp: new Date("2026-01-01T00:00:00Z"),
+    arn: "arn:aws:sqs:us-east-1:000000000000:demo-queue",
   },
 };
 
@@ -52,6 +53,7 @@ const fifoQueue: QueueSummary = {
     depth: 0,
     inFlight: 0,
     delayed: 0,
+    arn: "arn:aws:sqs:us-east-1:000000000000:demo.fifo",
   },
 };
 
@@ -63,6 +65,7 @@ const otherQueue: QueueSummary = {
     depth: 0,
     inFlight: 0,
     delayed: 0,
+    arn: "arn:aws:sqs:us-east-1:000000000000:other-queue",
   },
 };
 

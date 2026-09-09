@@ -28,6 +28,7 @@ const demoQueue: QueueSummary = {
     inFlight: 1,
     delayed: 0,
     createdTimestamp: new Date("2026-01-01T00:00:00Z"),
+    arn: "arn:aws:sqs:us-east-1:000000000000:demo-queue",
   },
 };
 
@@ -121,6 +122,7 @@ describe("SqsServiceView", () => {
         inFlight: 0,
         delayed: 0,
         dlqName: "demo-queue",
+        arn: "arn:aws:sqs:us-east-1:000000000000:source-queue",
       },
     };
     currentQueues = [demoQueue, sourceQueue];
