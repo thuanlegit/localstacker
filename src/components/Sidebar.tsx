@@ -1,11 +1,18 @@
+import { useState } from "react";
 import { Check, ChevronsUpDown, Moon, Sun } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ConnectionDialog } from "@/components/ConnectionDialog";
 import { HealthBadge } from "@/components/HealthBadge";
 import { cn } from "@/lib/utils";
 import { LOCALSTACK_SERVICE_NAMES, SERVICES } from "@/lib/services";
@@ -13,8 +20,11 @@ import { useHealth } from "@/hooks/use-health";
 import { useActiveProfile, useProfiles } from "@/store/profiles";
 import { useTheme } from "@/store/theme";
 import { useTabs } from "@/store/tabs";
-import type { ServiceKind } from "@/types";
+import type { ConnectionProfile, ServiceKind } from "@/types";
 
+function toErrorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
 export function openServiceTab(kind: ServiceKind, title: string) {
   useTabs.getState().openTab({ id: `service:${kind}`, kind: "service", service: kind, title });
 }
@@ -24,8 +34,12 @@ export function Sidebar() {
   const profiles = useProfiles((s) => s.profiles);
   const activeProfile = useActiveProfile();
   const setActiveProfile = useProfiles((s) => s.setActiveProfile);
+  const removeProfile = useProfiles((s) => s.removeProfile);
   const theme = useTheme((s) => s.theme);
   const { data: healthData } = useHealth();
+
+  const [isConnectionDialogOpen, setIsConnectionDialogOpen] = useState(false);
+  const [dialogProfile, setDialogProfile] = useState<ConnectionProfile | undefined>(undefined);
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="flex flex-col gap-2 p-3">
@@ -42,16 +56,95 @@ export function Sidebar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            {profiles.map((profile) => (
-              <DropdownMenuItem key={profile.id} onSelect={() => setActiveProfile(profile.id)}>
-                <Check className={cn("size-4", profile.id !== activeProfile.id && "invisible")} />
-                <span className="flex-1 truncate">{profile.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{profile.endpoint}</span>
-              </DropdownMenuItem>
-            ))}
+            {profiles.map((profile) =>
+              profile.builtIn ? (
+                <DropdownMenuItem
+                  key={profile.id}
+                  onSelect={() => setActiveProfile(profile.id)}
+                >
+                  <Check
+                    className={cn(
+                      "size-4",
+                      profile.id !== activeProfile.id && "invisible",
+                    )}
+                  />
+                  <span className="flex-1 truncate">{profile.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {profile.endpoint}
+                  </span>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuSub key={profile.id}>
+                  <DropdownMenuSubTrigger
+                    onClick={() => setActiveProfile(profile.id)}
+                  >
+                    <Check
+                      className={cn(
+                        "size-4",
+                        profile.id !== activeProfile.id && "invisible",
+                      )}
+                    />
+                    <span className="flex-1 truncate">{profile.name}</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {profile.endpoint}
+                    </span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onSelect={() => setActiveProfile(profile.id)}
+                    >
+                      Use connection
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setDialogProfile(profile);
+                        setIsConnectionDialogOpen(true);
+                      }}
+                    >
+                      Edit…
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onSelect={() => {
+                        try {
+                          removeProfile(profile.id);
+                          toast.success(`Connection ${profile.name} removed`);
+                        } catch (err) {
+                          toast.error(toErrorMessage(err));
+                        }
+                      }}
+                    >
+                      Remove
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              ),
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                setDialogProfile(activeProfile);
+                setIsConnectionDialogOpen(true);
+              }}
+            >
+              Edit connection…
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                setDialogProfile(undefined);
+                setIsConnectionDialogOpen(true);
+              }}
+            >
+              New connection…
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <HealthBadge />
+        <ConnectionDialog
+          open={isConnectionDialogOpen}
+          onOpenChange={setIsConnectionDialogOpen}
+          profile={dialogProfile}
+        />
       </div>
 
       <nav className="flex flex-col gap-0.5 px-3">

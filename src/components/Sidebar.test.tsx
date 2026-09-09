@@ -53,4 +53,49 @@ describe("Sidebar", () => {
       { id: "service:sqs", kind: "service", service: "sqs", title: "SQS" },
     ]);
   });
+
+  it("opens Edit connection dialog prefilled with Local profile and persists endpoint change", async () => {
+    renderWithProviders(<Sidebar />);
+
+    // Open connection dropdown
+    const profileTrigger = screen.getByRole("button", { name: /Local/i });
+    fireEvent.keyDown(profileTrigger, { key: "ArrowDown", code: "ArrowDown" });
+
+    const editItem = await screen.findByRole("menuitem", { name: /Edit connection…/i });
+    fireEvent.click(editItem);
+
+    expect(await screen.findByRole("heading", { name: "Edit connection" })).toBeInTheDocument();
+    const endpointInput = screen.getByLabelText(/Endpoint URL/i);
+    expect(endpointInput).toHaveValue("http://localhost:4566");
+
+    fireEvent.change(endpointInput, { target: { value: "http://localhost:4567" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save connection" }));
+
+    const active = useProfiles.getState().profiles.find((p) => p.id === LOCAL_PROFILE_ID);
+    expect(active?.endpoint).toBe("http://localhost:4567");
+  });
+
+  it("opens New connection dialog, adds profile, and activates it", async () => {
+    renderWithProviders(<Sidebar />);
+
+    const profileTrigger = screen.getByRole("button", { name: /Local/i });
+    fireEvent.keyDown(profileTrigger, { key: "ArrowDown", code: "ArrowDown" });
+
+    const newItem = await screen.findByRole("menuitem", { name: /New connection…/i });
+    fireEvent.click(newItem);
+
+    expect(await screen.findByRole("heading", { name: "New connection" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/Name/i), { target: { value: "Dev Instance" } });
+    fireEvent.change(screen.getByLabelText(/Endpoint URL/i), {
+      target: { value: "http://dev.localstack:4566" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Save connection" }));
+
+    const state = useProfiles.getState();
+    const added = state.profiles.find((p) => p.name === "Dev Instance");
+    expect(added).toBeDefined();
+    expect(added?.endpoint).toBe("http://dev.localstack:4566");
+    expect(state.activeProfileId).toBe(added?.id);
+  });
 });
