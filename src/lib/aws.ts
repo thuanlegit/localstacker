@@ -8,6 +8,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { SNSClient } from "@aws-sdk/client-sns";
 import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
+import { SSMClient } from "@aws-sdk/client-ssm";
 import type { ConnectionProfile } from "@/types";
 
 /** LocalStack ignores SigV4 identity, but SDKs require credentials to sign. */
@@ -48,6 +49,7 @@ export interface ServiceClients {
   dynamodbDoc: DynamoDBDocumentClient;
   sns: SNSClient;
   logs: CloudWatchLogsClient;
+  ssm: SSMClient;
 }
 
 export function makeClients(profile: ConnectionProfile): ServiceClients {
@@ -62,5 +64,6 @@ export function makeClients(profile: ConnectionProfile): ServiceClients {
     dynamodbDoc: DynamoDBDocumentClient.from(dynamodb),
     sns: new SNSClient(config),
     logs: new CloudWatchLogsClient(config),
+    ssm: new SSMClient(config),
   };
 }
