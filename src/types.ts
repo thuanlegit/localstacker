@@ -14,12 +14,13 @@ export type NewProfile = Omit<ConnectionProfile, "id" | "builtIn"> & {
   authToken?: string;
 };
 
-export type TabKind = "service";
+export type TabKind = "service" | "bucket";
 
 export interface TabDescriptor {
-  /** Stable tab identity, e.g. "service:s3" or (later) "bucket:my-bucket". */
+  /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket". */
   id: string;
   kind: TabKind;
   service?: ServiceKind;
+  bucketName?: string;
   title: string;
 }

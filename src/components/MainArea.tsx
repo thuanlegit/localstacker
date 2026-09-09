@@ -2,8 +2,9 @@ import { Boxes, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { serviceMeta } from "@/lib/services";
 import { useTabs } from "@/store/tabs";
+import { S3ServiceView } from "@/components/s3/S3ServiceView";
+import { BucketView } from "@/components/s3/BucketView";
 import type { ServiceKind } from "@/types";
-
 function ServicePlaceholder({ service }: { service: ServiceKind }) {
   const meta = serviceMeta(service);
   const Icon = meta.icon;
@@ -65,7 +66,11 @@ export function MainArea() {
       </TabsList>
       {tabs.map((tab) => (
         <TabsContent key={tab.id} value={tab.id} className="min-h-0">
-          {tab.kind === "service" && tab.service ? (
+          {tab.kind === "service" && tab.service === "s3" ? (
+            <S3ServiceView />
+          ) : tab.kind === "bucket" && tab.bucketName ? (
+            <BucketView bucketName={tab.bucketName} />
+          ) : tab.kind === "service" && tab.service ? (
             <ServicePlaceholder service={tab.service} />
           ) : null}
         </TabsContent>

@@ -1,6 +1,7 @@
 import { CommandPalette } from "@/components/CommandPalette";
 import { MainArea } from "@/components/MainArea";
 import { Sidebar } from "@/components/Sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 export function AppShell() {
   return (
@@ -10,6 +11,7 @@ export function AppShell() {
         <MainArea />
       </main>
       <CommandPalette />
+      <Toaster position="bottom-right" richColors />
     </div>
   );
 }
