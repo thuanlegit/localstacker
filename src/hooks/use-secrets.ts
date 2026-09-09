@@ -4,9 +4,9 @@ import type { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 import { makeClients } from "@/lib/aws";
 import { useActiveProfile } from "@/store/profiles";
 import { listSecrets, listSecretVersions } from "@/lib/secrets";
-
 export const secretsKeys = {
-  secrets: (profileId: string) => ["secrets", "secrets", profileId] as const,
+  secrets: (profileId: string, region?: string) =>
+    ["secrets", "secrets", profileId, region ?? ""] as const,
   versions: (profileId: string, name: string) =>
     ["secrets", "versions", profileId, name] as const,
 };
@@ -24,8 +24,9 @@ export function useSecrets(
   options?: { enabled?: boolean },
 ) {
   const client = useSecretsClient();
+  const profile = useActiveProfile();
   return useQuery({
-    queryKey: secretsKeys.secrets(profileId),
+    queryKey: secretsKeys.secrets(profileId, profile.region),
     queryFn: () => listSecrets(client),
     staleTime: 30_000,
     enabled: options?.enabled,

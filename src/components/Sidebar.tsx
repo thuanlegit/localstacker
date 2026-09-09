@@ -49,7 +49,7 @@ export function Sidebar() {
               <span className="flex min-w-0 flex-col items-start gap-0.5">
                 <span className="text-sm font-medium leading-tight">{activeProfile.name}</span>
                 <span className="max-w-full truncate text-xs font-normal leading-tight text-muted-foreground">
-                  {activeProfile.endpoint}
+                  {activeProfile.endpoint} · {activeProfile.region}
                 </span>
               </span>
               <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
@@ -70,7 +70,7 @@ export function Sidebar() {
                   />
                   <span className="flex-1 truncate">{profile.name}</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {profile.endpoint}
+                    {profile.endpoint} · {profile.region}
                   </span>
                 </DropdownMenuItem>
               ) : (
@@ -86,7 +86,7 @@ export function Sidebar() {
                     />
                     <span className="flex-1 truncate">{profile.name}</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      {profile.endpoint}
+                      {profile.endpoint} · {profile.region}
                     </span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>

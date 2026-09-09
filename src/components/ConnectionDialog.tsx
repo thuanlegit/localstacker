@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AWS_REGIONS } from "@/lib/regions";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +24,6 @@ import { useProfiles } from "@/store/profiles";
 import type { ConnectionProfile } from "@/types";
 
 const ENDPOINT_REGEX = /^https?:\/\//;
-const REGION_REGEX = /^[a-z]{2}(-[a-z]+)+-\d$/;
 
 function toErrorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -37,10 +45,10 @@ export function ConnectionDialog({
   const [region, setRegion] = useState("us-east-1");
   const [authToken, setAuthToken] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const addProfile = useProfiles((s) => s.addProfile);
   const updateProfile = useProfiles((s) => s.updateProfile);
   const setActiveProfile = useProfiles((s) => s.setActiveProfile);
+  const queryClient = useQueryClient();
 
   const isEdit = !!profile;
 
@@ -67,16 +75,11 @@ export function ConnectionDialog({
 
   const isNameValid = trimmedName.length > 0;
   const isEndpointValid = ENDPOINT_REGEX.test(trimmedEndpoint);
-  const isRegionValid = REGION_REGEX.test(trimmedRegion);
-
+  const isRegionValid = region.length > 0;
   const showEndpointError =
     endpoint.length > 0 && !ENDPOINT_REGEX.test(trimmedEndpoint);
-  const showRegionError =
-    region.length > 0 && !REGION_REGEX.test(trimmedRegion);
-
   const canSubmit =
     isNameValid && isEndpointValid && isRegionValid && !isSubmitting;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
@@ -90,6 +93,7 @@ export function ConnectionDialog({
           region: trimmedRegion,
           authToken: trimmedAuthToken || undefined,
         });
+        await queryClient.invalidateQueries();
         toast.success(`Connection ${trimmedName} saved`);
       } else {
         const added = addProfile({
@@ -99,6 +103,7 @@ export function ConnectionDialog({
           authToken: trimmedAuthToken || undefined,
         });
         setActiveProfile(added.id);
+        await queryClient.invalidateQueries();
         toast.success(`Connection ${trimmedName} saved`);
       }
       onOpenChange(false);
@@ -153,17 +158,21 @@ export function ConnectionDialog({
 
             <div className="space-y-2">
               <Label htmlFor="conn-region">Region</Label>
-              <Input
-                id="conn-region"
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
-                placeholder="us-east-1"
-              />
-              {showRegionError && (
-                <p className="text-xs text-destructive">
-                  Region must follow standard format (e.g. us-east-1)
-                </p>
-              )}
+              <Select value={region} onValueChange={setRegion}>
+                <SelectTrigger id="conn-region" aria-label="Region">
+                  <SelectValue placeholder="Select region" />
+                </SelectTrigger>
+                <SelectContent>
+                  {!AWS_REGIONS.some((r) => r.value === region) && region && (
+                    <SelectItem value={region}>{region}</SelectItem>
+                  )}
+                  {AWS_REGIONS.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>
+                      {r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

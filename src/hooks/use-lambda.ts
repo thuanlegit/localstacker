@@ -4,9 +4,9 @@ import type { LambdaClient } from "@aws-sdk/client-lambda";
 import { makeClients } from "@/lib/aws";
 import { useActiveProfile } from "@/store/profiles";
 import { getFunctionConfig, listFunctions } from "@/lib/lambda";
-
 export const lambdaKeys = {
-  functions: (profileId: string) => ["lambda", "functions", profileId] as const,
+  functions: (profileId: string, region?: string) =>
+    ["lambda", "functions", profileId, region ?? ""] as const,
   config: (profileId: string, name: string) =>
     ["lambda", "config", profileId, name] as const,
 };
@@ -24,8 +24,9 @@ export function useFunctions(
   options?: { enabled?: boolean },
 ) {
   const client = useLambdaClient();
+  const profile = useActiveProfile();
   return useQuery({
-    queryKey: lambdaKeys.functions(profileId),
+    queryKey: lambdaKeys.functions(profileId, profile.region),
     queryFn: () => listFunctions(client),
     staleTime: 30_000,
     enabled: options?.enabled,
