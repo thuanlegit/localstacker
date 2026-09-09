@@ -87,7 +87,17 @@ Compact record of the foundational decisions. Each entry: context → decision �
 ## D11. M1 S3: pure-TS data plane + Tauri plugins for file save
 
 **Context**: Downloading objects inside a webview requires file system access, but the data plane is pure TypeScript running in the webview.
-
 **Decision**: Run AWS SDK v3 in the webview; implement download via `GetObjectCommand` paired with `@tauri-apps/plugin-dialog` and `@tauri-apps/plugin-fs` for native file save with a browser `<a download>` fallback; generate presigned URLs client-side using `@aws-sdk/s3-request-presigner`; use `sonner` for user feedback toasts.
 
 **Consequences**: The Rust surface stays thin (2-line plugin registration in `src-tauri/src/lib.rs` and scoped capability in `default.json`); browser `pnpm dev` remains fully functional through fallback paths without bundling native plugins into browser dev bundles.
+
+## D12. M2 SQS: peek via short visibility timeout with explicit restore; redrive as receive→resend→delete loop
+
+**Context**: Peek must not consume messages, but SQS has no native non-consuming read API. Similarly, SQS has no native queue-to-queue redrive API for non-DLQ setups or manual transfers.
+
+**Decision**:
+- Peek uses `ReceiveMessageCommand` with a 30s visibility timeout (`PEEK_VISIBILITY_TIMEOUT_SECONDS`) coupled with `ChangeMessageVisibilityBatchCommand` (timeout 0) for immediate explicit restore on peek refresh, tab close, tab switch, and component unmount.
+- Queue depth and stats are kept fresh by polling `useQueues` at a 10s interval (`refetchInterval: 10_000`).
+- Redrive is implemented as a client-side loop: receive up to 10 messages with 30s visibility → send to target queue (preserving FIFO `MessageGroupId` when the target is a `.fifo` queue) → batch delete from source queue via `DeleteMessageBatchCommand`, bounded by a 1000-message cap (`REDRIVE_MAX_MESSAGES`).
+
+**Consequences**: Peeked messages briefly count as in-flight (honest AWS SQS semantics) until explicitly restored or visibility naturally expires. A crash mid-redrive self-heals at visibility expiry with at-least-once duplicate delivery guarantees (documented in the redrive dialog).
