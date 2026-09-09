@@ -14,14 +14,14 @@ browse and operate your local AWS resources without reaching for the CLI.
 
 ## Status
 
-Pre-alpha — M2 (SQS browse + message tools) shipped; M3 (Lambda + Secrets Manager) is next. Roadmap from [`docs/plan.md`](docs/plan.md):
+Pre-alpha — M3 (Lambda invoke+logs, Secrets Manager) shipped; M4 (hardening) is next. Roadmap from [`docs/plan.md`](docs/plan.md):
 
 | Milestone | Scope | Status |
 |---|---|---|
 | M0 | Scaffold, app shell, connection profiles, health badge | ✅ Done |
 | M1 | S3 — buckets/objects, upload/download, presigned URLs | ✅ Done |
 | M2 | SQS — send, peek, purge, DLQ redrive | ✅ Done |
-| M3 | Lambda (invoke + logs) and Secrets Manager | Planned |
+| M3 | Lambda (invoke + logs) and Secrets Manager | ✅ Done |
 | M4 | Hardening — e2e, notarization, auto-updater | Planned |
 
 ## Planned v1 — daily-driver tier

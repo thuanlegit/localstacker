@@ -101,3 +101,14 @@ Compact record of the foundational decisions. Each entry: context → decision �
 - Redrive is implemented as a client-side loop: receive up to 10 messages with 30s visibility → send to target queue (preserving FIFO `MessageGroupId` when the target is a `.fifo` queue) → batch delete from source queue via `DeleteMessageBatchCommand`, bounded by a 1000-message cap (`REDRIVE_MAX_MESSAGES`).
 
 **Consequences**: Peeked messages briefly count as in-flight (honest AWS SQS semantics) until explicitly restored or visibility naturally expires. A crash mid-redrive self-heals at visibility expiry with at-least-once duplicate delivery guarantees (documented in the redrive dialog).
+
+## D13. M3 Lambda + Secrets: LogType=Tail invocation logs; auth token as Authorization header
+
+**Context**: `docs/plan.md` assumed a LocalStack-internal logs endpoint (`/_localstack/lambda/*`) which no longer exists at LocalStack HEAD (verified; 0 Sourcegraph matches). Secrets Manager tier requirements have evolved: `secretsmanager` lives in community core at HEAD, but LocalStack auth token handling is required across services on modern unified images.
+
+**Decision**:
+- Use standard AWS `LogType: "Tail"` invoke parameter and base64-decode `LogResult`. When `LogResult` is absent, degrade gracefully to "Logs unavailable for this invocation (LocalStack returns logs via LogType=Tail)" rather than failing.
+- Pass connection profile `authToken` as the `Authorization` header on all SDK requests via a `withAuthHeader` fetch handler wrapper. LocalStack ignores SigV4 on service APIs, so overriding `Authorization` is safe and authenticates against licensed/internal endpoints.
+- Secrets Manager token gating is explanatory UX (informational note under header and error-path explanation) rather than a hard client-side block, since community containers may operate without a token while licensed containers require one.
+
+**Consequences**: The logs mechanism is portable to any AWS-compatible emulator or real AWS; token headers are harmless on unauthenticated or activated instances; users can configure tokens directly in the UI via Connection settings.
