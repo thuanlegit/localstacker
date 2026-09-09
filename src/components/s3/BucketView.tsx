@@ -6,6 +6,7 @@ import {
   FileText,
   Folder,
   FolderOpen,
+  FolderPlus,
   Loader2,
   MoreHorizontal,
   RotateCw,
@@ -13,6 +14,16 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +38,7 @@ import { useS3Client, useS3ObjectActions, s3Keys } from "@/hooks/use-s3";
 import {
   listObjectsPage,
   putObject,
+  createDirectory,
   deleteObject as deleteS3Object,
   type S3ObjectEntry,
 } from "@/lib/s3";
@@ -54,7 +66,9 @@ export function BucketView({ bucketName }: BucketViewProps) {
   const [previewEntry, setPreviewEntry] = useState<S3ObjectEntry | null>(null);
   const [objectToDelete, setObjectToDelete] = useState<S3ObjectEntry | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
+  const [isCreateDirectoryOpen, setIsCreateDirectoryOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  const [isDeletingFolder, setIsDeletingFolder] = useState(false);
   const {
     data,
     isPending,
@@ -131,6 +145,29 @@ export function BucketView({ bucketName }: BucketViewProps) {
       toast.error(`Delete failed: ${toErrorMessage(err)}`);
     } finally {
       setIsDeleting(false);
+    }
+  };
+  const handleDeleteFolder = async () => {
+    if (!folderToDelete || isDeletingFolder) return;
+
+    setIsDeletingFolder(true);
+    try {
+      await deleteS3Object(client, {
+        bucket: bucketName,
+        key: folderToDelete,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["s3", "objects", profile.id, bucketName],
+      });
+      const folderName = folderToDelete
+        .slice(prefix.length)
+        .replace(/\/$/, "");
+      toast.success(`Deleted directory ${folderName}`);
+      setFolderToDelete(null);
+    } catch (err) {
+      toast.error(`Delete failed: ${toErrorMessage(err)}`);
+    } finally {
+      setIsDeletingFolder(false);
     }
   };
 
@@ -228,6 +265,14 @@ export function BucketView({ bucketName }: BucketViewProps) {
             e.target.value = "";
           }}
         />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsCreateDirectoryOpen(true)}
+        >
+          <FolderPlus className="mr-1.5 size-4" />
+          Create directory
+        </Button>
 
         <Button size="sm" onClick={() => fileInputRef.current?.click()}>
           <Upload className="mr-1.5 size-4" />
@@ -288,7 +333,30 @@ export function BucketView({ bucketName }: BucketViewProps) {
                     <td className="px-4 py-2 text-right font-mono text-xs text-muted-foreground">
                       —
                     </td>
-                    <td />
+                    <td className="px-2 py-2 text-right">
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              aria-label={`Actions for ${folderName}`}
+                            >
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => setFolderToDelete(folder)}
+                            >
+                              Delete directory
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
@@ -405,6 +473,121 @@ export function BucketView({ bucketName }: BucketViewProps) {
         isPending={isDeleting}
         onConfirm={handleDeleteObject}
       />
+
+      {/* Delete Folder Dialog */}
+      <DeleteConfirmDialog
+        open={Boolean(folderToDelete)}
+        onOpenChange={(open) => !open && setFolderToDelete(null)}
+        title="Delete directory"
+        description={`Delete directory “${
+          folderToDelete
+            ? folderToDelete.slice(prefix.length).replace(/\/$/, "")
+            : ""
+        }” from ${bucketName}? Objects within this directory will not be deleted.`}
+        confirmLabel="Delete"
+        isPending={isDeletingFolder}
+        onConfirm={handleDeleteFolder}
+      />
+
+      {/* Create Directory Dialog */}
+      <CreateDirectoryDialog
+        open={isCreateDirectoryOpen}
+        onOpenChange={setIsCreateDirectoryOpen}
+        bucketName={bucketName}
+        prefix={prefix}
+      />
     </div>
+  );
+}
+
+interface CreateDirectoryDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  bucketName: string;
+  prefix: string;
+}
+
+function CreateDirectoryDialog({
+  open,
+  onOpenChange,
+  bucketName,
+  prefix,
+}: CreateDirectoryDialogProps) {
+  const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const client = useS3Client();
+  const profile = useActiveProfile();
+  const queryClient = useQueryClient();
+
+  const trimmed = name.trim();
+  const isValid = trimmed.length > 0 && !/[/\\#?%]/.test(trimmed);
+  const showError = trimmed.length > 0 && !isValid;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValid || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const fullKey = prefix ? `${prefix}${trimmed}/` : `${trimmed}/`;
+      await createDirectory(client, {
+        bucket: bucketName,
+        key: fullKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["s3", "objects", profile.id, bucketName],
+      });
+      toast.success(`Directory ${trimmed} created`);
+      setName("");
+      onOpenChange(false);
+    } catch (err) {
+      toast.error(toErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Create directory</DialogTitle>
+            <DialogDescription>
+              Directories in S3 are virtual prefixes ending with a trailing slash.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            <Label htmlFor="new-directory-name">Directory name</Label>
+            <Input
+              id="new-directory-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. photos"
+              autoComplete="off"
+              disabled={isSubmitting}
+            />
+            {showError && (
+              <p className="text-xs text-destructive">
+                Directory name cannot contain slashes (/ or \) or special characters.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!isValid || isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create directory"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

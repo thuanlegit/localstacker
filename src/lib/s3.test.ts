@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { S3Client } from "@aws-sdk/client-s3";
 import {
   createBucket,
+  createDirectory,
   deleteBucket,
   deleteObject,
   getObject,
@@ -172,6 +173,52 @@ describe("s3 data plane", () => {
     expect(commandInput.ContentType).toBe("image/png");
     expect(commandInput.Body).toBeInstanceOf(Uint8Array);
     expect(new TextDecoder().decode(commandInput.Body)).toBe("image binary bytes");
+  });
+
+  it("createDirectory puts empty object ending in slash with directory content type", async () => {
+    const send = vi.fn().mockResolvedValue({});
+    const client = { send } as unknown as S3Client;
+
+    await createDirectory(client, { bucket: "my-bucket", key: "photos" });
+    expect(send.mock.calls[0][0].input).toEqual({
+      Bucket: "my-bucket",
+      Key: "photos/",
+      Body: new Uint8Array(0),
+      ContentType: "application/x-directory",
+    });
+
+    await createDirectory(client, { bucket: "my-bucket", key: "nested/dir/" });
+    expect(send.mock.calls[1][0].input).toEqual({
+      Bucket: "my-bucket",
+      Key: "nested/dir/",
+      Body: new Uint8Array(0),
+      ContentType: "application/x-directory",
+    });
+
+    await createDirectory(client, { bucket: "my-bucket", key: "/leading/slash" });
+    expect(send.mock.calls[2][0].input).toEqual({
+      Bucket: "my-bucket",
+      Key: "leading/slash/",
+      Body: new Uint8Array(0),
+      ContentType: "application/x-directory",
+    });
+  });
+
+  it("listObjectsPage discovers folder markers from Contents and excludes them from objects", async () => {
+    const send = vi.fn().mockResolvedValue({
+      CommonPrefixes: [],
+      Contents: [
+        { Key: "uploads/", Size: 0 },
+        { Key: "uploads/nested/", Size: 0 },
+        { Key: "file.txt", Size: 42, LastModified: new Date() },
+      ],
+    });
+    const client = { send } as unknown as S3Client;
+
+    const page = await listObjectsPage(client, { bucket: "my-bucket", prefix: "" });
+    expect(page.folders).toEqual(["uploads/"]);
+    expect(page.objects).toHaveLength(1);
+    expect(page.objects[0].name).toBe("file.txt");
   });
 
   it("previewModeFor determines mode accurately", () => {

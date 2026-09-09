@@ -110,12 +110,26 @@ export async function listObjectsPage(
     }),
   );
 
-  const folders = (res.CommonPrefixes ?? [])
-    .map((cp) => cp.Prefix)
-    .filter((p): p is string => Boolean(p));
+  const folderSet = new Set<string>();
+  for (const cp of res.CommonPrefixes ?? []) {
+    if (cp.Prefix) folderSet.add(cp.Prefix);
+  }
+  for (const o of res.Contents ?? []) {
+    if (o.Key && o.Key.endsWith("/") && o.Key !== prefix) {
+      const rel = prefix && o.Key.startsWith(prefix) ? o.Key.slice(prefix.length) : o.Key;
+      const slashIdx = rel.indexOf("/");
+      if (slashIdx !== -1) {
+        folderSet.add(prefix + rel.slice(0, slashIdx + 1));
+      }
+    }
+  }
+  const folders = Array.from(folderSet);
 
   const objects: S3ObjectEntry[] = (res.Contents ?? [])
-    .filter((o): o is typeof o & { Key: string } => Boolean(o.Key && o.Key !== prefix))
+    .filter(
+      (o): o is typeof o & { Key: string } =>
+        Boolean(o.Key && o.Key !== prefix && !o.Key.endsWith("/")),
+    )
     .map((o) => ({
       key: o.Key,
       name: o.Key.startsWith(prefix) ? o.Key.slice(prefix.length) : o.Key,
@@ -191,6 +205,30 @@ export async function putObject(
     }),
   );
 }
+
+export async function createDirectory(
+  client: S3Client,
+  params: {
+    bucket: string;
+    key: string;
+  },
+): Promise<void> {
+  let key = params.key.trim().replace(/^\/+/, "");
+  if (!key.endsWith("/")) {
+    key += "/";
+  }
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: params.bucket,
+      Key: key,
+      Body: new Uint8Array(0),
+      ContentType: "application/x-directory",
+    }),
+  );
+}
+
+export const createFolder = createDirectory;
 
 export async function presignGetObject(
   client: S3Client,
