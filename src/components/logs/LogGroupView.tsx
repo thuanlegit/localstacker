@@ -80,15 +80,24 @@ export function LogGroupView({ logGroupName }: LogGroupViewProps) {
   const [streamToDelete, setStreamToDelete] = useState<string | null>(null);
   const [isDeletingStream, setIsDeletingStream] = useState(false);
 
+  const displayEvents = useMemo(() => {
+    if (!filterPattern.trim()) return events;
+    const pattern = filterPattern.trim().toLowerCase();
+    return events.filter(
+      (e) =>
+        e.message.toLowerCase().includes(pattern) ||
+        e.streamName.toLowerCase().includes(pattern),
+    );
+  }, [events, filterPattern]);
+
   // Virtualizer
   const parentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
-    count: events.length,
+    count: displayEvents.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 24,
     overscan: 15,
   });
-
   const handleDeleteGroup = async () => {
     setIsDeletingGroup(true);
     try {
@@ -259,7 +268,7 @@ export function LogGroupView({ logGroupName }: LogGroupViewProps) {
               Retry
             </Button>
           </div>
-        ) : events.length === 0 ? (
+        ) : displayEvents.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-muted-foreground p-6">
             <ScrollText className="h-8 w-8 stroke-1" />
             <p className="text-sm font-medium">No log events found</p>
@@ -279,7 +288,7 @@ export function LogGroupView({ logGroupName }: LogGroupViewProps) {
               }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const ev = events[virtualRow.index];
+                const ev = displayEvents[virtualRow.index];
                 return (
                   <div
                     key={virtualRow.key}
