@@ -31,7 +31,8 @@ const demoQueue: QueueSummary = {
   },
 };
 
-let currentQueues: QueueSummary[] = [demoQueue];
+let currentQueues: QueueSummary[] | undefined = [demoQueue];
+let currentError: Error | null = null;
 
 vi.mock("@/hooks/use-sqs", () => ({
   useSqsClient: () => mockClient,
@@ -39,7 +40,7 @@ vi.mock("@/hooks/use-sqs", () => ({
     data: currentQueues,
     isPending: false,
     isFetching: false,
-    error: null,
+    error: currentError,
     refetch: vi.fn(),
   }),
   sqsKeys: {
@@ -51,6 +52,7 @@ describe("SqsServiceView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     currentQueues = [demoQueue];
+    currentError = null;
     useProfiles.setState({
       profiles: [{ ...localProfile(), region: "us-east-1" }],
       activeProfileId: LOCAL_PROFILE_ID,
@@ -126,5 +128,18 @@ describe("SqsServiceView", () => {
     renderWithProviders(<SqsServiceView />);
 
     expect(screen.getByText("DLQ")).toBeInTheDocument();
+  });
+
+  it("renders ServiceDisabledView when SQS is disabled in LocalStack SERVICES configuration", () => {
+    currentQueues = undefined;
+    currentError = new Error(
+      "Service 'sqs' is not enabled. Check your 'SERVICES' configuration variable.",
+    );
+
+    renderWithProviders(<SqsServiceView />);
+
+    expect(screen.getByTestId("service-disabled-view")).toBeInTheDocument();
+    expect(screen.getByText("SQS is turned off")).toBeInTheDocument();
+    expect(screen.queryByText("Queues")).not.toBeInTheDocument();
   });
 });

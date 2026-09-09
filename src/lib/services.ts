@@ -71,3 +71,10 @@ export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
   if (!meta) throw new Error(`Unknown service: ${kind}`);
   return meta;
 };
+
+export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
+  s3: "s3",
+  sqs: "sqs",
+  secrets: "secretsmanager",
+  lambda: "lambda",
+};

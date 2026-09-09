@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import { ServiceDisabledView } from "@/components/ServiceDisabledView";
+import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
 import { useBuckets, useS3Client, s3Keys } from "@/hooks/use-s3";
@@ -127,7 +129,18 @@ export function S3ServiceView() {
   const openTab = useTabs((s) => s.openTab);
 
   const { data, isPending, isFetching, error, refetch } = useBuckets(profile.id);
+  const s3Status = useServiceStatus("s3");
+  const isDisabled = s3Status === "disabled" || isServiceDisabledError(error);
 
+  if (isDisabled) {
+    return (
+      <ServiceDisabledView
+        service="s3"
+        onRetry={() => refetch()}
+        isChecking={isFetching}
+      />
+    );
+  }
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [bucketToDelete, setBucketToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);

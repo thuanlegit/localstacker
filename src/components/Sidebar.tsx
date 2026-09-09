@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HealthBadge } from "@/components/HealthBadge";
 import { cn } from "@/lib/utils";
-import { SERVICES } from "@/lib/services";
+import { LOCALSTACK_SERVICE_NAMES, SERVICES } from "@/lib/services";
+import { useHealth } from "@/hooks/use-health";
 import { useActiveProfile, useProfiles } from "@/store/profiles";
 import { useTheme } from "@/store/theme";
 import { useTabs } from "@/store/tabs";
@@ -19,12 +20,12 @@ export function openServiceTab(kind: ServiceKind, title: string) {
 }
 
 export function Sidebar() {
-  const activeProfile = useActiveProfile();
-  const profiles = useProfiles((s) => s.profiles);
-  const setActiveProfile = useProfiles((s) => s.setActiveProfile);
   const activeTabId = useTabs((s) => s.activeTabId);
+  const profiles = useProfiles((s) => s.profiles);
+  const activeProfile = useActiveProfile();
+  const setActiveProfile = useProfiles((s) => s.setActiveProfile);
   const theme = useTheme((s) => s.theme);
-
+  const { data: healthData } = useHealth();
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="flex flex-col gap-2 p-3">
@@ -60,6 +61,11 @@ export function Sidebar() {
         {SERVICES.map((meta) => {
           const Icon = meta.icon;
           const active = activeTabId === `service:${meta.kind}`;
+          const lsName = LOCALSTACK_SERVICE_NAMES[meta.kind];
+          const isOff =
+            healthData?.status === "up" &&
+            healthData.services.find((s) => s.name === lsName)?.status === "disabled";
+
           return (
             <button
               key={meta.kind}
@@ -68,11 +74,19 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-sidebar-accent/50",
                 active && "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent",
+                isOff && "opacity-75 hover:opacity-100",
               )}
             >
-              <Icon className="size-4 shrink-0" />
-              <span className="min-w-0">
-                <span className="block truncate font-medium">{meta.label}</span>
+              <Icon className={cn("size-4 shrink-0", isOff && "text-muted-foreground/70")} />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center justify-between gap-1">
+                  <span className="truncate font-medium">{meta.label}</span>
+                  {isOff && (
+                    <span className="rounded px-1.5 py-0 text-[10px] font-normal text-muted-foreground bg-muted/60">
+                      Off
+                    </span>
+                  )}
+                </span>
                 <span className="block truncate text-xs text-muted-foreground">{meta.blurb}</span>
               </span>
             </button>

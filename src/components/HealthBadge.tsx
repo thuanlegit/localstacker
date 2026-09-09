@@ -1,7 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { checkHealth } from "@/lib/health";
 import { useActiveProfile } from "@/store/profiles";
+import { useHealth } from "@/hooks/use-health";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -11,17 +10,7 @@ import {
 
 export function HealthBadge() {
   const profile = useActiveProfile();
-  const { data, isPending } = useQuery({
-    queryKey: ["health", profile.id, profile.endpoint, profile.authToken],
-    queryFn: () =>
-      checkHealth({
-        endpoint: profile.endpoint,
-        authToken: profile.authToken,
-      }),
-    refetchInterval: 5000,
-    retry: false,
-    staleTime: 4000,
-  });
+  const { data, isPending } = useHealth();
 
   const up = data?.status === "up";
   const dotClass = isPending

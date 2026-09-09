@@ -32,6 +32,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import { ServiceDisabledView } from "@/components/ServiceDisabledView";
+import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
 import { sqsKeys, useQueues, useSqsClient } from "@/hooks/use-sqs";
@@ -287,9 +289,21 @@ export function QueueView({ queueName }: QueueViewProps) {
   const queryClient = useQueryClient();
   const openTab = useTabs((s) => s.openTab);
 
-  const { data, isPending, isFetching, refetch } = useQueues(profile.id);
-  const queue = data?.find((q) => q.name === queueName);
+  const { data, isPending, isFetching, error, refetch } = useQueues(profile.id);
+  const sqsStatus = useServiceStatus("sqs");
+  const isDisabled = sqsStatus === "disabled" || isServiceDisabledError(error);
 
+  if (isDisabled) {
+    return (
+      <ServiceDisabledView
+        service="sqs"
+        onRetry={() => refetch()}
+        isChecking={isFetching}
+      />
+    );
+  }
+
+  const queue = data?.find((q) => q.name === queueName);
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [isRedriveOpen, setIsRedriveOpen] = useState(false);
   const [isPurgeOpen, setIsPurgeOpen] = useState(false);

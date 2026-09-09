@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import { ServiceDisabledView } from "@/components/ServiceDisabledView";
+import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
 import { sqsKeys, useQueues, useSqsClient } from "@/hooks/use-sqs";
@@ -140,7 +142,18 @@ export function SqsServiceView() {
   const openTab = useTabs((s) => s.openTab);
 
   const { data, isPending, isFetching, error, refetch } = useQueues(profile.id);
+  const sqsStatus = useServiceStatus("sqs");
+  const isDisabled = sqsStatus === "disabled" || isServiceDisabledError(error);
 
+  if (isDisabled) {
+    return (
+      <ServiceDisabledView
+        service="sqs"
+        onRetry={() => refetch()}
+        isChecking={isFetching}
+      />
+    );
+  }
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [queueToDelete, setQueueToDelete] = useState<QueueSummary | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
