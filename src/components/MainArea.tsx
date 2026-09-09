@@ -15,6 +15,8 @@ import { SnsServiceView } from "@/components/sns/SnsServiceView";
 import { TopicView } from "@/components/sns/TopicView";
 import { LogsServiceView } from "@/components/logs/LogsServiceView";
 import { LogGroupView } from "@/components/logs/LogGroupView";
+import { SsmServiceView } from "@/components/ssm/SsmServiceView";
+import { ParameterView } from "@/components/ssm/ParameterView";
 
 function EmptyState() {
   return (
@@ -82,6 +84,10 @@ export function MainArea() {
             <LogsServiceView />
           ) : tab.kind === "logGroup" && tab.logGroupName ? (
             <LogGroupView logGroupName={tab.logGroupName} />
+          ) : tab.kind === "service" && tab.service === "ssm" ? (
+            <SsmServiceView />
+          ) : tab.kind === "parameter" && tab.parameterName ? (
+            <ParameterView parameterName={tab.parameterName} />
           ) : null}
         </TabsContent>
       ))}

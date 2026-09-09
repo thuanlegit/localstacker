@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Database, HardDrive, KeyRound, ListOrdered, Moon, Radio, ScrollText, Sun, Zap } from "lucide-react";
+import { Database, HardDrive, KeyRound, ListOrdered, ListTree, Moon, Radio, ScrollText, Sun, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -20,6 +20,7 @@ import { useFunctions } from "@/hooks/use-lambda";
 import { useTables } from "@/hooks/use-dynamodb";
 import { useTopics } from "@/hooks/use-sns";
 import { useLogGroups } from "@/hooks/use-logs";
+import { useParameters } from "@/hooks/use-ssm";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -32,6 +33,7 @@ export function CommandPalette() {
   const { data: tables } = useTables(profile.id, { enabled: open });
   const { data: topics } = useTopics(profile.id, { enabled: open });
   const { data: logGroups } = useLogGroups(profile.id, { enabled: open });
+  const { data: parameters } = useParameters(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -225,6 +227,29 @@ export function CommandPalette() {
               >
                 <ScrollText />
                 {g.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {parameters && parameters.length > 0 && (
+          <CommandGroup heading="Parameters">
+            {parameters.map((p) => (
+              <CommandItem
+                key={p.name}
+                value={p.name}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `parameter:${p.name}`,
+                      kind: "parameter",
+                      parameterName: p.name,
+                      title: p.name,
+                    }),
+                  )
+                }
+              >
+                <ListTree />
+                {p.name}
               </CommandItem>
             ))}
           </CommandGroup>
