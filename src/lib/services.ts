@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 
 export interface ServiceMeta {
@@ -38,6 +38,13 @@ export const SERVICES: readonly ServiceMeta[] = [
     icon: Zap,
     blurb: "Functions",
   },
+  {
+    kind: "dynamodb",
+    label: "DynamoDB",
+    shortLabel: "DynamoDB",
+    icon: Database,
+    blurb: "Tables & items",
+  },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
@@ -51,4 +58,8 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   sqs: "sqs",
   secrets: "secretsmanager",
   lambda: "lambda",
+  dynamodb: "dynamodb",
+  sns: "sns",
+  logs: "logs",
+  ssm: "ssm",
 };

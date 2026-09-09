@@ -1,4 +1,12 @@
-export type ServiceKind = "s3" | "sqs" | "secrets" | "lambda";
+export type ServiceKind =
+  | "s3"
+  | "sqs"
+  | "secrets"
+  | "lambda"
+  | "dynamodb"
+  | "sns"
+  | "logs"
+  | "ssm";
 
 export interface ConnectionProfile {
   id: string;
@@ -14,7 +22,13 @@ export type NewProfile = Omit<ConnectionProfile, "id" | "builtIn"> & {
   authToken?: string;
 };
 
-export type TabKind = "service" | "bucket" | "queue" | "secret" | "function";
+export type TabKind =
+  | "service"
+  | "bucket"
+  | "queue"
+  | "secret"
+  | "function"
+  | "table";
 
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
@@ -25,5 +39,6 @@ export interface TabDescriptor {
   queueName?: string;
   secretName?: string;
   functionName?: string;
+  tableName?: string;
   title: string;
 }

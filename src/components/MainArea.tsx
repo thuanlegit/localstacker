@@ -9,6 +9,8 @@ import { SecretsServiceView } from "@/components/secrets/SecretsServiceView";
 import { SecretView } from "@/components/secrets/SecretView";
 import { LambdaServiceView } from "@/components/lambda/LambdaServiceView";
 import { FunctionView } from "@/components/lambda/FunctionView";
+import { DynamoServiceView } from "@/components/dynamodb/DynamoServiceView";
+import { TableView } from "@/components/dynamodb/TableView";
 
 function EmptyState() {
   return (
@@ -64,6 +66,10 @@ export function MainArea() {
             <LambdaServiceView />
           ) : tab.kind === "function" && tab.functionName ? (
             <FunctionView functionName={tab.functionName} />
+          ) : tab.kind === "service" && tab.service === "dynamodb" ? (
+            <DynamoServiceView />
+          ) : tab.kind === "table" && tab.tableName ? (
+            <TableView tableName={tab.tableName} />
           ) : null}
         </TabsContent>
       ))}

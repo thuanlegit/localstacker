@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HardDrive, KeyRound, ListOrdered, Moon, Sun, Zap } from "lucide-react";
+import { Database, HardDrive, KeyRound, ListOrdered, Moon, Sun, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -17,6 +17,7 @@ import { useBuckets } from "@/hooks/use-s3";
 import { useQueues } from "@/hooks/use-sqs";
 import { useSecrets } from "@/hooks/use-secrets";
 import { useFunctions } from "@/hooks/use-lambda";
+import { useTables } from "@/hooks/use-dynamodb";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -26,6 +27,7 @@ export function CommandPalette() {
   const { data: queues } = useQueues(profile.id, { enabled: open });
   const { data: secrets } = useSecrets(profile.id, { enabled: open });
   const { data: functions } = useFunctions(profile.id, { enabled: open });
+  const { data: tables } = useTables(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -150,6 +152,29 @@ export function CommandPalette() {
               >
                 <Zap />
                 {f.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {tables && tables.length > 0 && (
+          <CommandGroup heading="Tables">
+            {tables.map((t) => (
+              <CommandItem
+                key={t}
+                value={t}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `table:${t}`,
+                      kind: "table",
+                      tableName: t,
+                      title: t,
+                    }),
+                  )
+                }
+              >
+                <Database />
+                {t}
               </CommandItem>
             ))}
           </CommandGroup>
