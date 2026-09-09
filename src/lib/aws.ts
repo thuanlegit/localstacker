@@ -4,6 +4,8 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 import { LambdaClient } from "@aws-sdk/client-lambda";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import type { ConnectionProfile } from "@/types";
 
 /** LocalStack ignores SigV4 identity, but SDKs require credentials to sign. */
@@ -40,14 +42,19 @@ export interface ServiceClients {
   sqs: SQSClient;
   secrets: SecretsManagerClient;
   lambda: LambdaClient;
+  dynamodb: DynamoDBClient;
+  dynamodbDoc: DynamoDBDocumentClient;
 }
 
 export function makeClients(profile: ConnectionProfile): ServiceClients {
   const config = baseClientConfig(profile);
+  const dynamodb = new DynamoDBClient(config);
   return {
     s3: new S3Client({ ...config, forcePathStyle: true }),
     sqs: new SQSClient(config),
     secrets: new SecretsManagerClient(config),
     lambda: new LambdaClient(config),
+    dynamodb,
+    dynamodbDoc: DynamoDBDocumentClient.from(dynamodb),
   };
 }
