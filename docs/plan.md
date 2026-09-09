@@ -79,8 +79,8 @@ Notes:
 | **SSM Parameter Store** | M6 | Parameters (path hierarchy & flat views); type badges (`String`, `StringList`, `SecureString`); decrypted value toggle | Create/update parameter; delete parameter; decrypt `SecureString` using local KMS | Parameter tier editing; advanced policies; history diffing |
 ## Information architecture
 
-- Left sidebar: connection selector + services (S3, SQS, Secrets, Lambda).
-- Resources (bucket, queue, secret, function) open as **tabs** in the main area.
+- Left sidebar: connection selector + services (S3, SQS, Secrets, Lambda, DynamoDB, SNS, Logs, SSM).
+- Resources (bucket, queue, secret, function, table, topic, log group, parameter) open as **tabs** in the main area.
 - **Cmd-K** quick-jump palette to open any resource by name (additive, not primary).
 
 ## Quality & release engineering
@@ -109,7 +109,7 @@ Notes:
   token-gated secrets.
 - **M4 — Hardening**: Playwright e2e suite, notarization, auto-updater,
   README/landing polish, tagged v1.0.0. (Shipped ✅)
-- **M5 — DynamoDB & SNS**:
+- **M5 — DynamoDB & SNS** (Shipped ✅):
   - DynamoDB vertical slice: `@aws-sdk/client-dynamodb` + `@aws-sdk/lib-dynamodb`,
     table listing, key schema inspection, virtualized item grid, Scan and Query
     filtering, item JSON editor, item deletion, clear table action.
@@ -117,7 +117,7 @@ Notes:
     create/delete topic, subscriptions inspector, publish message modal,
     quick SQS queue subscription helper.
   - E2E Playwright tests against LocalStack 4.14.0 container.
-- **M6 — CloudWatch Logs & SSM Parameter Store**:
+- **M6 — CloudWatch Logs & SSM Parameter Store** (Shipped ✅):
   - CloudWatch Logs: `@aws-sdk/client-cloudwatch-logs`, log group & stream exploration,
     virtualized live log tailing with search filter, deep link from Lambda function view.
   - SSM Parameter Store: `@aws-sdk/client-ssm`, path hierarchy browser,

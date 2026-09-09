@@ -124,3 +124,27 @@ Compact record of the foundational decisions. Each entry: context → decision �
 - Updater artifacts use NSIS (not MSI) on Windows, and minisign ed25519 signing keys with the public key committed to `tauri.conf.json`.
 
 **Consequences**: E2E runs identically locally and in CI; the Rust `forward_request` path remains covered by unit tests and desktop dogfooding. Release workflow safely produces artifacts even prior to acquiring an Apple Developer account.
+
+## D15. M5 DynamoDB + SNS: document client for items, bounded client-side clear table, SQS subscribe helper via QueueArn
+
+**Context**: DynamoDB item manipulation requires marshaling/unmarshaling attribute values if raw client is used, causing awkward UI code and boilerplate. DynamoDB has no native truncate table API. SQS subscriptions from SNS need the queue's ARN, which is already present inside SQS attributes.
+
+**Decision**:
+- Use `@aws-sdk/lib-dynamodb` document client for item operations (`ScanCommand`, `QueryCommand`, `PutCommand`, `DeleteCommand`, `BatchWriteCommand`), operating directly on plain JSON records without manual marshalling. Schema inspection (`ListTablesCommand`, `DescribeTableCommand`) uses the raw `@aws-sdk/client-dynamodb` client.
+- Clear table is implemented as a client-side loop: scan up to 100 items/page projecting only key attributes → batch delete via `BatchWriteCommand` in chunks of 25 with up to 3 retry rounds for `UnprocessedItems`, capped at 5000 items (`CLEAR_TABLE_MAX_ITEMS`).
+- Query builder is scoped to partition key equality plus sort key operators (`eq`, `begins_with`, `between`), coercing values based on table/index `AttributeDefinitions` (handling string, number, and base64 binary).
+- SQS subscribe helper in SNS reuses the queue ARN exposed directly on `QueueSummary.attributes.arn` (parsed from `QueueArn` in SQS attributes).
+
+**Consequences**: UI components handle standard JavaScript objects cleanly. Truncate is safe and bounded. SNS to SQS subscription requires zero manual ARN entry by the user.
+
+## D16. M6 CloudWatch Logs + SSM: unified FilterLogEvents API, client-side tailing/filtering, SecureString KMS auto-decryption
+
+**Context**: CloudWatch Logs has multiple event retrieval APIs (`GetLogEvents`, `FilterLogEvents`). SSM Parameter Store supports hierarchical names with `/` and encrypted `SecureString` values. On LocalStack community, default KMS keys are auto-provisioned.
+
+**Decision**:
+- Use a single `FilterLogEventsCommand` API for event browsing, search filtering, and live tailing. Live tailing polls every 3 seconds (`TAIL_POLL_INTERVAL_MS`) with a `startTime` cursor set to `lastTimestamp + 1`, merging and deduplicating by event ID, capped at 5000 events (`MAX_LOG_EVENTS`). Search filtering includes client-side substring matching on message and stream name to provide responsive, instant filtering across all environments including community emulators.
+- SSM `SecureString` values are decrypted via `WithDecryption: true` in `GetParameterCommand` against LocalStack's auto-provisioned default KMS key (`aws/ssm`), avoiding the need for an explicit KMS client or key ID in local development.
+- Hierarchy is built client-side via `buildParameterTree` from `DescribeParameters`, supporting arbitrary nested slash paths and resolving folder/leaf collisions cleanly.
+- Lambda to CloudWatch Logs deep-link links directly to `/aws/lambda/<name>` log group, displaying a helpful empty state if the runtime has not yet emitted or forwarded logs.
+
+**Consequences**: Log viewer provides smooth, responsive streaming and search without multiple API abstractions. SSM parameters cleanly display both flat and tree representations, with secure reveal and editing in-place.

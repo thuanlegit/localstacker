@@ -37,12 +37,28 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **SQS** | Real-time queue depth & in-flight metrics, send validated JSON messages, **peek messages without consuming**, purge, dead-letter queue redrive |
 | **Secrets Manager** | List secrets, create and update secrets, reveal decrypted secret values, delete secrets (explains LocalStack Hobby+ auth token requirements) |
 | **Lambda** | Function listing, configuration inspection (runtime, handler, env vars), **invoke with test payload → response status + payload + logs (LogType=Tail)**, edit environment variables |
+| **DynamoDB** | Tables list, key schema (`HASH`/`RANGE`), GSIs/LSIs, virtualized item grid, Scan & Query (PK/SK expressions), JSON item editor, delete item, clear table |
+| **SNS** | Topics list (standard & FIFO), attributes, subscriptions list, publish message (payload + attributes), subscribe SQS queue helper |
+| **CloudWatch Logs** | Log groups & streams exploration, virtualized log viewer with live tailing & search filter, deep-link from Lambda function view |
+| **SSM Parameter Store** | Parameters in path hierarchy and flat views, type badges (`String`, `StringList`, `SecureString`), decrypted value toggle, create/update/delete |
 
 ### S3 Object Preview
 ![S3 Object Preview](docs/screenshots/s3-bucket.png)
 
 ### Lambda Invocation & Execution Logs
 ![Lambda Invocation](docs/screenshots/lambda-invoke.png)
+
+### DynamoDB Table Browser & JSON Inspector
+![DynamoDB Table Browser](docs/screenshots/dynamodb-table.png)
+
+### SNS Topics & Subscriptions
+![SNS Topics](docs/screenshots/sns-topic.png)
+
+### CloudWatch Logs Live Tailing & Search
+![CloudWatch Logs](docs/screenshots/logs-view.png)
+
+### SSM Parameter Store Hierarchy
+![SSM Parameter Store](docs/screenshots/ssm-params.png)
 
 ## Status & Roadmap
 
@@ -55,8 +71,8 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **M2** | SQS — send, peek, purge, DLQ redrive | ✅ Done |
 | **M3** | Lambda (invoke + logs) and Secrets Manager | ✅ Done |
 | **M4** | Hardening — Playwright e2e suite, release engineering, auto-updater, v1.0.0 | ✅ Done |
-| **M5** | **DynamoDB & SNS** — table inspector, scan/query, document editor; topic pub/sub & SQS subscription helper | 📋 Planned |
-| **M6** | **CloudWatch Logs & SSM Parameter Store** — log groups/streams viewer, live tailing, parameter hierarchy & SecureString decryption | 📋 Planned |
+| **M5** | **DynamoDB & SNS** — table inspector, scan/query, document editor; topic pub/sub & SQS subscription helper | ✅ Done |
+| **M6** | **CloudWatch Logs & SSM Parameter Store** — log groups/streams viewer, live tailing, parameter hierarchy & SecureString decryption | ✅ Done |
 | **v1.1** | **Docker Lifecycle** — detect, start, stop, and restart LocalStack containers via Docker socket | 🔭 Future |
 
 See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.
@@ -110,7 +126,7 @@ docker run --rm -p 4566:4566 -v /var/run/docker.sock:/var/run/docker.sock locals
 
 ## Stack
 
-Tauri 2 · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui · TanStack Query · Zustand · AWS SDK v3 · Playwright · Vitest + Testing Library
+Tauri 2 · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui · TanStack Query · TanStack Virtual · Zustand · AWS SDK v3 · Playwright · Vitest + Testing Library
 
 ## Documentation
 
