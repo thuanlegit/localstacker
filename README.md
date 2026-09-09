@@ -44,19 +44,22 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 ### Lambda Invocation & Execution Logs
 ![Lambda Invocation](docs/screenshots/lambda-invoke.png)
 
-## Status
+## Status & Roadmap
 
-**v1.0.0 shipped** ✅. All core milestones implemented and verified with end-to-end coverage:
+**v1.0.0 shipped** ✅. Core milestones implemented and verified with end-to-end coverage:
 
 | Milestone | Scope | Status |
 |---|---|---|
-| M0 | Scaffold, app shell, connection profiles, health badge | ✅ Done |
-| M1 | S3 — buckets/objects, upload/download, presigned URLs | ✅ Done |
-| M2 | SQS — send, peek, purge, DLQ redrive | ✅ Done |
-| M3 | Lambda (invoke + logs) and Secrets Manager | ✅ Done |
-| M4 | Hardening — Playwright e2e suite, release engineering, auto-updater, v1.0.0 | ✅ Done |
+| **M0** | Scaffold, app shell, connection profiles, health badge | ✅ Done |
+| **M1** | S3 — buckets/objects, upload/download, presigned URLs | ✅ Done |
+| **M2** | SQS — send, peek, purge, DLQ redrive | ✅ Done |
+| **M3** | Lambda (invoke + logs) and Secrets Manager | ✅ Done |
+| **M4** | Hardening — Playwright e2e suite, release engineering, auto-updater, v1.0.0 | ✅ Done |
+| **M5** | **DynamoDB & SNS** — table inspector, scan/query, document editor; topic pub/sub & SQS subscription helper | 📋 Planned |
+| **M6** | **CloudWatch Logs & SSM Parameter Store** — log groups/streams viewer, live tailing, parameter hierarchy & SecureString decryption | 📋 Planned |
+| **v1.1** | **Docker Lifecycle** — detect, start, stop, and restart LocalStack containers via Docker socket | 🔭 Future |
 
-See [`docs/plan.md`](docs/plan.md) for the architecture and roadmap.
+See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.
 
 ## Development
 

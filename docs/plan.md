@@ -66,9 +66,17 @@ them without reaching for the CLI.
 
 Notes:
 - SQS peek = receive with a short visibility timeout; restore visibility after inspection.
-- Lambda logs use a LocalStack-internal endpoint — detect availability and degrade gracefully.
-- Secrets Manager requires an auth token (Hobby+); the UI must explain this, not fail silently.
+- Lambda logs use standard AWS `LogType: "Tail"` invocation logs (D13), decoded client-side.
+- Secrets Manager requires an auth token (Hobby+); the UI explains this with a token configuration prompt.
 
+## Upcoming services contract (v1.x)
+
+| Service | Milestone | Browse | Curated write actions | Explicitly skipped |
+|---|---|---|---|---|
+| **DynamoDB** | M5 | Tables list; key schema (`HASH`/`RANGE`), GSIs/LSIs; virtualized item grid; Scan & Query (PK/SK condition expressions); raw JSON & document inspector | Put/edit item (validated JSON); delete item; truncate/clear table | Complex table creation wizard; secondary index mutation; auto-scaling / throughput editing; backup / PITR |
+| **SNS** | M5 | Topics list (standard & FIFO); attributes; subscriptions list (protocol, endpoint, status) | Create/delete topic; publish message (payload + JSON attributes); subscribe SQS queue helper | Delivery retry policies; SMS sandbox management; data protection policies |
+| **CloudWatch Logs** | M6 | Log groups; log streams (sorted by event time); virtualized log viewer with live tailing & search filter | Create/delete log group; delete stream; deep-link from Lambda FunctionView | Metric filters; subscription filters; CloudWatch metrics/alarms |
+| **SSM Parameter Store** | M6 | Parameters (path hierarchy & flat views); type badges (`String`, `StringList`, `SecureString`); decrypted value toggle | Create/update parameter; delete parameter; decrypt `SecureString` using local KMS | Parameter tier editing; advanced policies; history diffing |
 ## Information architecture
 
 - Left sidebar: connection selector + services (S3, SQS, Secrets, Lambda).
@@ -100,8 +108,23 @@ Notes:
 - **M3 — Lambda + Secrets Manager**: invoke with logs (capability-detected);
   token-gated secrets.
 - **M4 — Hardening**: Playwright e2e suite, notarization, auto-updater,
-  README/landing polish, tagged v1.0.0.
-
+  README/landing polish, tagged v1.0.0. (Shipped ✅)
+- **M5 — DynamoDB & SNS**:
+  - DynamoDB vertical slice: `@aws-sdk/client-dynamodb` + `@aws-sdk/lib-dynamodb`,
+    table listing, key schema inspection, virtualized item grid, Scan and Query
+    filtering, item JSON editor, item deletion, clear table action.
+  - SNS vertical slice: `@aws-sdk/client-sns`, topic listing (standard/FIFO),
+    create/delete topic, subscriptions inspector, publish message modal,
+    quick SQS queue subscription helper.
+  - E2E Playwright tests against LocalStack 4.14.0 container.
+- **M6 — CloudWatch Logs & SSM Parameter Store**:
+  - CloudWatch Logs: `@aws-sdk/client-cloudwatch-logs`, log group & stream exploration,
+    virtualized live log tailing with search filter, deep link from Lambda function view.
+  - SSM Parameter Store: `@aws-sdk/client-ssm`, path hierarchy browser,
+    parameter editing, local KMS `SecureString` decryption.
+- **v1.1 — Docker Lifecycle & Advanced Tooling**:
+  - LocalStack Docker container lifecycle management via local Docker socket (detect/start/stop/restart).
+  - EventBridge event buses and rules inspection.
 ## Risks & mitigations
 
 | Risk | Mitigation |
