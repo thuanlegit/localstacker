@@ -85,4 +85,60 @@ describe("platformFetch", () => {
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('{"services":{}}');
   });
+
+  it("converts Blob body and invokes forward_request with bytes array in Tauri", async () => {
+    (window as unknown as { __TAURI_INTERNALS__: Record<string, unknown> }).__TAURI_INTERNALS__ = {};
+
+    const mockInvoke = vi.fn().mockResolvedValue({
+      status: 200,
+      status_text: "OK",
+      headers: {},
+      body: [],
+    });
+    vi.doMock("@tauri-apps/api/core", () => ({
+      invoke: mockInvoke,
+    }));
+
+    const blob = new Blob(["test payload"], { type: "text/plain" });
+    await platformFetch("http://localhost:4566/my-bucket/test.txt", {
+      method: "PUT",
+      body: blob,
+    });
+
+    expect(mockInvoke).toHaveBeenCalledWith("forward_request", {
+      req: {
+        method: "PUT",
+        url: "http://localhost:4566/my-bucket/test.txt",
+        headers: {},
+        body: Array.from(new TextEncoder().encode("test payload")),
+      },
+    });
+  });
+
+  it("ensures PUT request without body sends empty byte array instead of null in Tauri", async () => {
+    (window as unknown as { __TAURI_INTERNALS__: Record<string, unknown> }).__TAURI_INTERNALS__ = {};
+
+    const mockInvoke = vi.fn().mockResolvedValue({
+      status: 200,
+      status_text: "OK",
+      headers: {},
+      body: [],
+    });
+    vi.doMock("@tauri-apps/api/core", () => ({
+      invoke: mockInvoke,
+    }));
+
+    await platformFetch("http://localhost:4566/my-bucket/folder/", {
+      method: "PUT",
+    });
+
+    expect(mockInvoke).toHaveBeenCalledWith("forward_request", {
+      req: {
+        method: "PUT",
+        url: "http://localhost:4566/my-bucket/folder/",
+        headers: {},
+        body: [],
+      },
+    });
+  });
 });

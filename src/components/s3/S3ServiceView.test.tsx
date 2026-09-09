@@ -54,6 +54,7 @@ describe("S3ServiceView", () => {
   });
 
   it("validates bucket name in create bucket dialog and submits when valid", async () => {
+    renderWithProviders(<S3ServiceView />);
     // Open create dialog
     fireEvent.click(screen.getByRole("button", { name: /Create bucket/i }));
     const dialog = screen.getByRole("dialog");

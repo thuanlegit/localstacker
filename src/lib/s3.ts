@@ -168,11 +168,25 @@ export async function putObject(
     contentType?: string;
   },
 ): Promise<void> {
+  let body: Uint8Array | string;
+  if (
+    params.body &&
+    typeof (params.body as { arrayBuffer?: unknown }).arrayBuffer === "function"
+  ) {
+    const buffer = await (params.body as Blob).arrayBuffer();
+    body = new Uint8Array(buffer);
+  } else if (typeof Blob !== "undefined" && params.body instanceof Blob) {
+    const buffer = await params.body.arrayBuffer();
+    body = new Uint8Array(buffer);
+  } else {
+    body = params.body as Uint8Array | string;
+  }
+
   await client.send(
     new PutObjectCommand({
       Bucket: params.bucket,
       Key: params.key,
-      Body: params.body,
+      Body: body,
       ContentType: params.contentType,
     }),
   );

@@ -153,6 +153,27 @@ describe("s3 data plane", () => {
     });
   });
 
+  it("putObject converts Blob and File bodies to Uint8Array to avoid stream reader bug", async () => {
+    const send = vi.fn().mockResolvedValue({});
+    const client = { send } as unknown as S3Client;
+
+    const blob = new Blob(["image binary bytes"], { type: "image/png" });
+    await putObject(client, {
+      bucket: "test-bucket",
+      key: "top10_new_2.png",
+      body: blob,
+      contentType: "image/png",
+    });
+
+    expect(send).toHaveBeenCalledTimes(1);
+    const commandInput = send.mock.calls[0][0].input;
+    expect(commandInput.Bucket).toBe("test-bucket");
+    expect(commandInput.Key).toBe("top10_new_2.png");
+    expect(commandInput.ContentType).toBe("image/png");
+    expect(commandInput.Body).toBeInstanceOf(Uint8Array);
+    expect(new TextDecoder().decode(commandInput.Body)).toBe("image binary bytes");
+  });
+
   it("previewModeFor determines mode accurately", () => {
     expect(previewModeFor("image.png", "image/png")).toBe("image");
     expect(previewModeFor("doc.json")).toBe("json");

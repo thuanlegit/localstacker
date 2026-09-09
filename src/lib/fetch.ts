@@ -57,7 +57,7 @@ export async function platformFetch(
         headers[k] = v;
       });
       const buffer = await input.arrayBuffer();
-      if (buffer.byteLength > 0) {
+      if (buffer.byteLength > 0 || (method !== "GET" && method !== "HEAD")) {
         body = Array.from(new Uint8Array(buffer));
       }
     }
@@ -69,16 +69,52 @@ export async function platformFetch(
           headers[k] = v;
         });
       }
-      if (init.body) {
-        if (init.body instanceof Uint8Array) {
-          body = Array.from(init.body);
+      if (init.body !== undefined && init.body !== null) {
+        if (ArrayBuffer.isView(init.body)) {
+          body = Array.from(
+            new Uint8Array(
+              init.body.buffer,
+              init.body.byteOffset,
+              init.body.byteLength,
+            ),
+          );
+        } else if (init.body instanceof ArrayBuffer) {
+          body = Array.from(new Uint8Array(init.body));
         } else if (typeof init.body === "string") {
           body = Array.from(new TextEncoder().encode(init.body));
-        } else if (init.body instanceof Blob) {
-          const buffer = await init.body.arrayBuffer();
+        } else if (
+          init.body instanceof Blob ||
+          typeof (init.body as { arrayBuffer?: unknown }).arrayBuffer === "function"
+        ) {
+          const buffer = await (init.body as unknown as Blob).arrayBuffer();
           body = Array.from(new Uint8Array(buffer));
+        } else if (
+          typeof (init.body as { getReader?: unknown }).getReader === "function"
+        ) {
+          const reader = (init.body as ReadableStream<Uint8Array>).getReader();
+          const chunks: Uint8Array[] = [];
+          let totalLen = 0;
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            if (value) {
+              chunks.push(value);
+              totalLen += value.length;
+            }
+          }
+          const merged = new Uint8Array(totalLen);
+          let offset = 0;
+          for (const chunk of chunks) {
+            merged.set(chunk, offset);
+            offset += chunk.length;
+          }
+          body = Array.from(merged);
         }
       }
+    }
+
+    if (method !== "GET" && method !== "HEAD" && body === null) {
+      body = [];
     }
 
     const res = await invoke<ForwardResponse>("forward_request", {
