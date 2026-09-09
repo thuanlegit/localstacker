@@ -112,3 +112,15 @@ Compact record of the foundational decisions. Each entry: context → decision �
 - Secrets Manager token gating is explanatory UX (informational note under header and error-path explanation) rather than a hard client-side block, since community containers may operate without a token while licensed containers require one.
 
 **Consequences**: The logs mechanism is portable to any AWS-compatible emulator or real AWS; token headers are harmless on unauthenticated or activated instances; users can configure tokens directly in the UI via Connection settings.
+
+## D14. M4: e2e via Chromium against vite proxy; release engineering
+
+**Context**: `docs/plan.md` specified Playwright e2e "through the Tauri webview". This is technically infeasible: WKWebView (macOS) and webkit2gtk (Linux) do not expose Chrome DevTools Protocol (CDP), and Playwright does not speak WebDriver. Additionally, modern LocalStack images (≥2026.03) mandate cloud authentication tokens, while `localstack/localstack:4.14.0` represents the final token-free community release.
+
+**Decision**:
+- Drive end-to-end tests via Playwright + Chromium against the Vite dev server (`http://localhost:1420`), using the Vite reverse proxy to forward LocalStack traffic to `http://127.0.0.1:4566`. In browser mode, request bodies are buffered as ArrayBuffers to prevent Chromium's HTTP/1.1 streaming body ALPN errors. LocalStack is pinned to `localstack/localstack:4.14.0` with `/var/run/docker.sock` mounted for Lambda execution.
+- Release engineering uses a GitHub Actions matrix across `macos-14` (Apple silicon DMG), `ubuntu-22.04` (AppImage), and `windows-latest` (NSIS).
+- Secrets-gated notarization: if Apple signing/notarization secrets are absent, `tauri-action` outputs unsigned DMGs without failing the build.
+- Updater artifacts use NSIS (not MSI) on Windows, and minisign ed25519 signing keys with the public key committed to `tauri.conf.json`.
+
+**Consequences**: E2E runs identically locally and in CI; the Rust `forward_request` path remains covered by unit tests and desktop dogfooding. Release workflow safely produces artifacts even prior to acquiring an Apple Developer account.

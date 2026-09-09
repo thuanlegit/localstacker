@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test --grep-invert @screenshot",
-    "e2e:headed": "playwright test --headed --grep-invert @screenshot"
+    "e2e:headed": "playwright test --headed --grep-invert @screenshot",
+    "screenshots": "playwright test --grep @screenshot"
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.1127.0",
