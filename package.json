@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "e2e": "playwright test --grep-invert @screenshot",
+    "e2e:headed": "playwright test --headed --grep-invert @screenshot"
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.1127.0",
@@ -39,6 +41,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tauri-apps/cli": "^2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
