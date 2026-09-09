@@ -28,8 +28,8 @@ export type TabKind =
   | "queue"
   | "secret"
   | "function"
-  | "table";
-
+  | "table"
+  | "topic";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -40,5 +40,6 @@ export interface TabDescriptor {
   secretName?: string;
   functionName?: string;
   tableName?: string;
+  topicArn?: string;
   title: string;
 }

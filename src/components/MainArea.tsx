@@ -11,6 +11,8 @@ import { LambdaServiceView } from "@/components/lambda/LambdaServiceView";
 import { FunctionView } from "@/components/lambda/FunctionView";
 import { DynamoServiceView } from "@/components/dynamodb/DynamoServiceView";
 import { TableView } from "@/components/dynamodb/TableView";
+import { SnsServiceView } from "@/components/sns/SnsServiceView";
+import { TopicView } from "@/components/sns/TopicView";
 
 function EmptyState() {
   return (
@@ -70,6 +72,10 @@ export function MainArea() {
             <DynamoServiceView />
           ) : tab.kind === "table" && tab.tableName ? (
             <TableView tableName={tab.tableName} />
+          ) : tab.kind === "service" && tab.service === "sns" ? (
+            <SnsServiceView />
+          ) : tab.kind === "topic" && tab.topicArn ? (
+            <TopicView topicArn={tab.topicArn} />
           ) : null}
         </TabsContent>
       ))}

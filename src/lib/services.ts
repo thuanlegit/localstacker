@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 
 export interface ServiceMeta {
@@ -44,6 +44,13 @@ export const SERVICES: readonly ServiceMeta[] = [
     shortLabel: "DynamoDB",
     icon: Database,
     blurb: "Tables & items",
+  },
+  {
+    kind: "sns",
+    label: "SNS",
+    shortLabel: "SNS",
+    icon: Radio,
+    blurb: "Topics & subscriptions",
   },
 ] as const;
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Database, HardDrive, KeyRound, ListOrdered, Moon, Sun, Zap } from "lucide-react";
+import { Database, HardDrive, KeyRound, ListOrdered, Moon, Radio, Sun, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -18,6 +18,7 @@ import { useQueues } from "@/hooks/use-sqs";
 import { useSecrets } from "@/hooks/use-secrets";
 import { useFunctions } from "@/hooks/use-lambda";
 import { useTables } from "@/hooks/use-dynamodb";
+import { useTopics } from "@/hooks/use-sns";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -28,6 +29,7 @@ export function CommandPalette() {
   const { data: secrets } = useSecrets(profile.id, { enabled: open });
   const { data: functions } = useFunctions(profile.id, { enabled: open });
   const { data: tables } = useTables(profile.id, { enabled: open });
+  const { data: topics } = useTopics(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -175,6 +177,29 @@ export function CommandPalette() {
               >
                 <Database />
                 {t}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {topics && topics.length > 0 && (
+          <CommandGroup heading="Topics">
+            {topics.map((t) => (
+              <CommandItem
+                key={t.arn}
+                value={t.name}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `topic:${t.arn}`,
+                      kind: "topic",
+                      topicArn: t.arn,
+                      title: t.name,
+                    }),
+                  )
+                }
+              >
+                <Radio />
+                {t.name}
               </CommandItem>
             ))}
           </CommandGroup>
