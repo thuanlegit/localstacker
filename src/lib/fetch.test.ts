@@ -59,20 +59,30 @@ describe("platformFetch", () => {
     expect(res).toBe(mockResponse);
   });
 
-  it("calls tauri fetch when running in Tauri", async () => {
+  it("calls tauri forward_request command when running in Tauri", async () => {
     (window as unknown as { __TAURI_INTERNALS__: Record<string, unknown> }).__TAURI_INTERNALS__ = {};
 
-    const mockTauriFetch = vi.fn().mockResolvedValue(new Response("tauri-ok", { status: 200 }));
-    vi.doMock("@tauri-apps/plugin-http", () => ({
-      fetch: mockTauriFetch,
+    const mockInvoke = vi.fn().mockResolvedValue({
+      status: 200,
+      status_text: "OK",
+      headers: { "content-type": "application/json" },
+      body: Array.from(new TextEncoder().encode('{"services":{}}')),
+    });
+    vi.doMock("@tauri-apps/api/core", () => ({
+      invoke: mockInvoke,
     }));
 
     const res = await platformFetch("http://localhost:4566/_localstack/health", { method: "GET" });
 
-    expect(mockTauriFetch).toHaveBeenCalledWith(
-      "http://localhost:4566/_localstack/health",
-      { method: "GET" },
-    );
-    expect(await res.text()).toBe("tauri-ok");
+    expect(mockInvoke).toHaveBeenCalledWith("forward_request", {
+      req: {
+        method: "GET",
+        url: "http://localhost:4566/_localstack/health",
+        headers: {},
+        body: null,
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe('{"services":{}}');
   });
 });
