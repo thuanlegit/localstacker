@@ -98,4 +98,13 @@ describe("Sidebar", () => {
     expect(added?.endpoint).toBe("http://dev.localstack:4566");
     expect(state.activeProfileId).toBe(added?.id);
   });
+
+  it("renders active region selector in sidebar", () => {
+    renderWithProviders(<Sidebar />);
+    const regionTrigger = screen.getByRole("combobox", {
+      name: "Active AWS region",
+    });
+    expect(regionTrigger).toBeInTheDocument();
+    expect(regionTrigger).toHaveTextContent("us-east-1");
+  });
 });

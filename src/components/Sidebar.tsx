@@ -1,7 +1,15 @@
 import { useState } from "react";
-import { Check, ChevronsUpDown, Moon, Sun } from "lucide-react";
+import { Check, ChevronsUpDown, Globe, Moon, Sun } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { AWS_REGIONS } from "@/lib/regions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +42,9 @@ export function Sidebar() {
   const profiles = useProfiles((s) => s.profiles);
   const activeProfile = useActiveProfile();
   const setActiveProfile = useProfiles((s) => s.setActiveProfile);
+  const updateProfile = useProfiles((s) => s.updateProfile);
   const removeProfile = useProfiles((s) => s.removeProfile);
+  const queryClient = useQueryClient();
   const theme = useTheme((s) => s.theme);
   const { data: healthData } = useHealth();
 
@@ -49,7 +59,7 @@ export function Sidebar() {
               <span className="flex min-w-0 flex-col items-start gap-0.5">
                 <span className="text-sm font-medium leading-tight">{activeProfile.name}</span>
                 <span className="max-w-full truncate text-xs font-normal leading-tight text-muted-foreground">
-                  {activeProfile.endpoint} · {activeProfile.region}
+                  {activeProfile.endpoint}
                 </span>
               </span>
               <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
@@ -139,6 +149,37 @@ export function Sidebar() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <Select
+          value={activeProfile.region}
+          onValueChange={async (newRegion) => {
+            updateProfile(activeProfile.id, { region: newRegion });
+            await queryClient.invalidateQueries();
+            toast.success(`Region switched to ${newRegion}`);
+          }}
+        >
+          <SelectTrigger
+            className="h-8 w-full text-xs font-mono"
+            aria-label="Active AWS region"
+          >
+            <div className="flex items-center gap-1.5 truncate">
+              <Globe className="size-3.5 shrink-0 text-muted-foreground" />
+              <span className="truncate">{activeProfile.region}</span>
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {!AWS_REGIONS.some((r) => r.value === activeProfile.region) &&
+              activeProfile.region && (
+                <SelectItem value={activeProfile.region}>
+                  {activeProfile.region}
+                </SelectItem>
+              )}
+            {AWS_REGIONS.map((r) => (
+              <SelectItem key={r.value} value={r.value} className="text-xs">
+                {r.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <HealthBadge />
         <ConnectionDialog
           open={isConnectionDialogOpen}

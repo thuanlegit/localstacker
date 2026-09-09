@@ -6,7 +6,8 @@ import { useActiveProfile } from "@/store/profiles";
 import { listQueues } from "@/lib/sqs";
 
 export const sqsKeys = {
-  queues: (profileId: string) => ["sqs", "queues", profileId] as const,
+  queues: (profileId: string, region?: string) =>
+    ["sqs", "queues", profileId, region ?? ""] as const,
 };
 
 export function useSqsClient(): SQSClient {
@@ -19,8 +20,9 @@ export function useSqsClient(): SQSClient {
 
 export function useQueues(profileId: string, options?: { enabled?: boolean }) {
   const client = useSqsClient();
+  const profile = useActiveProfile();
   return useQuery({
-    queryKey: sqsKeys.queues(profileId),
+    queryKey: sqsKeys.queues(profileId, profile.region),
     queryFn: () => listQueues(client),
     staleTime: 5_000,
     refetchInterval: 10_000,
