@@ -29,7 +29,48 @@ vi.mock("@/hooks/use-s3", () => ({
     objects: (id: string, b: string, p?: string) => ["s3", "objects", id, b, p ?? ""],
   },
 }));
+const { demoQueue } = vi.hoisted(() => ({
+  demoQueue: {
+    url: "http://localhost:4566/000000000000/demo-queue",
+    name: "demo-queue",
+    isFifo: false,
+    attributes: {
+      depth: 3,
+      inFlight: 1,
+      delayed: 0,
+      createdTimestamp: new Date("2026-01-01T00:00:00Z"),
+    },
+  },
+}));
 
+vi.mock("@/hooks/use-sqs", () => ({
+  useSqsClient: vi.fn(),
+  useQueues: vi.fn(() => ({
+    data: [demoQueue],
+    isPending: false,
+    isFetching: false,
+    error: null,
+    refetch: vi.fn(),
+  })),
+  sqsKeys: {
+    queues: (id: string) => ["sqs", "queues", id],
+  },
+}));
+
+vi.mock("@/lib/sqs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/sqs")>();
+  return {
+    ...actual,
+    createQueue: vi.fn().mockResolvedValue({ url: demoQueue.url }),
+    deleteQueue: vi.fn().mockResolvedValue(undefined),
+    sendMessage: vi.fn().mockResolvedValue({ messageId: "msg-1" }),
+    peekMessages: vi.fn().mockResolvedValue([]),
+    restoreVisibility: vi.fn().mockResolvedValue(undefined),
+    deleteMessage: vi.fn().mockResolvedValue(undefined),
+    purgeQueue: vi.fn().mockResolvedValue(undefined),
+    redriveMessages: vi.fn().mockResolvedValue({ moved: 0 }),
+  };
+});
 vi.mock("@/lib/s3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/s3")>();
   return {
@@ -91,6 +132,20 @@ describe("AppShell", () => {
     expect(await screen.findByText("logs")).toBeInTheDocument();
     expect(await screen.findByText("hello.txt")).toBeInTheDocument();
   });
+  it("opens the SQS tab and navigates into a queue", async () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^SQS/ }));
+    expect(screen.getByText("demo-queue")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("SQS");
+    fireEvent.click(screen.getByText("demo-queue"));
+
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual([
+      "service:sqs",
+      "queue:demo-queue",
+    ]);
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("demo-queue");
+  });
+
 
   it("opens the palette with Cmd-K and navigates to SQS from it", () => {
     renderApp();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HardDrive, Moon, Sun } from "lucide-react";
+import { HardDrive, ListOrdered, Moon, Sun } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -14,12 +14,14 @@ import { useTheme } from "@/store/theme";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
 import { useBuckets } from "@/hooks/use-s3";
+import { useQueues } from "@/hooks/use-sqs";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
   const profile = useActiveProfile();
   const openTab = useTabs((s) => s.openTab);
   const { data: buckets } = useBuckets(profile.id, { enabled: open });
+  const { data: queues } = useQueues(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -75,6 +77,29 @@ export function CommandPalette() {
               >
                 <HardDrive />
                 {b.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {queues && queues.length > 0 && (
+          <CommandGroup heading="Queues">
+            {queues.map((q) => (
+              <CommandItem
+                key={q.name}
+                value={q.name}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `queue:${q.name}`,
+                      kind: "queue",
+                      queueName: q.name,
+                      title: q.name,
+                    }),
+                  )
+                }
+              >
+                <ListOrdered />
+                {q.name}
               </CommandItem>
             ))}
           </CommandGroup>

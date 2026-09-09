@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ObjectPreview } from "@/components/s3/ObjectPreview";
-import { DeleteConfirmDialog } from "@/components/s3/DeleteConfirmDialog";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { useActiveProfile } from "@/store/profiles";
 import { useBucketPrefix, useS3Browsing } from "@/store/s3-browsing";
 import { useS3Client, useS3ObjectActions, s3Keys } from "@/hooks/use-s3";

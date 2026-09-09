@@ -4,6 +4,8 @@ import { serviceMeta } from "@/lib/services";
 import { useTabs } from "@/store/tabs";
 import { S3ServiceView } from "@/components/s3/S3ServiceView";
 import { BucketView } from "@/components/s3/BucketView";
+import { SqsServiceView } from "@/components/sqs/SqsServiceView";
+import { QueueView } from "@/components/sqs/QueueView";
 import type { ServiceKind } from "@/types";
 function ServicePlaceholder({ service }: { service: ServiceKind }) {
   const meta = serviceMeta(service);
@@ -70,6 +72,10 @@ export function MainArea() {
             <S3ServiceView />
           ) : tab.kind === "bucket" && tab.bucketName ? (
             <BucketView bucketName={tab.bucketName} />
+          ) : tab.kind === "service" && tab.service === "sqs" ? (
+            <SqsServiceView />
+          ) : tab.kind === "queue" && tab.queueName ? (
+            <QueueView queueName={tab.queueName} />
           ) : tab.kind === "service" && tab.service ? (
             <ServicePlaceholder service={tab.service} />
           ) : null}
