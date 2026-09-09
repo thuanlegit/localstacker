@@ -29,7 +29,8 @@ export type TabKind =
   | "secret"
   | "function"
   | "table"
-  | "topic";
+  | "topic"
+  | "logGroup";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -41,5 +42,6 @@ export interface TabDescriptor {
   functionName?: string;
   tableName?: string;
   topicArn?: string;
+  logGroupName?: string;
   title: string;
 }

@@ -13,6 +13,8 @@ import { DynamoServiceView } from "@/components/dynamodb/DynamoServiceView";
 import { TableView } from "@/components/dynamodb/TableView";
 import { SnsServiceView } from "@/components/sns/SnsServiceView";
 import { TopicView } from "@/components/sns/TopicView";
+import { LogsServiceView } from "@/components/logs/LogsServiceView";
+import { LogGroupView } from "@/components/logs/LogGroupView";
 
 function EmptyState() {
   return (
@@ -76,6 +78,10 @@ export function MainArea() {
             <SnsServiceView />
           ) : tab.kind === "topic" && tab.topicArn ? (
             <TopicView topicArn={tab.topicArn} />
+          ) : tab.kind === "service" && tab.service === "logs" ? (
+            <LogsServiceView />
+          ) : tab.kind === "logGroup" && tab.logGroupName ? (
+            <LogGroupView logGroupName={tab.logGroupName} />
           ) : null}
         </TabsContent>
       ))}

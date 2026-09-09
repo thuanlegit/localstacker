@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 
 export interface ServiceMeta {
@@ -51,6 +51,13 @@ export const SERVICES: readonly ServiceMeta[] = [
     shortLabel: "SNS",
     icon: Radio,
     blurb: "Topics & subscriptions",
+  },
+  {
+    kind: "logs",
+    label: "CloudWatch Logs",
+    shortLabel: "Logs",
+    icon: ScrollText,
+    blurb: "Log groups & streams",
   },
 ] as const;
 

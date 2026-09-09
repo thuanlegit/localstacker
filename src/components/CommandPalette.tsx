@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Database, HardDrive, KeyRound, ListOrdered, Moon, Radio, Sun, Zap } from "lucide-react";
+import { Database, HardDrive, KeyRound, ListOrdered, Moon, Radio, ScrollText, Sun, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -19,6 +19,7 @@ import { useSecrets } from "@/hooks/use-secrets";
 import { useFunctions } from "@/hooks/use-lambda";
 import { useTables } from "@/hooks/use-dynamodb";
 import { useTopics } from "@/hooks/use-sns";
+import { useLogGroups } from "@/hooks/use-logs";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -30,6 +31,7 @@ export function CommandPalette() {
   const { data: functions } = useFunctions(profile.id, { enabled: open });
   const { data: tables } = useTables(profile.id, { enabled: open });
   const { data: topics } = useTopics(profile.id, { enabled: open });
+  const { data: logGroups } = useLogGroups(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -200,6 +202,29 @@ export function CommandPalette() {
               >
                 <Radio />
                 {t.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {logGroups && logGroups.length > 0 && (
+          <CommandGroup heading="Log groups">
+            {logGroups.map((g) => (
+              <CommandItem
+                key={g.name}
+                value={g.name}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `logGroup:${g.name}`,
+                      kind: "logGroup",
+                      logGroupName: g.name,
+                      title: g.name,
+                    }),
+                  )
+                }
+              >
+                <ScrollText />
+                {g.name}
               </CommandItem>
             ))}
           </CommandGroup>
