@@ -13,7 +13,7 @@ export function useSqsClient(): SQSClient {
   const profile = useActiveProfile();
   return useMemo(
     () => makeClients(profile).sqs,
-    [profile.id, profile.endpoint, profile.region],
+    [profile.id, profile.endpoint, profile.region, profile.authToken],
   );
 }
 

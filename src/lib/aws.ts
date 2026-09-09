@@ -11,6 +11,16 @@ export const DUMMY_CREDENTIALS = {
   accessKeyId: "test",
   secretAccessKey: "test",
 };
+export function withAuthHeader(
+  token: string,
+  fetchFn: typeof platformFetch = platformFetch,
+) {
+  return (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const headers = new Headers(init?.headers);
+    headers.set("authorization", token);
+    return fetchFn(input, { ...init, headers });
+  };
+}
 
 export function baseClientConfig(profile: ConnectionProfile) {
   return {
@@ -18,7 +28,9 @@ export function baseClientConfig(profile: ConnectionProfile) {
     endpoint: profile.endpoint.replace(/\/+$/, ""),
     credentials: DUMMY_CREDENTIALS,
     requestHandler: new FetchHttpHandler({
-      customFetch: platformFetch,
+      customFetch: profile.authToken
+        ? withAuthHeader(profile.authToken)
+        : platformFetch,
     }),
   };
 }

@@ -23,7 +23,7 @@ export function useS3Client(): S3Client {
   const profile = useActiveProfile();
   return useMemo(
     () => makeClients(profile).s3,
-    [profile.id, profile.endpoint, profile.region],
+    [profile.id, profile.endpoint, profile.region, profile.authToken],
   );
 }
 
