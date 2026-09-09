@@ -6,6 +6,7 @@ import {
   Play,
   Plus,
   RotateCw,
+  ScrollText,
   Variable,
   X,
   Zap,
@@ -26,6 +27,7 @@ import {
 import { ServiceDisabledView } from "@/components/ServiceDisabledView";
 import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
+import { useTabs } from "@/store/tabs";
 import {
   lambdaKeys,
   useFunctions,
@@ -501,6 +503,22 @@ export function FunctionView({ functionName }: { functionName: string }) {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              useTabs.getState().openTab({
+                id: `logGroup:/aws/lambda/${functionName}`,
+                kind: "logGroup",
+                logGroupName: `/aws/lambda/${functionName}`,
+                title: `/aws/lambda/${functionName}`,
+              })
+            }
+          >
+            <ScrollText className="mr-1.5 size-3.5" />
+            View logs
+          </Button>
+
           <Button
             variant="outline"
             size="sm"

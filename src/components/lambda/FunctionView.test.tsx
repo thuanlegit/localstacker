@@ -215,4 +215,19 @@ describe("FunctionView", () => {
       },
     });
   });
+  it("opens CloudWatch logs tab on clicking View logs button", () => {
+    renderWithProviders(<FunctionView functionName="hello" />);
+    const viewLogsBtn = screen.getByRole("button", { name: /View logs/i });
+    fireEvent.click(viewLogsBtn);
+
+    const tabs = useTabs.getState().tabs;
+    expect(
+      tabs.some(
+        (t) =>
+          t.id === "logGroup:/aws/lambda/hello" &&
+          t.kind === "logGroup" &&
+          t.logGroupName === "/aws/lambda/hello",
+      ),
+    ).toBe(true);
+  });
 });
