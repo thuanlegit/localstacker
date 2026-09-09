@@ -2,8 +2,10 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { MainArea } from "@/components/MainArea";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { useAutoUpdate } from "@/hooks/use-auto-update";
 
 export function AppShell() {
+  useAutoUpdate();
   return (
     <div className="flex h-screen">
       <Sidebar />

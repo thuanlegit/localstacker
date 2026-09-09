@@ -10,6 +10,8 @@
     {
       "identifier": "fs:allow-write-file",
       "allow": [{ "path": "**" }]
-    }
+    },
+    "updater:default",
+    "process:allow-restart"
   ]
 }
