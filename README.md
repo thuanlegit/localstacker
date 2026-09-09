@@ -14,12 +14,12 @@ browse and operate your local AWS resources without reaching for the CLI.
 
 ## Status
 
-Pre-alpha — M0 (app shell) shipped; M1 (S3 browsing) is next. Roadmap from [`docs/plan.md`](docs/plan.md):
+Pre-alpha — M1 (S3 browse + curated writes) shipped; M2 (SQS) is next. Roadmap from [`docs/plan.md`](docs/plan.md):
 
 | Milestone | Scope | Status |
 |---|---|---|
 | M0 | Scaffold, app shell, connection profiles, health badge | ✅ Done |
-| M1 | S3 — buckets/objects, upload/download, presigned URLs | Planned |
+| M1 | S3 — buckets/objects, upload/download, presigned URLs | ✅ Done |
 | M2 | SQS — send, peek, purge, DLQ redrive | Planned |
 | M3 | Lambda (invoke + logs) and Secrets Manager | Planned |
 | M4 | Hardening — e2e, notarization, auto-updater | Planned |

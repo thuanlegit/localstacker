@@ -83,3 +83,11 @@ Compact record of the foundational decisions. Each entry: context â†’ decision â
 **Decision**: Keep **LocalStacker**; README carries a "not affiliated with LocalStack GmbH" disclaimer. Rename later only if the project outgrows LocalStack.
 
 **Consequences**: Instant searchability ("localstack gui"); trademark hygiene handled by disclaimer; renaming before popularity is cheap.
+
+## D11. M1 S3: pure-TS data plane + Tauri plugins for file save
+
+**Context**: Downloading objects inside a webview requires file system access, but the data plane is pure TypeScript running in the webview.
+
+**Decision**: Run AWS SDK v3 in the webview; implement download via `GetObjectCommand` paired with `@tauri-apps/plugin-dialog` and `@tauri-apps/plugin-fs` for native file save with a browser `<a download>` fallback; generate presigned URLs client-side using `@aws-sdk/s3-request-presigner`; use `sonner` for user feedback toasts.
+
+**Consequences**: The Rust surface stays thin (2-line plugin registration in `src-tauri/src/lib.rs` and scoped capability in `default.json`); browser `pnpm dev` remains fully functional through fallback paths without bundling native plugins into browser dev bundles.
