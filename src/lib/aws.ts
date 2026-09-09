@@ -1,3 +1,5 @@
+import { FetchHttpHandler } from "@smithy/fetch-http-handler";
+import { platformFetch } from "./fetch";
 import { S3Client } from "@aws-sdk/client-s3";
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
@@ -15,6 +17,9 @@ export function baseClientConfig(profile: ConnectionProfile) {
     region: profile.region,
     endpoint: profile.endpoint.replace(/\/+$/, ""),
     credentials: DUMMY_CREDENTIALS,
+    requestHandler: new FetchHttpHandler({
+      customFetch: platformFetch,
+    }),
   };
 }
 

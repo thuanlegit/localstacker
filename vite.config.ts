@@ -25,6 +25,29 @@ export default defineConfig(() => ({
     port: 1420,
     strictPort: true,
     host: host || false,
+    proxy: {
+      "/_localstack": {
+        target: "http://127.0.0.1:4566",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq) => {
+            proxyReq.removeHeader("origin");
+            proxyReq.removeHeader("referer");
+          });
+        },
+      },
+      "^/localstack-proxy": {
+        target: "http://127.0.0.1:4566",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/localstack-proxy/, ""),
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq) => {
+            proxyReq.removeHeader("origin");
+            proxyReq.removeHeader("referer");
+          });
+        },
+      },
+    },
     hmr: host
       ? {
           protocol: "ws",

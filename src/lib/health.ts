@@ -1,3 +1,5 @@
+import { platformFetch } from "./fetch";
+
 export interface HealthService {
   name: string;
   status: string;
@@ -20,7 +22,7 @@ export type HealthInfo = HealthUp | HealthDown;
 export interface CheckHealthOptions {
   endpoint: string;
   authToken?: string;
-  fetchFn?: typeof fetch;
+  fetchFn?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
   signal?: AbortSignal;
 }
 
@@ -53,7 +55,7 @@ function normalizeServices(raw: unknown): HealthService[] {
  */
 export async function checkHealth(options: CheckHealthOptions): Promise<HealthInfo> {
   const { endpoint, authToken, signal } = options;
-  const fetchFn = options.fetchFn ?? fetch;
+  const fetchFn = options.fetchFn ?? platformFetch;
   const url = `${endpoint.replace(/\/+$/, "")}/_localstack/health`;
   const headers: Record<string, string> = { accept: "application/json" };
   if (authToken) headers.authorization = authToken;
