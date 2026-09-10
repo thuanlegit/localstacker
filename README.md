@@ -45,6 +45,8 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **EventBridge Scheduler** | Schedule groups, schedules list (rate/cron/at) with enable/disable toggles, create/delete schedules, target & payload inspector |
 | **API Gateway** | REST APIs listing, resource tree, method inspector, stage deployments, **built-in Method Test Runner** (`TestInvokeMethod`) |
 | **SES** | Verified email & domain identities, send test email modal, **LocalStack Captured Mailbox** with HTML, plaintext, raw MIME, and attachment tabs |
+| **IAM** | Roles, users, and policies listing, trust relationship policy inspector, inline policy editor with syntax-highlighted JSON viewer, user access keys manager (.env copy helper) |
+| **Route 53** | Hosted zones explorer (public/private), virtualized ResourceRecordSets grid (@tanstack/react-virtual), DNS records editor (A, AAAA, CNAME, TXT, MX, etc.) with TTL & value validation |
 
 ### S3 Object Preview
 ![S3 Object Preview](docs/screenshots/s3-bucket.png)
@@ -76,6 +78,12 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 ### SES Captured Mailbox & HTML Email Preview
 ![SES Captured Mailbox](docs/screenshots/ses-mailbox.png)
 
+### IAM Role & Inline Policy Inspector
+![IAM Role & Inline Policy Inspector](docs/screenshots/iam-role.png)
+
+### Route 53 Hosted Zone & DNS Records Grid
+![Route 53 Hosted Zone & DNS Records Grid](docs/screenshots/route53-zone.png)
+
 ## Status & Roadmap
 
 **v1.0.0 shipped** ✅. Core milestones implemented and verified with end-to-end coverage:
@@ -91,7 +99,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **M6** | **CloudWatch Logs & SSM Parameter Store** — log groups/streams viewer, live tailing, parameter hierarchy & SecureString decryption | ✅ Done |
 | **M7** | **EventBridge & EventBridge Scheduler** — event buses/rules, PutEvents test publisher, schedules explorer | ✅ Done |
 | **M8** | **API Gateway REST API & SES** — resource tree, method test runner, verified identities & captured mailbox viewer | ✅ Done |
-| **M9** | **IAM & Route53** — role/policy inspector, access keys, hosted zones & DNS records grid | 📋 Planned |
+| **M9** | **IAM & Route53** — role/policy inspector, access keys, hosted zones & DNS records grid | ✅ Done |
 | **M10** | **EC2 Mock** — instance states, security groups rule matrix, key pairs | 📋 Planned |
 | **v1.1** | **Docker Lifecycle** — detect, start, stop, and restart LocalStack containers via Docker socket | 🔭 Future |
 
