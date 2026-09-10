@@ -38,6 +38,8 @@ import { SesMailboxView } from "@/components/ses/SesMailboxView";
 import { IamServiceView } from "@/components/iam/IamServiceView";
 import { RoleView } from "@/components/iam/RoleView";
 import { UserView } from "@/components/iam/UserView";
+import { Route53ServiceView } from "@/components/route53/Route53ServiceView";
+import { HostedZoneView } from "@/components/route53/HostedZoneView";
 
 function EmptyState() {
   return (
@@ -225,6 +227,10 @@ export function MainArea() {
             <RoleView roleName={tab.roleName} />
           ) : tab.kind === "iamUser" && tab.userName ? (
             <UserView userName={tab.userName} />
+          ) : tab.kind === "service" && tab.service === "route53" ? (
+            <Route53ServiceView />
+          ) : tab.kind === "hostedZone" && tab.zoneId ? (
+            <HostedZoneView zoneId={tab.zoneId} />
           ) : null}
         </TabsContent>
       ))}

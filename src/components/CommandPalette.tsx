@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, Database, HardDrive, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, ShieldCheck, Sun, User, Webhook, Zap } from "lucide-react";
+import { CalendarClock, Database, Globe, HardDrive, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, ShieldCheck, Sun, User, Webhook, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -26,6 +26,7 @@ import { useScheduleGroups } from "@/hooks/use-scheduler";
 import { useRestApis } from "@/hooks/use-apigateway";
 import { useIdentities } from "@/hooks/use-ses";
 import { useRoles, useUsers } from "@/hooks/use-iam";
+import { useHostedZones } from "@/hooks/use-route53";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -45,6 +46,7 @@ export function CommandPalette() {
   const { data: identities } = useIdentities(profile.id, { enabled: open });
   const { data: iamRoles } = useRoles({ enabled: open });
   const { data: iamUsers } = useUsers({ enabled: open });
+  const { data: hostedZones } = useHostedZones({ enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -412,6 +414,29 @@ export function CommandPalette() {
               >
                 <User />
                 {u.userName}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {hostedZones && hostedZones.length > 0 && (
+          <CommandGroup heading="Hosted Zones">
+            {hostedZones.map((z) => (
+              <CommandItem
+                key={z.id}
+                value={`Route 53 hosted zone ${z.name}`}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `hostedZone:${z.id}`,
+                      kind: "hostedZone",
+                      zoneId: z.id,
+                      title: z.name,
+                    }),
+                  )
+                }
+              >
+                <Globe />
+                {z.name}
               </CommandItem>
             ))}
           </CommandGroup>

@@ -179,6 +179,20 @@ vi.mock("@/hooks/use-lambda", () => ({
     eventSourceMappings: (...args: unknown[]) => ["lambda", "eventSourceMappings", ...args],
   },
 }));
+vi.mock("@/hooks/use-iam", () => ({
+  useRoles: vi.fn(() => ({ data: [], isLoading: false, isFetching: false, refetch: vi.fn() })),
+  useUsers: vi.fn(() => ({ data: [], isLoading: false, isFetching: false, refetch: vi.fn() })),
+  usePolicies: vi.fn(() => ({ data: [], isLoading: false, isFetching: false, refetch: vi.fn() })),
+  useRoleActions: vi.fn(() => ({ deleteRole: vi.fn(), createRole: vi.fn() })),
+  useUserActions: vi.fn(() => ({ deleteUser: vi.fn(), createUser: vi.fn() })),
+}));
+
+vi.mock("@/hooks/use-route53", () => ({
+  useHostedZones: vi.fn(() => ({ data: [], isLoading: false, isFetching: false, refetch: vi.fn() })),
+  useResourceRecordSets: vi.fn(() => ({ data: [], isLoading: false, isFetching: false, refetch: vi.fn() })),
+  useHostedZoneActions: vi.fn(() => ({ deleteHostedZone: vi.fn(), createHostedZone: vi.fn() })),
+  useRecordSetActions: vi.fn(() => ({ deleteRecordSet: vi.fn(), createRecordSet: vi.fn() })),
+}));
 
 vi.mock("@/lib/lambda", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/lambda")>();
@@ -297,6 +311,18 @@ describe("AppShell", () => {
       "function:hello",
     ]);
     expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("hello");
+  });
+  it("opens the IAM tab and displays IAM service view", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^IAM/ }));
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual(["service:iam"]);
+    expect(screen.getByRole("tab", { name: /^IAM/ })).toHaveAttribute("data-state", "active");
+  });
+  it("opens the Route 53 tab and displays Route 53 service view", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^Route 53/ }));
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual(["service:route53"]);
+    expect(screen.getByRole("tab", { name: /^Route 53/ })).toHaveAttribute("data-state", "active");
   });
 
   it("opens the palette with Cmd-K and navigates to SQS from it", () => {

@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 
 export interface ServiceMeta {
@@ -101,6 +101,13 @@ export const SERVICES: readonly ServiceMeta[] = [
     icon: ShieldCheck,
     blurb: "Roles, users & policies",
   },
+  {
+    kind: "route53",
+    label: "Route 53",
+    shortLabel: "Route 53",
+    icon: Globe,
+    blurb: "Hosted zones & DNS records",
+  },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
@@ -123,4 +130,5 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   apigateway: "apigateway",
   ses: "ses",
   iam: "iam",
+  route53: "route53",
 };
