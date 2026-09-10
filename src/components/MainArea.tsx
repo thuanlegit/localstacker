@@ -30,6 +30,8 @@ import { EventBridgeServiceView } from "@/components/eventbridge/EventBridgeServ
 import { EventBusView } from "@/components/eventbridge/EventBusView";
 import { SchedulerServiceView } from "@/components/scheduler/SchedulerServiceView";
 import { ScheduleGroupView } from "@/components/scheduler/ScheduleGroupView";
+import { ApigatewayServiceView } from "@/components/apigateway/ApigatewayServiceView";
+import { RestApiView } from "@/components/apigateway/RestApiView";
 
 function EmptyState() {
   return (
@@ -201,6 +203,10 @@ export function MainArea() {
             <SchedulerServiceView />
           ) : tab.kind === "scheduleGroup" && tab.groupName ? (
             <ScheduleGroupView groupName={tab.groupName} />
+          ) : tab.kind === "service" && tab.service === "apigateway" ? (
+            <ApigatewayServiceView />
+          ) : tab.kind === "restApi" && tab.restApiId ? (
+            <RestApiView restApiId={tab.restApiId} />
           ) : null}
         </TabsContent>
       ))}

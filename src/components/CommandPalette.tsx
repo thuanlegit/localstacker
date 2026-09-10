@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, Database, HardDrive, KeyRound, ListOrdered, ListTree, Moon, Radio, ScrollText, Sun, Webhook, Zap } from "lucide-react";
+import { CalendarClock, Database, HardDrive, KeyRound, ListOrdered, ListTree, Moon, Network, Radio, ScrollText, Sun, Webhook, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -23,6 +23,7 @@ import { useLogGroups } from "@/hooks/use-logs";
 import { useParameters } from "@/hooks/use-ssm";
 import { useEventBuses } from "@/hooks/use-eventbridge";
 import { useScheduleGroups } from "@/hooks/use-scheduler";
+import { useRestApis } from "@/hooks/use-apigateway";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -38,6 +39,7 @@ export function CommandPalette() {
   const { data: parameters } = useParameters(profile.id, { enabled: open });
   const { data: buses } = useEventBuses(profile.id, { enabled: open });
   const { data: scheduleGroups } = useScheduleGroups(profile.id, { enabled: open });
+  const { data: restApis } = useRestApis(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -300,6 +302,29 @@ export function CommandPalette() {
               >
                 <CalendarClock />
                 {g.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {restApis && restApis.length > 0 && (
+          <CommandGroup heading="REST APIs">
+            {restApis.map((api) => (
+              <CommandItem
+                key={api.id}
+                value={`${api.name} ${api.id}`}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `restApi:${api.id}`,
+                      kind: "restApi",
+                      restApiId: api.id,
+                      title: api.name,
+                    }),
+                  )
+                }
+              >
+                <Network />
+                {api.name}
               </CommandItem>
             ))}
           </CommandGroup>
