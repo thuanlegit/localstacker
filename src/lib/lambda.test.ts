@@ -5,6 +5,8 @@ import {
   getFunctionConfig,
   invokeFunction,
   updateFunctionEnvVars,
+  createDemoFunction,
+  deleteFunction,
 } from "./lambda";
 
 describe("lambda data plane", () => {
@@ -230,6 +232,38 @@ describe("lambda data plane", () => {
           envVars: {},
         }),
       ).rejects.toThrow("Update failed");
+    });
+  });
+
+  describe("createDemoFunction", () => {
+    it("creates a demo function with bundled zip and returns the name", async () => {
+      const send = vi.fn().mockResolvedValue({
+        FunctionArn: "arn:aws:lambda:us-east-1:000000000000:function:demo-hello",
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const name = await createDemoFunction(client, "my-demo");
+      expect(name).toBe("my-demo");
+      expect(send).toHaveBeenCalledOnce();
+      const input = send.mock.calls[0][0].input;
+      expect(input.FunctionName).toBe("my-demo");
+      expect(input.Runtime).toBe("nodejs22.x");
+      expect(input.Handler).toBe("index.handler");
+      expect(input.Code.ZipFile).toBeInstanceOf(Uint8Array);
+      expect(input.Code.ZipFile.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("deleteFunction", () => {
+    it("deletes a function by name", async () => {
+      const send = vi.fn().mockResolvedValue({});
+      const client = { send } as unknown as LambdaClient;
+
+      await deleteFunction(client, "to-delete");
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0][0].input).toEqual({
+        FunctionName: "to-delete",
+      });
     });
   });
 });

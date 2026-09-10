@@ -26,6 +26,10 @@ vi.mock("@/hooks/use-lambda", () => ({
     error: currentError,
     refetch: vi.fn(),
   }),
+  useLambdaActions: () => ({
+    createDemo: vi.fn().mockResolvedValue("demo-hello"),
+    removeFunction: vi.fn().mockResolvedValue(true),
+  }),
   lambdaKeys: {
     functions: (id: string) => ["lambda", "functions", id],
     config: (id: string, name: string) => ["lambda", "config", id, name],
@@ -83,5 +87,27 @@ describe("LambdaServiceView", () => {
 
     expect(screen.getByTestId("service-disabled-view")).toBeInTheDocument();
     expect(screen.getByText("Lambda is turned off")).toBeInTheDocument();
+  });
+
+  it("renders LambdaGuideCard when function list is empty", () => {
+    currentFunctions = [];
+    renderWithProviders(<LambdaServiceView />);
+
+    expect(screen.getByText("No Lambda functions")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /quick demo function/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /full guide/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens guide dialog when clicking Guide button in header", () => {
+    renderWithProviders(<LambdaServiceView />);
+
+    const guideBtn = screen.getByRole("button", { name: /guide/i });
+    fireEvent.click(guideBtn);
+
+    expect(screen.getByText("Lambda Setup & Usage Guide")).toBeInTheDocument();
   });
 });

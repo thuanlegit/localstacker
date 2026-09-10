@@ -1,9 +1,15 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import type { LambdaClient } from "@aws-sdk/client-lambda";
 import { makeClients } from "@/lib/aws";
 import { useActiveProfile } from "@/store/profiles";
-import { getFunctionConfig, listFunctions } from "@/lib/lambda";
+import {
+  createDemoFunction,
+  deleteFunction,
+  getFunctionConfig,
+  listFunctions,
+} from "@/lib/lambda";
 export const lambdaKeys = {
   functions: (profileId: string, region?: string) =>
     region
@@ -47,4 +53,44 @@ export function useFunctionConfig(
     enabled: options?.enabled !== undefined ? options.enabled && !!name : !!name,
     staleTime: 10_000,
   });
+}
+
+function toErrorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
+export function useLambdaActions() {
+  const client = useLambdaClient();
+  const profile = useActiveProfile();
+  const queryClient = useQueryClient();
+
+  const createDemo = async (name = "demo-hello"): Promise<string | null> => {
+    try {
+      const res = await createDemoFunction(client, name);
+      toast.success(`Demo function "${res}" created`);
+      await queryClient.invalidateQueries({
+        queryKey: lambdaKeys.functions(profile.id, profile.region),
+      });
+      return res;
+    } catch (e) {
+      toast.error(`Failed to create demo function: ${toErrorMessage(e)}`);
+      return null;
+    }
+  };
+
+  const removeFunction = async (name: string): Promise<boolean> => {
+    try {
+      await deleteFunction(client, name);
+      toast.success(`Function "${name}" deleted`);
+      await queryClient.invalidateQueries({
+        queryKey: lambdaKeys.functions(profile.id, profile.region),
+      });
+      return true;
+    } catch (e) {
+      toast.error(`Failed to delete function: ${toErrorMessage(e)}`);
+      return false;
+    }
+  };
+
+  return { createDemo, removeFunction };
 }

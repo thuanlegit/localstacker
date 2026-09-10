@@ -1,10 +1,13 @@
 import {
+  CreateFunctionCommand,
+  DeleteFunctionCommand,
   GetFunctionConfigurationCommand,
   InvokeCommand,
   ListFunctionsCommand,
   UpdateFunctionConfigurationCommand,
   type LambdaClient,
 } from "@aws-sdk/client-lambda";
+import { zipSync, strToU8 } from "fflate";
 
 export interface LambdaFunctionSummary {
   name: string;
@@ -169,4 +172,47 @@ export async function updateFunctionEnvVars(
       },
     }),
   );
+}
+
+export async function createDemoFunction(
+  client: LambdaClient,
+  name = "demo-hello",
+): Promise<string> {
+  const codeZip = zipSync({
+    "index.js": strToU8(
+      "exports.handler = async (event) => {\n" +
+        "  console.log('Demo lambda invoked with event:', JSON.stringify(event));\n" +
+        "  return {\n" +
+        "    statusCode: 200,\n" +
+        "    body: JSON.stringify({\n" +
+        "      message: 'Hello from LocalStack Lambda!',\n" +
+        "      timestamp: new Date().toISOString(),\n" +
+        "      event,\n" +
+        "    }),\n" +
+        "  };\n" +
+        "};",
+    ),
+  });
+
+  await client.send(
+    new CreateFunctionCommand({
+      FunctionName: name,
+      Runtime: "nodejs22.x",
+      Handler: "index.handler",
+      Role: "arn:aws:iam::000000000000:role/lambda-demo-role",
+      Description: "Demo function created from Localstacker",
+      Code: {
+        ZipFile: codeZip,
+      },
+    }),
+  );
+
+  return name;
+}
+
+export async function deleteFunction(
+  client: LambdaClient,
+  name: string,
+): Promise<void> {
+  await client.send(new DeleteFunctionCommand({ FunctionName: name }));
 }

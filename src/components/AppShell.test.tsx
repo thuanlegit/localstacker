@@ -137,6 +137,10 @@ vi.mock("@/lib/secrets", async (importOriginal) => {
 
 vi.mock("@/hooks/use-lambda", () => ({
   useLambdaClient: vi.fn(),
+  useLambdaActions: vi.fn(() => ({
+    createDemo: vi.fn(),
+    removeFunction: vi.fn(),
+  })),
   useFunctions: vi.fn(() => ({
     data: [demoFunction],
     isPending: false,

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import {
+  BookOpen,
   CircleAlert,
   Loader2,
   RotateCw,
@@ -10,7 +12,9 @@ import { ServiceDisabledView } from "@/components/ServiceDisabledView";
 import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
-import { useFunctions } from "@/hooks/use-lambda";
+import { useFunctions, useLambdaActions } from "@/hooks/use-lambda";
+import { LambdaGuideDialog } from "./LambdaGuideDialog";
+import { LambdaGuideCard } from "./LambdaGuideCard";
 import { formatBytes, formatDate } from "@/lib/format";
 
 export function LambdaServiceView() {
@@ -22,6 +26,24 @@ export function LambdaServiceView() {
     profile.id,
     { enabled: serviceStatus !== "disabled" },
   );
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const { createDemo } = useLambdaActions();
+
+  const handleOpenFunction = (name: string) => {
+    openTab({
+      id: `function:${name}`,
+      kind: "function",
+      functionName: name,
+      title: name,
+    });
+  };
+
+  const handleCreateDemo = async () => {
+    const name = await createDemo();
+    if (name) {
+      handleOpenFunction(name);
+    }
+  };
 
   if (serviceStatus === "disabled" || isServiceDisabledError(error)) {
     return <ServiceDisabledView service="lambda" />;
@@ -36,17 +58,30 @@ export function LambdaServiceView() {
           {data ? data.length : 0}
         </Badge>
         <div className="flex-1" />
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Refresh functions"
-          disabled={isFetching}
-          onClick={() => refetch()}
-        >
-          <RotateCw
-            className={`size-4 ${isFetching ? "animate-spin" : ""}`}
-          />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsGuideOpen(true)}
+            className="gap-1.5"
+            title="Lambda Setup & CLI/SDK Guide"
+          >
+            <BookOpen className="h-4 w-4" />
+            <span className="hidden sm:inline">Guide</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Refresh functions"
+            disabled={isFetching}
+            onClick={() => refetch()}
+          >
+            <RotateCw
+              className={`size-4 ${isFetching ? "animate-spin" : ""}`}
+            />
+          </Button>
+        </div>
       </div>
 
       {/* Body */}
@@ -63,13 +98,10 @@ export function LambdaServiceView() {
           </Button>
         </div>
       ) : !data || data.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
-          <Zap className="size-10 opacity-40" />
-          <p className="text-sm">
-            No functions yet — create one with the AWS CLI, IaC, or your deploy
-            pipeline
-          </p>
-        </div>
+        <LambdaGuideCard
+          onOpenGuide={() => setIsGuideOpen(true)}
+          onFunctionCreated={handleOpenFunction}
+        />
       ) : (
         <div className="flex-1 overflow-auto">
           <table className="w-full text-left text-sm">
@@ -141,6 +173,12 @@ export function LambdaServiceView() {
           </table>
         </div>
       )}
+
+      <LambdaGuideDialog
+        open={isGuideOpen}
+        onOpenChange={setIsGuideOpen}
+        onCreateDemoClick={handleCreateDemo}
+      />
     </div>
   );
 }
