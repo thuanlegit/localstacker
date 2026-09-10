@@ -14,7 +14,7 @@ import {
   type PeekedMessage,
   type QueueSummary,
 } from "@/lib/sqs";
-
+import type { EventSourceMappingSummary } from "@/lib/lambda";
 vi.mock("@/lib/sqs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/sqs")>();
   return {
@@ -70,7 +70,22 @@ const otherQueue: QueueSummary = {
 };
 
 let currentQueues: QueueSummary[] = [demoQueue, fifoQueue, otherQueue];
+let currentAttachedTriggers: EventSourceMappingSummary[] = [];
+const mockDeleteTrigger = vi.fn().mockResolvedValue(true);
+const mockUpdateTrigger = vi.fn().mockResolvedValue(true);
 
+vi.mock("@/hooks/use-lambda", () => ({
+  useFunctions: () => ({ data: [], isLoading: false }),
+  useEventSourceMappings: () => ({
+    data: currentAttachedTriggers,
+    isLoading: false,
+  }),
+  useEventSourceMappingActions: () => ({
+    deleteMapping: mockDeleteTrigger,
+    updateMapping: mockUpdateTrigger,
+    createMapping: vi.fn(),
+  }),
+}));
 vi.mock("@/hooks/use-sqs", () => ({
   useSqsClient: () => mockClient,
   useQueues: () => ({
@@ -89,6 +104,7 @@ describe("QueueView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     currentQueues = [demoQueue, fifoQueue, otherQueue];
+    currentAttachedTriggers = [];
     useProfiles.setState({
       profiles: [{ ...localProfile(), region: "us-east-1" }],
       activeProfileId: LOCAL_PROFILE_ID,
@@ -283,5 +299,52 @@ describe("QueueView", () => {
       sourceUrl: demoQueue.url,
       targetUrl: otherQueue.url,
     });
+  });
+
+  it("displays attached Lambda triggers and allows toggling and detaching", async () => {
+    currentAttachedTriggers = [
+      {
+        uuid: "esm-123",
+        functionArn:
+          "arn:aws:lambda:us-east-1:000000000000:function:order-processor",
+        functionName: "order-processor",
+        eventSourceArn: demoQueue.attributes.arn!,
+        batchSize: 10,
+        state: "Enabled",
+        service: "sqs",
+        resourceName: "demo-queue",
+      },
+    ];
+
+    renderWithProviders(<QueueView queueName="demo-queue" />);
+
+    expect(screen.getByText("order-processor")).toBeInTheDocument();
+    expect(screen.getByText("Enabled")).toBeInTheDocument();
+
+    // Toggle trigger state
+    fireEvent.click(screen.getByText("Enabled"));
+    expect(mockUpdateTrigger).toHaveBeenCalledWith({
+      uuid: "esm-123",
+      functionName: "order-processor",
+      enabled: false,
+    });
+
+    // Detach trigger
+    const detachBtn = screen.getByRole("button", {
+      name: "Detach Lambda order-processor",
+    });
+    fireEvent.click(detachBtn);
+
+    const confirmDialog = await screen.findByRole("dialog");
+    expect(
+      within(confirmDialog).getByText(/Detach Lambda Trigger/i),
+    ).toBeInTheDocument();
+
+    const confirmBtn = within(confirmDialog).getByRole("button", {
+      name: "Detach trigger",
+    });
+    fireEvent.click(confirmBtn);
+
+    expect(mockDeleteTrigger).toHaveBeenCalledWith("esm-123");
   });
 });

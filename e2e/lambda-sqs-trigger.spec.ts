@@ -123,7 +123,24 @@ test.describe("Lambda SQS Trigger e2e", () => {
     await qItem.click();
 
     // 8. Verify the attached Lambda function badge appears in the queue header
-    const lambdaBadge = page.getByTitle(new RegExp(`Attached to Lambda: ${functionName}`));
+    const lambdaBadge = page.getByTitle(
+      new RegExp(`Attached to Lambda: ${functionName}`),
+    );
     await expect(lambdaBadge).toBeVisible({ timeout: 10_000 });
+
+    // 9. Detach the Lambda trigger directly from the SQS view
+    const detachBtn = page.getByRole("button", {
+      name: `Detach Lambda ${functionName}`,
+    });
+    await detachBtn.click();
+
+    const detachDialog = page.getByRole("dialog");
+    await expect(
+      detachDialog.getByText("Detach Lambda Trigger"),
+    ).toBeVisible();
+    await detachDialog.getByRole("button", { name: "Detach trigger" }).click();
+
+    // 10. Verify trigger badge disappears from queue view
+    await expect(lambdaBadge).not.toBeVisible({ timeout: 10_000 });
   });
 });

@@ -11,6 +11,7 @@ import {
   Plus,
   RotateCw,
   Trash2,
+  X,
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -38,7 +39,10 @@ import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
 import { sqsKeys, useQueues, useSqsClient } from "@/hooks/use-sqs";
-import { useEventSourceMappings } from "@/hooks/use-lambda";
+import {
+  useEventSourceMappings,
+  useEventSourceMappingActions,
+} from "@/hooks/use-lambda";
 import { AttachLambdaDialog } from "./AttachLambdaDialog";
 import {
   deleteMessage,
@@ -50,6 +54,7 @@ import {
   type PeekedMessage,
   type QueueSummary,
 } from "@/lib/sqs";
+import type { EventSourceMappingSummary } from "@/lib/lambda";
 import { formatDate } from "@/lib/format";
 
 function toErrorMessage(e: unknown): string {
@@ -312,15 +317,39 @@ export function QueueView({ queueName }: QueueViewProps) {
   const [isPurgeOpen, setIsPurgeOpen] = useState(false);
   const [isPurging, setIsPurging] = useState(false);
   const [isAttachLambdaOpen, setIsAttachLambdaOpen] = useState(false);
+  const [triggerToDetach, setTriggerToDetach] =
+    useState<EventSourceMappingSummary | null>(null);
+  const [isDetachingTrigger, setIsDetachingTrigger] = useState(false);
 
-  const [peeked, setPeeked] = useState<PeekedMessage[] | null>(null);
   const { data: attachedTriggers } = useEventSourceMappings(
     { eventSourceArn: queue?.attributes.arn },
     { enabled: Boolean(queue?.attributes.arn) },
   );
+  const { deleteMapping, updateMapping } = useEventSourceMappingActions();
+
+  const handleDetachTrigger = async () => {
+    if (!triggerToDetach) return;
+    setIsDetachingTrigger(true);
+    try {
+      await deleteMapping(triggerToDetach.uuid);
+      setTriggerToDetach(null);
+    } finally {
+      setIsDetachingTrigger(false);
+    }
+  };
+
+  const handleToggleTrigger = async (t: EventSourceMappingSummary) => {
+    const nextEnabled = t.state !== "Enabled";
+    await updateMapping({
+      uuid: t.uuid,
+      functionName: t.functionName,
+      enabled: nextEnabled,
+    });
+  };
+
+  const [peeked, setPeeked] = useState<PeekedMessage[] | null>(null);
   const [messageToDelete, setMessageToDelete] = useState<PeekedMessage | null>(null);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
-
   const consumedHandlesRef = useRef<Set<string>>(new Set());
   const peekedRef = useRef<PeekedMessage[] | null>(null);
   peekedRef.current = peeked;
@@ -569,28 +598,61 @@ export function QueueView({ queueName }: QueueViewProps) {
               </span>
               <div className="flex flex-wrap items-center gap-1.5">
                 {attachedTriggers.map((t) => (
-                  <button
+                  <div
                     key={t.uuid}
-                    type="button"
-                    onClick={() =>
-                      openTab({
-                        id: `function:${t.functionName}`,
-                        kind: "function",
-                        functionName: t.functionName,
-                        title: t.functionName,
-                      })
-                    }
-                    className="inline-flex items-center gap-1.5 rounded border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 font-mono text-xs text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition-colors whitespace-nowrap shrink-0"
-                    title={`Attached to Lambda: ${t.functionName} (${t.state}) — click to view function`}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 pl-2 pr-1 py-0.5 font-mono text-xs text-amber-700 dark:text-amber-300"
+                    title={`Attached to Lambda: ${t.functionName} (${t.state})`}
                   >
-                    <span className="font-semibold">{t.functionName}</span>
-                    <Badge
-                      variant={t.state === "Enabled" ? "secondary" : "outline"}
-                      className="text-[9px] px-1 py-0 h-4 border-amber-500/30"
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openTab({
+                          id: `function:${t.functionName}`,
+                          kind: "function",
+                          functionName: t.functionName,
+                          title: t.functionName,
+                        })
+                      }
+                      className="inline-flex items-center gap-1 font-semibold hover:underline"
+                      title="Open Lambda function view"
                     >
-                      {t.state}
-                    </Badge>
-                  </button>
+                      <Zap className="size-3 text-amber-500" />
+                      <span>{t.functionName}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleTrigger(t)}
+                      title={
+                        t.state === "Enabled"
+                          ? "Trigger is Active — click to pause/disable"
+                          : "Trigger is Paused — click to enable"
+                      }
+                    >
+                      <Badge
+                        variant={t.state === "Enabled" ? "default" : "outline"}
+                        className={`text-[9px] px-1.5 py-0 h-4 cursor-pointer hover:opacity-80 transition-opacity ${
+                          t.state === "Enabled"
+                            ? "bg-green-600/80 hover:bg-green-600 text-white border-transparent"
+                            : "text-muted-foreground border-border bg-background/50"
+                        }`}
+                      >
+                        {t.state}
+                      </Badge>
+                    </button>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-4 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                      onClick={() => setTriggerToDetach(t)}
+                      title={`Detach Lambda ${t.functionName}`}
+                      aria-label={`Detach Lambda ${t.functionName}`}
+                    >
+                      <X className="size-3" />
+                    </Button>
+                  </div>
                 ))}
                 <Button
                   variant="ghost"
@@ -747,6 +809,16 @@ export function QueueView({ queueName }: QueueViewProps) {
           queue={queue}
         />
       )}
+
+      <DeleteConfirmDialog
+        open={Boolean(triggerToDetach)}
+        onOpenChange={(open) => !open && setTriggerToDetach(null)}
+        title="Detach Lambda Trigger"
+        description={`Are you sure you want to detach Lambda function "${triggerToDetach?.functionName}" from ${queue.name}? Incoming messages will no longer trigger this function.`}
+        confirmLabel="Detach trigger"
+        isPending={isDetachingTrigger}
+        onConfirm={handleDetachTrigger}
+      />
     </div>
   );
 }

@@ -235,24 +235,40 @@ export function AddTriggerDialog({
               </div>
             </div>
 
-            {/* Enabled Checkbox */}
-            <div className="flex items-center space-x-2 pt-1">
-              <input
-                type="checkbox"
-                id="enable-trigger-checkbox"
-                checked={enabled}
-                onChange={(e) => setEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-input text-primary focus:ring-ring"
-              />
-              <Label
-                htmlFor="enable-trigger-checkbox"
-                className="text-xs font-normal cursor-pointer"
-              >
-                Enable trigger immediately
-              </Label>
+            {/* Enabled Checkbox with live explanation */}
+            <div className="rounded-md border p-3 space-y-1.5 bg-muted/20">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="enable-trigger-checkbox"
+                  checked={enabled}
+                  onChange={(e) => setEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-input text-primary focus:ring-ring cursor-pointer"
+                />
+                <Label
+                  htmlFor="enable-trigger-checkbox"
+                  className="text-xs font-semibold cursor-pointer select-none"
+                >
+                  Enable trigger immediately
+                </Label>
+                <Badge
+                  variant={enabled ? "default" : "outline"}
+                  className={`text-[9px] px-1.5 py-0 h-4 ${
+                    enabled
+                      ? "bg-green-600/80 hover:bg-green-600 text-white"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {enabled ? "Active" : "Disabled / Paused"}
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground pl-6">
+                {enabled
+                  ? "When enabled, Lambda actively polls this queue and invokes the function whenever new messages arrive."
+                  : "When disabled, the trigger mapping is saved in a paused state. Messages will accumulate in the queue without invoking Lambda until enabled."}
+              </p>
             </div>
           </div>
-
           <DialogFooter>
             <Button
               type="button"
