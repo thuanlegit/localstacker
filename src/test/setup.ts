@@ -14,3 +14,7 @@ class ResizeObserverStub {
 // jsdom also lacks scrollIntoView; cmdk scrolls the selected item into view.
 Element.prototype.scrollIntoView ??= () => {};
 window.ResizeObserver ??= ResizeObserverStub;
+// jsdom lacks pointer-capture APIs; Radix Select requires them.
+Element.prototype.hasPointerCapture ??= () => false;
+Element.prototype.setPointerCapture ??= () => {};
+Element.prototype.releasePointerCapture ??= () => {};

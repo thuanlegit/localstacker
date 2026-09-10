@@ -34,7 +34,8 @@ them without reaching for the CLI.
 ## Architecture
 
 - **Shell**: Tauri 2 (Rust) + React + TypeScript. The Rust surface stays thin
-  (window, menus, packaging); no business logic in Rust.
+  (window, menus, packaging, and — from v1.1 — the Docker Engine client via
+  `bollard`); no service business logic in Rust.
 - **Data plane**: pure TypeScript running in the webview — `@aws-sdk/v3` clients
   (`-s3`, `-sqs`, `-secrets-manager`, `-lambda`) instantiated per connection
   profile with endpoint override and dummy credentials (`test`/`test`).
@@ -152,7 +153,46 @@ Notes:
   - EC2: `@aws-sdk/client-ec2`, instances list with mock state transitions (Start, Stop, Reboot, Terminate), Key Pairs manager (create with `.pem` download, delete), Security Groups list with visual Inbound/Outbound rule matrix visualizer, Authorize/Revoke ingress/egress rules.
   - E2E Playwright test: create security group, add ingress rule for port 443, assert in rule matrix, revoke rule; create key pair, assert fingerprint, delete key pair and security group.
 - **v1.1 — Docker Lifecycle Management**:
-  - LocalStack Docker container lifecycle management via local Docker socket (detect running container, inspect version/logs, start/stop/restart).
+  - Architecture: Docker Engine access via `bollard` in the Tauri Rust backend
+    (unix socket on macOS/Linux, named pipe on Windows; no CLI sidecar). Typed
+    `#[tauri::command]`s: `docker_status`, `list_containers`,
+    `inspect_container`, `container_logs`, `start_container`, `stop_container`,
+    `restart_container`, `create_container`, `remove_container`.
+  - TS seam: injectable `DockerAdapter` interface in `src/lib/docker.ts`
+    wrapping `invoke`; component tests and Playwright e2e run against a mock
+    adapter (the browser harness cannot call Tauri commands), bollard commands
+    get Rust integration tests against a real daemon in CI.
+  - Shell: dedicated Docker sidebar section above Services (whale icon),
+    `docker` tab kind; container list polls every 5s.
+  - Availability: lazy probe on first panel open; daemon down / socket missing /
+    `EACCES` render a status row with actionable guidance and retry — users who
+    never open the panel pay zero cost, connect-only flows unaffected.
+  - Discovery: containers whose image matches `localstack/localstack*` or
+    `gresau/localstack-persist*`, default Docker context only (no
+    `DOCKER_HOST`/remote contexts in v1.1); per-row actions Start, Stop,
+    Restart, Remove, Connect; inspect drawer (image+tag, created, status,
+    ports, mounts, networks, env with secret values masked).
+  - Stop semantics: persistence = `/var/lib/localstack` mount or persist-
+    flavored image; no persistence → state-loss warning before stop/restart.
+    Stop timeout 60s for persist-flavored images (commit-on-stop,
+    "persisting…" progress), 10s otherwise. Remove confirms and optionally
+    deletes named volumes (default off).
+  - Logs: snapshot (last N lines) plus follow tail with autoscroll/pause,
+    in-tab console per container.
+  - Create wizard: curated fields — container name, image+tag picker (both
+    families plus custom image), host port (default 4566) and extra port
+    mappings, key=value env rows (API key masked), PERSIST toggle creating a
+    named volume, network picker, restart policy (default `unless-stopped`),
+    hostname — plus Advanced JSON overrides deep-merged into the bollard
+    create request (client-side validation, merged-config preview). Image pull
+    shows layer progress and is cancellable.
+  - Post-create: wait for health, find-or-create `localhost:<port>` profile,
+    auto-connect; profiles stay pure endpoint+auth, container control never
+    becomes a profile field.
+  - E2E Playwright test (mock adapter): panel states, lifecycle actions with
+    and without persistence warnings, wizard validation and JSON-merge
+    preview, remove confirmation.
+
 ## Risks & mitigations
 
 | Risk | Mitigation |
@@ -165,3 +205,7 @@ Notes:
 | EventBridge Scheduler community emulation depth | LocalStack community may have partial execution support; validate execution semantics, surface Pro requirement badge if scheduler engine requires token while keeping CRUD active |
 | EC2 expectation mismatch (real VMs vs mock) | UI clearly indicates "Stateful Mock" and emphasizes Security Groups / Key Pairs as the primary daily-driver value |
 | IAM policy JSON validation errors | Syntax-highlighted editor validates JSON structure client-side before sending PutRolePolicy / CreatePolicy to avoid opaque AWS errors |
+| Docker socket unavailable or permission denied (notably Linux socket group) | Lazy probe on first panel open; status row with actionable guidance and retry; connect-only flows unaffected |
+| Windows named-pipe connectivity via bollard unverified | Smoke test NSIS build against Docker Desktop; degrade to "Docker unavailable" panel state rather than failing |
+| Advanced JSON overrides produce invalid or unsafe container configs | Client-side JSON validation plus merged-config preview before create; daemon errors surfaced verbatim |
+| `gresau/localstack-persist` commit window exceeds stop timeout on large states | 60s per-image stop timeout with "persisting…" progress; no SIGKILL mid-commit, container remains inspectable |

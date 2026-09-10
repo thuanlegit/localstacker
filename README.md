@@ -108,7 +108,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **M8** | **API Gateway REST API & SES** — resource tree, method test runner, verified identities & captured mailbox viewer | ✅ Done |
 | **M9** | **IAM & Route53** — role/policy inspector, access keys, hosted zones & DNS records grid | ✅ Done |
 | **M10** | **EC2 Mock** — instance states, security groups rule matrix, key pairs | ✅ Done |
-| **v1.1** | **Docker Lifecycle** — detect, start, stop, and restart LocalStack containers via Docker socket | 🔭 Future |
+| **v1.1** | **Docker Lifecycle** — dedicated container panel: detect/inspect LocalStack containers (incl. `localstack-persist` images), snapshot+follow logs, start/stop/restart/remove with persistence-aware warnings, create wizard with image pull & auto-connect — via Docker socket (`bollard` in the Rust backend, no CLI sidecar) | 🔭 Future |
 
 See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.
 

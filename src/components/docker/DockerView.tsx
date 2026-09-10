@@ -46,6 +46,7 @@ import {
 } from "@/hooks/use-docker";
 import { containerEndpoint, type ContainerSummary } from "@/lib/docker";
 import { ContainerDetailPanel } from "./ContainerDetailPanel";
+import { CreateContainerDialog } from "./CreateContainerDialog";
 
 function getContainerStateBadgeClass(state: string): string {
   switch (state.toLowerCase()) {
@@ -76,12 +77,9 @@ interface ActionWarningState {
   action: "stop" | "restart";
 }
 
-export function DockerView({
-  onOpenCreate,
-}: {
-  onOpenCreate?: () => void;
-}) {
+export function DockerView() {
   const adapter = useDockerAdapter();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { data: status, isLoading: isStatusLoading, refetch: refetchStatus } = useDockerStatus();
   const {
     data: containers = [],
@@ -97,6 +95,7 @@ export function DockerView({
     restartContainer,
     removeContainer,
     connectContainer,
+    createAndConnect,
   } = useDockerActions();
 
   const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);
@@ -206,12 +205,10 @@ export function DockerView({
             />
             <span>Refresh</span>
           </Button>
-          {onOpenCreate && (
-            <Button size="sm" onClick={onOpenCreate} className="gap-1.5">
-              <Plus className="size-3.5" />
-              <span>Launch Container</span>
-            </Button>
-          )}
+          <Button size="sm" onClick={() => setIsCreateOpen(true)} className="gap-1.5">
+            <Plus className="size-3.5" />
+            <span>Launch Container</span>
+          </Button>
         </div>
       </div>
 
@@ -266,12 +263,10 @@ export function DockerView({
             <p className="text-sm text-muted-foreground max-w-sm mt-1 mb-4">
               Start a container via Docker or launch a new LocalStack container instance.
             </p>
-            {onOpenCreate && (
-              <Button size="sm" onClick={onOpenCreate} className="gap-1.5">
-                <Plus className="size-3.5" />
-                <span>Launch Container</span>
-              </Button>
-            )}
+            <Button size="sm" onClick={() => setIsCreateOpen(true)} className="gap-1.5">
+              <Plus className="size-3.5" />
+              <span>Launch Container</span>
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -564,6 +559,14 @@ export function DockerView({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Create Container Wizard */}
+      <CreateContainerDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onCreate={createAndConnect}
+        onCancelOperation={(sessionId) => adapter.cancelOperation(sessionId)}
+      />
     </div>
   );
 }
