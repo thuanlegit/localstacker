@@ -443,115 +443,168 @@ export function QueueView({ queueName }: QueueViewProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex h-12 items-center gap-2 border-b px-4">
-        <ListOrdered className="size-4 shrink-0 text-muted-foreground" />
-        <span className="font-medium text-sm">{queue.name}</span>
-        {queue.isFifo && (
-          <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
-            FIFO
-          </Badge>
-        )}
-        <span className="font-mono text-xs text-muted-foreground">
-          {queue.attributes.depth} messages · {queue.attributes.inFlight} in flight ·{" "}
-          {queue.attributes.delayed} delayed
-        </span>
-        {queue.attributes.dlqName && (
-          <button
-            type="button"
-            onClick={() => {
-              const dlq = queue.attributes.dlqName!;
-              openTab({
-                id: `queue:${dlq}`,
-                kind: "queue",
-                queueName: dlq,
-                title: dlq,
-              });
-            }}
-            className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground hover:text-foreground"
+      <div className="flex h-12 items-center justify-between border-b px-4 gap-3">
+        {/* Queue identity and metrics */}
+        <div className="flex items-center gap-2 min-w-0">
+          <ListOrdered className="size-4 shrink-0 text-muted-foreground" />
+          <span className="font-semibold text-sm truncate">{queue.name}</span>
+          {queue.isFifo && (
+            <Badge variant="outline" className="px-1.5 py-0 text-[10px] shrink-0 whitespace-nowrap">
+              FIFO
+            </Badge>
+          )}
+          <span className="font-mono text-xs text-muted-foreground whitespace-nowrap shrink-0 hidden sm:inline ml-1">
+            {queue.attributes.depth} messages · {queue.attributes.inFlight} in flight ·{" "}
+            {queue.attributes.delayed} delayed
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Refresh queue"
+            disabled={isFetching}
+            onClick={() => refetch()}
           >
-            Dead-letter queue: {queue.attributes.dlqName}
-          </button>
-        )}
+            <RotateCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
+          </Button>
 
-        {attachedTriggers && attachedTriggers.length > 0 && (
-          <div className="flex items-center gap-1.5">
-            {attachedTriggers.map((t) => (
-              <button
-                key={t.uuid}
-                type="button"
-                onClick={() =>
-                  openTab({
-                    id: `function:${t.functionName}`,
-                    kind: "function",
-                    functionName: t.functionName,
-                    title: t.functionName,
-                  })
-                }
-                className="flex items-center gap-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 text-xs hover:bg-amber-500/20"
-                title={`Attached to Lambda: ${t.functionName} (${t.state}) — click to view function`}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePeek}
+            className="whitespace-nowrap"
+          >
+            <Eye className="mr-1.5 size-4" />
+            Peek messages
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => setIsSendOpen(true)}
+            className="whitespace-nowrap"
+          >
+            <Plus className="mr-1.5 size-4" />
+            Send message
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsRedriveOpen(true)}
+            className="hidden md:inline-flex whitespace-nowrap"
+          >
+            <ArrowRightLeft className="mr-1.5 size-4" />
+            Redrive to…
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAttachLambdaOpen(true)}
+            className="hidden lg:inline-flex whitespace-nowrap"
+            title="Attach this SQS queue as a Lambda trigger"
+          >
+            <Zap className="mr-1.5 size-4 text-amber-500" />
+            Attach Lambda
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Queue actions">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => setIsAttachLambdaOpen(true)}>
+                <Zap className="mr-2 size-4 text-amber-500" />
+                Attach Lambda trigger…
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => setIsRedriveOpen(true)}
+                className="md:hidden"
               >
-                <Zap className="size-3" />
-                <span className="font-mono">{t.functionName}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="flex-1" />
-
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Refresh queue"
-          disabled={isFetching}
-          onClick={() => refetch()}
-        >
-          <RotateCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
-        </Button>
-
-        <Button variant="outline" size="sm" onClick={handlePeek}>
-          <Eye className="mr-1.5 size-4" />
-          Peek messages
-        </Button>
-
-        <Button size="sm" onClick={() => setIsSendOpen(true)}>
-          <Plus className="mr-1.5 size-4" />
-          Send message
-        </Button>
-
-        <Button variant="outline" size="sm" onClick={() => setIsRedriveOpen(true)}>
-          <ArrowRightLeft className="mr-1.5 size-4" />
-          Redrive to…
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsAttachLambdaOpen(true)}
-          title="Attach this SQS queue as a Lambda trigger"
-        >
-          <Zap className="mr-1.5 size-4 text-amber-500" />
-          Attach Lambda
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Queue actions">
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => setIsPurgeOpen(true)}
-            >
-              Purge queue…
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setIsAttachLambdaOpen(true)}>
-              Attach Lambda trigger…
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                <ArrowRightLeft className="mr-2 size-4" />
+                Redrive to…
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => setIsPurgeOpen(true)}
+              >
+                Purge queue…
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+
+      {/* Secondary metadata bar: DLQ and Attached Lambda Triggers */}
+      {(queue.attributes.dlqName || (attachedTriggers && attachedTriggers.length > 0)) && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b bg-muted/25 px-4 py-2 text-xs">
+          {queue.attributes.dlqName && (
+            <button
+              type="button"
+              onClick={() => {
+                const dlq = queue.attributes.dlqName!;
+                openTab({
+                  id: `queue:${dlq}`,
+                  kind: "queue",
+                  queueName: dlq,
+                  title: dlq,
+                });
+              }}
+              className="inline-flex items-center gap-1.5 rounded-md bg-muted/60 hover:bg-muted px-2 py-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 whitespace-nowrap"
+            >
+              Dead-letter queue: {queue.attributes.dlqName}
+            </button>
+          )}
+
+          {attachedTriggers && attachedTriggers.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-muted-foreground font-medium flex items-center gap-1 shrink-0 whitespace-nowrap">
+                <Zap className="size-3 text-amber-500" />
+                Attached Lambda:
+              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {attachedTriggers.map((t) => (
+                  <button
+                    key={t.uuid}
+                    type="button"
+                    onClick={() =>
+                      openTab({
+                        id: `function:${t.functionName}`,
+                        kind: "function",
+                        functionName: t.functionName,
+                        title: t.functionName,
+                      })
+                    }
+                    className="inline-flex items-center gap-1.5 rounded border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 font-mono text-xs text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition-colors whitespace-nowrap shrink-0"
+                    title={`Attached to Lambda: ${t.functionName} (${t.state}) — click to view function`}
+                  >
+                    <span className="font-semibold">{t.functionName}</span>
+                    <Badge
+                      variant={t.state === "Enabled" ? "secondary" : "outline"}
+                      className="text-[9px] px-1 py-0 h-4 border-amber-500/30"
+                    >
+                      {t.state}
+                    </Badge>
+                  </button>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                  onClick={() => setIsAttachLambdaOpen(true)}
+                >
+                  + Attach another
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Body */}
       {peeked === null ? (
