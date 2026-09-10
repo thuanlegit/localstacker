@@ -10,6 +10,7 @@ import {
   updateFunctionEnvVars,
   type LambdaFunctionSummary,
   type LambdaFunctionConfig,
+  type EventSourceMappingSummary,
 } from "@/lib/lambda";
 
 vi.mock("@/lib/lambda", async (importOriginal) => {
@@ -57,7 +58,11 @@ const demoConfig: LambdaFunctionConfig = {
 
 let currentFunctions: LambdaFunctionSummary[] = [demoFunction];
 let currentConfig: LambdaFunctionConfig | null = demoConfig;
+let currentTriggers: EventSourceMappingSummary[] = [];
 
+const mockCreateMapping = vi.fn().mockResolvedValue({ uuid: "new-uuid" });
+const mockUpdateMapping = vi.fn().mockResolvedValue(true);
+const mockDeleteMapping = vi.fn().mockResolvedValue(true);
 vi.mock("@/hooks/use-lambda", () => ({
   useLambdaClient: () => mockClient,
   useFunctions: () => ({
@@ -74,9 +79,24 @@ vi.mock("@/hooks/use-lambda", () => ({
     error: null,
     refetch: vi.fn(),
   }),
+  useEventSourceMappings: () => ({
+    data: currentTriggers,
+    isLoading: false,
+    refetch: vi.fn(),
+  }),
+  useEventSourceMappingActions: () => ({
+    createMapping: mockCreateMapping,
+    updateMapping: mockUpdateMapping,
+    deleteMapping: mockDeleteMapping,
+  }),
   lambdaKeys: {
     functions: (id: string) => ["lambda", "functions", id],
     config: (id: string, name: string) => ["lambda", "config", id, name],
+    eventSourceMappings: (...args: unknown[]) => [
+      "lambda",
+      "eventSourceMappings",
+      ...args,
+    ],
   },
 }));
 
@@ -85,6 +105,7 @@ describe("FunctionView", () => {
     vi.clearAllMocks();
     currentFunctions = [demoFunction];
     currentConfig = demoConfig;
+    currentTriggers = [];
     useProfiles.setState({
       profiles: [{ ...localProfile(), region: "us-east-1" }],
       activeProfileId: LOCAL_PROFILE_ID,
@@ -229,5 +250,53 @@ describe("FunctionView", () => {
           t.logGroupName === "/aws/lambda/hello",
       ),
     ).toBe(true);
+  });
+
+  it("renders triggers section and displays triggers", () => {
+    currentTriggers = [
+      {
+        uuid: "esm-1",
+        functionArn: "arn:aws:lambda:us-east-1:000000000000:function:hello",
+        functionName: "hello",
+        eventSourceArn: "arn:aws:sqs:us-east-1:000000000000:orders-queue",
+        batchSize: 10,
+        maximumBatchingWindowInSeconds: 5,
+        state: "Enabled",
+        service: "sqs",
+        resourceName: "orders-queue",
+      },
+    ];
+
+    renderWithProviders(<FunctionView functionName="hello" />);
+    expect(screen.getByText("Triggers & Event Sources")).toBeInTheDocument();
+    expect(screen.getByText("orders-queue")).toBeInTheDocument();
+    expect(screen.getByText("10 msgs")).toBeInTheDocument();
+    expect(screen.getByText("5s")).toBeInTheDocument();
+    expect(screen.getByText("Enabled")).toBeInTheDocument();
+
+    // Toggle trigger
+    const disableBtn = screen.getByRole("button", { name: /Disable/i });
+    fireEvent.click(disableBtn);
+    expect(mockUpdateMapping).toHaveBeenCalledWith({
+      uuid: "esm-1",
+      functionName: "hello",
+      enabled: false,
+    });
+
+    // Delete trigger
+    const deleteBtn = screen.getByRole("button", {
+      name: /Delete trigger orders-queue/i,
+    });
+    fireEvent.click(deleteBtn);
+    const confirmDialog = screen.getByRole("dialog");
+    expect(
+      within(confirmDialog).getByText(/Delete Event Source Trigger/i),
+    ).toBeInTheDocument();
+
+    const confirmBtn = within(confirmDialog).getByRole("button", {
+      name: "Delete trigger",
+    });
+    fireEvent.click(confirmBtn);
+    expect(mockDeleteMapping).toHaveBeenCalledWith("esm-1");
   });
 });

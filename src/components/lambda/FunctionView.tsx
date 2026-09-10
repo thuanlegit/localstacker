@@ -8,8 +8,11 @@ import {
   Maximize2,
   Play,
   Plus,
+  Power,
+  Radio,
   RotateCw,
   ScrollText,
+  Trash2,
   Variable,
   X,
   Zap,
@@ -27,6 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { ServiceDisabledView } from "@/components/ServiceDisabledView";
 import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
@@ -36,13 +40,17 @@ import {
   useFunctions,
   useFunctionConfig,
   useLambdaClient,
+  useEventSourceMappings,
+  useEventSourceMappingActions,
 } from "@/hooks/use-lambda";
 import {
   invokeFunction,
   updateFunctionEnvVars,
   type InvocationResult,
+  type EventSourceMappingSummary,
 } from "@/lib/lambda";
 import { formatBytes, formatDate } from "@/lib/format";
+import { AddTriggerDialog } from "./AddTriggerDialog";
 
 function toErrorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -499,6 +507,46 @@ export function FunctionView({ functionName }: { functionName: string }) {
 
   const [isInvokeOpen, setIsInvokeOpen] = useState(false);
   const [isEnvOpen, setIsEnvOpen] = useState(false);
+  const [isAddTriggerOpen, setIsAddTriggerOpen] = useState(false);
+  const [triggerToDelete, setTriggerToDelete] =
+    useState<EventSourceMappingSummary | null>(null);
+  const [isDeletingTrigger, setIsDeletingTrigger] = useState(false);
+  const [togglingUuid, setTogglingUuid] = useState<string | null>(null);
+
+  const {
+    data: triggers,
+    isLoading: isTriggersLoading,
+    refetch: refetchTriggers,
+  } = useEventSourceMappings(
+    { functionName },
+    { enabled: serviceStatus !== "disabled" && !!functionName },
+  );
+  const { deleteMapping, updateMapping } = useEventSourceMappingActions();
+
+  const handleToggleTrigger = async (trigger: EventSourceMappingSummary) => {
+    const nextEnabled = trigger.state !== "Enabled";
+    setTogglingUuid(trigger.uuid);
+    try {
+      await updateMapping({
+        uuid: trigger.uuid,
+        functionName,
+        enabled: nextEnabled,
+      });
+    } finally {
+      setTogglingUuid(null);
+    }
+  };
+
+  const handleDeleteTrigger = async () => {
+    if (!triggerToDelete) return;
+    setIsDeletingTrigger(true);
+    try {
+      await deleteMapping(triggerToDelete.uuid);
+      setTriggerToDelete(null);
+    } finally {
+      setIsDeletingTrigger(false);
+    }
+  };
 
   if (
     serviceStatus === "disabled" ||
@@ -721,6 +769,159 @@ export function FunctionView({ functionName }: { functionName: string }) {
             </div>
           )}
         </div>
+
+        {/* Event Source Mappings / Triggers */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase text-muted-foreground">
+                Triggers & Event Sources
+              </span>
+              <Badge variant="secondary" className="font-mono text-xs">
+                {triggers?.length ?? 0}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7"
+                aria-label="Refresh triggers"
+                onClick={() => refetchTriggers()}
+              >
+                <RotateCw className="size-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => setIsAddTriggerOpen(true)}
+              >
+                <Plus className="mr-1.5 size-3.5" />
+                Add trigger
+              </Button>
+            </div>
+          </div>
+
+          {isTriggersLoading ? (
+            <div className="flex justify-center p-4">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : !triggers || triggers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
+              <Radio className="size-6 text-muted-foreground mb-2" />
+              <p className="text-xs font-medium text-foreground">
+                No event source triggers configured
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground max-w-sm">
+                Attach an SQS queue to invoke this Lambda function automatically whenever messages arrive.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 text-xs"
+                onClick={() => setIsAddTriggerOpen(true)}
+              >
+                <Plus className="mr-1.5 size-3.5" />
+                Add SQS Trigger
+              </Button>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border/40 text-xs font-semibold uppercase text-muted-foreground">
+                    <th className="px-3 py-2 font-medium">Source</th>
+                    <th className="px-3 py-2 font-medium">Batch Size</th>
+                    <th className="px-3 py-2 font-medium">Batch Window</th>
+                    <th className="px-3 py-2 font-medium">Status</th>
+                    <th className="px-3 py-2 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {triggers.map((trigger) => {
+                    const isEnabled = trigger.state === "Enabled";
+                    const isToggling = togglingUuid === trigger.uuid;
+
+                    return (
+                      <tr
+                        key={trigger.uuid}
+                        className="border-b border-border/20 last:border-0 hover:bg-muted/30"
+                      >
+                        <td className="px-3 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={trigger.service === "sqs" ? "secondary" : "outline"}
+                              className="text-[10px] uppercase font-mono px-1.5 py-0"
+                            >
+                              {trigger.service}
+                            </Badge>
+                            <span
+                              className="font-mono text-xs font-medium text-foreground truncate max-w-[200px]"
+                              title={trigger.eventSourceArn}
+                            >
+                              {trigger.resourceName}
+                            </span>
+                          </div>
+                          <p
+                            className="text-[11px] font-mono text-muted-foreground truncate max-w-[320px] mt-0.5"
+                            title={trigger.eventSourceArn}
+                          >
+                            {trigger.eventSourceArn}
+                          </p>
+                        </td>
+                        <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground">
+                          {trigger.batchSize ?? 10} msgs
+                        </td>
+                        <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground">
+                          {trigger.maximumBatchingWindowInSeconds ?? 0}s
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <Badge
+                            variant={isEnabled ? "default" : "outline"}
+                            className="text-[10px] font-mono px-1.5 py-0"
+                          >
+                            {trigger.state}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-2.5 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground"
+                              disabled={isToggling}
+                              onClick={() => handleToggleTrigger(trigger)}
+                              title={isEnabled ? "Disable trigger" : "Enable trigger"}
+                            >
+                              {isToggling ? (
+                                <Loader2 className="size-3.5 animate-spin" />
+                              ) : (
+                                <Power className={`size-3.5 ${isEnabled ? "text-green-500" : "text-muted-foreground"}`} />
+                              )}
+                              <span className="hidden sm:inline">
+                                {isEnabled ? "Disable" : "Enable"}
+                              </span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground hover:text-destructive"
+                              aria-label={`Delete trigger ${trigger.resourceName}`}
+                              onClick={() => setTriggerToDelete(trigger)}
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
 
       <InvokeDialog
@@ -734,6 +935,22 @@ export function FunctionView({ functionName }: { functionName: string }) {
         onOpenChange={setIsEnvOpen}
         functionName={functionName}
         initialEnvVars={envVars}
+      />
+
+      <AddTriggerDialog
+        open={isAddTriggerOpen}
+        onOpenChange={setIsAddTriggerOpen}
+        functionName={functionName}
+      />
+
+      <DeleteConfirmDialog
+        open={Boolean(triggerToDelete)}
+        onOpenChange={(open) => !open && setTriggerToDelete(null)}
+        title="Delete Event Source Trigger"
+        description={`Are you sure you want to delete the trigger for "${triggerToDelete?.resourceName}"? The Lambda function will no longer be invoked by this event source.`}
+        confirmLabel="Delete trigger"
+        isPending={isDeletingTrigger}
+        onConfirm={handleDeleteTrigger}
       />
     </div>
   );

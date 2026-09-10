@@ -11,6 +11,7 @@ import {
   Plus,
   RotateCw,
   Trash2,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,8 @@ import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
 import { sqsKeys, useQueues, useSqsClient } from "@/hooks/use-sqs";
+import { useEventSourceMappings } from "@/hooks/use-lambda";
+import { AttachLambdaDialog } from "./AttachLambdaDialog";
 import {
   deleteMessage,
   peekMessages,
@@ -308,8 +311,13 @@ export function QueueView({ queueName }: QueueViewProps) {
   const [isRedriveOpen, setIsRedriveOpen] = useState(false);
   const [isPurgeOpen, setIsPurgeOpen] = useState(false);
   const [isPurging, setIsPurging] = useState(false);
+  const [isAttachLambdaOpen, setIsAttachLambdaOpen] = useState(false);
 
   const [peeked, setPeeked] = useState<PeekedMessage[] | null>(null);
+  const { data: attachedTriggers } = useEventSourceMappings(
+    { eventSourceArn: queue?.attributes.arn },
+    { enabled: Boolean(queue?.attributes.arn) },
+  );
   const [messageToDelete, setMessageToDelete] = useState<PeekedMessage | null>(null);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
@@ -465,6 +473,30 @@ export function QueueView({ queueName }: QueueViewProps) {
           </button>
         )}
 
+        {attachedTriggers && attachedTriggers.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            {attachedTriggers.map((t) => (
+              <button
+                key={t.uuid}
+                type="button"
+                onClick={() =>
+                  openTab({
+                    id: `function:${t.functionName}`,
+                    kind: "function",
+                    functionName: t.functionName,
+                    title: t.functionName,
+                  })
+                }
+                className="flex items-center gap-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 text-xs hover:bg-amber-500/20"
+                title={`Attached to Lambda: ${t.functionName} (${t.state}) — click to view function`}
+              >
+                <Zap className="size-3" />
+                <span className="font-mono">{t.functionName}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex-1" />
 
         <Button
@@ -492,6 +524,15 @@ export function QueueView({ queueName }: QueueViewProps) {
           Redrive to…
         </Button>
 
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsAttachLambdaOpen(true)}
+          title="Attach this SQS queue as a Lambda trigger"
+        >
+          <Zap className="mr-1.5 size-4 text-amber-500" />
+          Attach Lambda
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Queue actions">
@@ -504,6 +545,9 @@ export function QueueView({ queueName }: QueueViewProps) {
               onSelect={() => setIsPurgeOpen(true)}
             >
               Purge queue…
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setIsAttachLambdaOpen(true)}>
+              Attach Lambda trigger…
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -642,6 +686,14 @@ export function QueueView({ queueName }: QueueViewProps) {
         isPending={isPurging}
         onConfirm={handlePurge}
       />
+
+      {queue && (
+        <AttachLambdaDialog
+          open={isAttachLambdaOpen}
+          onOpenChange={setIsAttachLambdaOpen}
+          queue={queue}
+        />
+      )}
     </div>
   );
 }

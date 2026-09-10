@@ -163,9 +163,20 @@ vi.mock("@/hooks/use-lambda", () => ({
     error: null,
     refetch: vi.fn(),
   })),
+  useEventSourceMappings: vi.fn(() => ({
+    data: [],
+    isLoading: false,
+    refetch: vi.fn(),
+  })),
+  useEventSourceMappingActions: vi.fn(() => ({
+    createMapping: vi.fn(),
+    updateMapping: vi.fn(),
+    deleteMapping: vi.fn(),
+  })),
   lambdaKeys: {
     functions: (id: string) => ["lambda", "functions", id],
     config: (id: string, name: string) => ["lambda", "config", id, name],
+    eventSourceMappings: (...args: unknown[]) => ["lambda", "eventSourceMappings", ...args],
   },
 }));
 

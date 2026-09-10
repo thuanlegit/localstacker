@@ -9,6 +9,11 @@ import {
   createDemoFunction,
   deleteFunction,
   buildStarterZip,
+  listEventSourceMappings,
+  createEventSourceMapping,
+  updateEventSourceMapping,
+  deleteEventSourceMapping,
+  parseEventSourceArn,
 } from "./lambda";
 
 describe("lambda data plane", () => {
@@ -312,6 +317,172 @@ describe("lambda data plane", () => {
       expect(send).toHaveBeenCalledOnce();
       expect(send.mock.calls[0][0].input).toEqual({
         FunctionName: "to-delete",
+      });
+    });
+  });
+
+  describe("parseEventSourceArn", () => {
+    it("parses SQS ARN correctly", () => {
+      const res = parseEventSourceArn(
+        "arn:aws:sqs:us-east-1:000000000000:my-test-queue",
+      );
+      expect(res).toEqual({
+        service: "sqs",
+        resourceName: "my-test-queue",
+      });
+    });
+
+    it("parses DynamoDB stream ARN correctly", () => {
+      const res = parseEventSourceArn(
+        "arn:aws:dynamodb:us-east-1:000000000000:table/my-table/stream/2026-09-10",
+      );
+      expect(res).toEqual({
+        service: "dynamodb",
+        resourceName: "my-table",
+      });
+    });
+
+    it("handles unknown ARN gracefully", () => {
+      const res = parseEventSourceArn("arn:aws:unknown:us-east-1:000000000000:custom");
+      expect(res).toEqual({
+        service: "unknown",
+        resourceName: "custom",
+      });
+    });
+  });
+
+  describe("listEventSourceMappings", () => {
+    it("lists and maps event source mappings", async () => {
+      const send = vi.fn().mockResolvedValue({
+        EventSourceMappings: [
+          {
+            UUID: "uuid-1",
+            FunctionArn: "arn:aws:lambda:us-east-1:000000000000:function:my-fn",
+            EventSourceArn: "arn:aws:sqs:us-east-1:000000000000:my-queue",
+            BatchSize: 10,
+            State: "Enabled",
+            LastModified: new Date("2026-09-10T12:00:00.000Z"),
+            MaximumBatchingWindowInSeconds: 0,
+          },
+        ],
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const mappings = await listEventSourceMappings(client, {
+        functionName: "my-fn",
+      });
+
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0][0].input).toEqual({ FunctionName: "my-fn" });
+      expect(mappings).toEqual([
+        {
+          uuid: "uuid-1",
+          functionArn: "arn:aws:lambda:us-east-1:000000000000:function:my-fn",
+          functionName: "my-fn",
+          eventSourceArn: "arn:aws:sqs:us-east-1:000000000000:my-queue",
+          batchSize: 10,
+          state: "Enabled",
+          lastModified: new Date("2026-09-10T12:00:00.000Z"),
+          maximumBatchingWindowInSeconds: 0,
+          service: "sqs",
+          resourceName: "my-queue",
+        },
+      ]);
+    });
+
+    it("paginates when NextMarker is returned", async () => {
+      const send = vi
+        .fn()
+        .mockResolvedValueOnce({
+          EventSourceMappings: [
+            {
+              UUID: "uuid-1",
+              FunctionArn: "arn:aws:lambda:us-east-1:000000000000:function:fn-1",
+              EventSourceArn: "arn:aws:sqs:us-east-1:000000000000:q-1",
+            },
+          ],
+          NextMarker: "next-token",
+        })
+        .mockResolvedValueOnce({
+          EventSourceMappings: [
+            {
+              UUID: "uuid-2",
+              FunctionArn: "arn:aws:lambda:us-east-1:000000000000:function:fn-2",
+              EventSourceArn: "arn:aws:sqs:us-east-1:000000000000:q-2",
+            },
+          ],
+        });
+      const client = { send } as unknown as LambdaClient;
+
+      const mappings = await listEventSourceMappings(client);
+      expect(send).toHaveBeenCalledTimes(2);
+      expect(mappings.map((m) => m.uuid)).toEqual(["uuid-1", "uuid-2"]);
+    });
+  });
+
+  describe("createEventSourceMapping", () => {
+    it("creates an SQS trigger with batch size and enabled flag", async () => {
+      const send = vi.fn().mockResolvedValue({
+        UUID: "new-uuid",
+        State: "Creating",
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const res = await createEventSourceMapping(client, {
+        functionName: "my-fn",
+        eventSourceArn: "arn:aws:sqs:us-east-1:000000000000:my-queue",
+        batchSize: 5,
+        enabled: true,
+        maximumBatchingWindowInSeconds: 10,
+      });
+
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0][0].input).toEqual({
+        FunctionName: "my-fn",
+        EventSourceArn: "arn:aws:sqs:us-east-1:000000000000:my-queue",
+        BatchSize: 5,
+        Enabled: true,
+        MaximumBatchingWindowInSeconds: 10,
+      });
+      expect(res).toEqual({ uuid: "new-uuid", state: "Creating" });
+    });
+  });
+
+  describe("updateEventSourceMapping", () => {
+    it("updates enabled state and batch size", async () => {
+      const send = vi.fn().mockResolvedValue({
+        UUID: "uuid-1",
+        State: "Updating",
+      });
+      const client = { send } as unknown as LambdaClient;
+
+      const res = await updateEventSourceMapping(client, {
+        uuid: "uuid-1",
+        functionName: "my-fn",
+        enabled: false,
+        batchSize: 20,
+      });
+
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0][0].input).toEqual({
+        UUID: "uuid-1",
+        FunctionName: "my-fn",
+        Enabled: false,
+        BatchSize: 20,
+      });
+      expect(res).toEqual({ uuid: "uuid-1", state: "Updating" });
+    });
+  });
+
+  describe("deleteEventSourceMapping", () => {
+    it("deletes event source mapping by UUID", async () => {
+      const send = vi.fn().mockResolvedValue({});
+      const client = { send } as unknown as LambdaClient;
+
+      await deleteEventSourceMapping(client, "uuid-to-delete");
+      expect(send).toHaveBeenCalledOnce();
+      expect(send.mock.calls[0][0].input).toEqual({
+        UUID: "uuid-to-delete",
       });
     });
   });

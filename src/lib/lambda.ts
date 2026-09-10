@@ -1,9 +1,14 @@
 import {
+  CreateEventSourceMappingCommand,
   CreateFunctionCommand,
+  DeleteEventSourceMappingCommand,
   DeleteFunctionCommand,
   GetFunctionConfigurationCommand,
   InvokeCommand,
+  ListEventSourceMappingsCommand,
+  type ListEventSourceMappingsCommandOutput,
   ListFunctionsCommand,
+  UpdateEventSourceMappingCommand,
   UpdateFunctionConfigurationCommand,
   type LambdaClient,
   type Runtime,
@@ -271,4 +276,154 @@ export async function deleteFunction(
   name: string,
 ): Promise<void> {
   await client.send(new DeleteFunctionCommand({ FunctionName: name }));
+}
+
+export interface EventSourceMappingSummary {
+  uuid: string;
+  functionArn: string;
+  functionName: string;
+  eventSourceArn: string;
+  batchSize?: number;
+  state: string;
+  lastModified?: Date;
+  maximumBatchingWindowInSeconds?: number;
+  service: "sqs" | "dynamodb" | "kinesis" | "unknown";
+  resourceName: string;
+}
+
+export function parseEventSourceArn(arn: string): {
+  service: "sqs" | "dynamodb" | "kinesis" | "unknown";
+  resourceName: string;
+} {
+  const parts = arn.split(":");
+  const svc = parts[2] ?? "";
+  if (svc === "sqs") {
+    const queueName = parts[5] ?? "";
+    return { service: "sqs", resourceName: queueName };
+  }
+  if (svc === "dynamodb") {
+    // arn:aws:dynamodb:region:account:table/TableName/stream/...
+    const resource = parts[5] ?? "";
+    const segments = resource.split("/");
+    const tableName = segments[1] ?? resource;
+    return { service: "dynamodb", resourceName: tableName };
+  }
+  if (svc === "kinesis") {
+    // arn:aws:kinesis:region:account:stream/StreamName
+    const resource = parts[5] ?? "";
+    const segments = resource.split("/");
+    const streamName = segments[1] ?? resource;
+    return { service: "kinesis", resourceName: streamName };
+  }
+  const lastPart = parts[parts.length - 1] ?? "";
+  const resourceName = lastPart.includes("/")
+    ? lastPart.split("/").pop() ?? lastPart
+    : lastPart;
+  return { service: "unknown", resourceName };
+}
+
+export async function listEventSourceMappings(
+  client: LambdaClient,
+  params?: { functionName?: string; eventSourceArn?: string },
+): Promise<EventSourceMappingSummary[]> {
+  const mappings: EventSourceMappingSummary[] = [];
+  let marker: string | undefined = undefined;
+
+  do {
+    const res: ListEventSourceMappingsCommandOutput = await client.send(
+      new ListEventSourceMappingsCommand({
+        FunctionName: params?.functionName,
+        EventSourceArn: params?.eventSourceArn,
+        Marker: marker,
+      }),
+    );
+
+    for (const m of res.EventSourceMappings ?? []) {
+      if (!m.UUID) continue;
+      const fnArn = m.FunctionArn ?? "";
+      const fnName = fnArn.includes(":") ? fnArn.split(":").pop() ?? fnArn : fnArn;
+      const eventSourceArn = m.EventSourceArn ?? "";
+      const parsed = parseEventSourceArn(eventSourceArn);
+
+      mappings.push({
+        uuid: m.UUID,
+        functionArn: fnArn,
+        functionName: fnName,
+        eventSourceArn,
+        batchSize: m.BatchSize,
+        state: m.State ?? "Unknown",
+        lastModified: m.LastModified ? new Date(m.LastModified) : undefined,
+        maximumBatchingWindowInSeconds: m.MaximumBatchingWindowInSeconds,
+        service: parsed.service,
+        resourceName: parsed.resourceName,
+      });
+    }
+
+    marker = res.NextMarker;
+  } while (marker);
+
+  return mappings;
+}
+
+export async function createEventSourceMapping(
+  client: LambdaClient,
+  params: {
+    functionName: string;
+    eventSourceArn: string;
+    batchSize?: number;
+    enabled?: boolean;
+    maximumBatchingWindowInSeconds?: number;
+  },
+): Promise<{ uuid: string; state?: string }> {
+  const res = await client.send(
+    new CreateEventSourceMappingCommand({
+      FunctionName: params.functionName,
+      EventSourceArn: params.eventSourceArn,
+      BatchSize: params.batchSize,
+      Enabled: params.enabled,
+      MaximumBatchingWindowInSeconds: params.maximumBatchingWindowInSeconds,
+    }),
+  );
+
+  if (!res.UUID) {
+    throw new Error("CreateEventSourceMapping returned no UUID");
+  }
+
+  return {
+    uuid: res.UUID,
+    state: res.State,
+  };
+}
+
+export async function updateEventSourceMapping(
+  client: LambdaClient,
+  params: {
+    uuid: string;
+    functionName?: string;
+    enabled?: boolean;
+    batchSize?: number;
+    maximumBatchingWindowInSeconds?: number;
+  },
+): Promise<{ uuid: string; state?: string }> {
+  const res = await client.send(
+    new UpdateEventSourceMappingCommand({
+      UUID: params.uuid,
+      FunctionName: params.functionName,
+      Enabled: params.enabled,
+      BatchSize: params.batchSize,
+      MaximumBatchingWindowInSeconds: params.maximumBatchingWindowInSeconds,
+    }),
+  );
+
+  return {
+    uuid: res.UUID ?? params.uuid,
+    state: res.State,
+  };
+}
+
+export async function deleteEventSourceMapping(
+  client: LambdaClient,
+  uuid: string,
+): Promise<void> {
+  await client.send(new DeleteEventSourceMappingCommand({ UUID: uuid }));
 }
