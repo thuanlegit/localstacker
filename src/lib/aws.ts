@@ -9,6 +9,8 @@ import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { SNSClient } from "@aws-sdk/client-sns";
 import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
 import { SSMClient } from "@aws-sdk/client-ssm";
+import { EventBridgeClient } from "@aws-sdk/client-eventbridge";
+import { SchedulerClient } from "@aws-sdk/client-scheduler";
 import type { ConnectionProfile } from "@/types";
 
 /** LocalStack ignores SigV4 identity, but SDKs require credentials to sign. */
@@ -50,6 +52,8 @@ export interface ServiceClients {
   sns: SNSClient;
   logs: CloudWatchLogsClient;
   ssm: SSMClient;
+  eventbridge: EventBridgeClient;
+  scheduler: SchedulerClient;
 }
 
 export function makeClients(profile: ConnectionProfile): ServiceClients {
@@ -65,5 +69,7 @@ export function makeClients(profile: ConnectionProfile): ServiceClients {
     sns: new SNSClient(config),
     logs: new CloudWatchLogsClient(config),
     ssm: new SSMClient(config),
+    eventbridge: new EventBridgeClient(config),
+    scheduler: new SchedulerClient(config),
   };
 }
