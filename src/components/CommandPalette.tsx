@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, Database, HardDrive, KeyRound, ListOrdered, ListTree, Moon, Network, Radio, ScrollText, Sun, Webhook, Zap } from "lucide-react";
+import { CalendarClock, Database, HardDrive, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, Sun, Webhook, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -24,6 +24,7 @@ import { useParameters } from "@/hooks/use-ssm";
 import { useEventBuses } from "@/hooks/use-eventbridge";
 import { useScheduleGroups } from "@/hooks/use-scheduler";
 import { useRestApis } from "@/hooks/use-apigateway";
+import { useIdentities } from "@/hooks/use-ses";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -40,6 +41,7 @@ export function CommandPalette() {
   const { data: buses } = useEventBuses(profile.id, { enabled: open });
   const { data: scheduleGroups } = useScheduleGroups(profile.id, { enabled: open });
   const { data: restApis } = useRestApis(profile.id, { enabled: open });
+  const { data: identities } = useIdentities(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -329,6 +331,42 @@ export function CommandPalette() {
             ))}
           </CommandGroup>
         )}
+        <CommandGroup heading="SES">
+          <CommandItem
+            value="SES Captured Mailbox"
+            onSelect={() =>
+              run(() =>
+                openTab({
+                  id: "sesMailbox:captured",
+                  kind: "sesMailbox",
+                  title: "SES Mailbox",
+                }),
+              )
+            }
+          >
+            <Inbox />
+            Captured mailbox
+          </CommandItem>
+          {identities?.map((id) => (
+            <CommandItem
+              key={id.identity}
+              value={`SES identity ${id.identity}`}
+              onSelect={() =>
+                run(() =>
+                  openTab({
+                    id: `sesIdentity:${id.identity}`,
+                    kind: "sesIdentity",
+                    identityName: id.identity,
+                    title: id.identity,
+                  }),
+                )
+              }
+            >
+              <Mail />
+              {id.identity}
+            </CommandItem>
+          ))}
+        </CommandGroup>
         <CommandGroup heading="Preferences">
           <CommandItem
             value="Toggle theme"

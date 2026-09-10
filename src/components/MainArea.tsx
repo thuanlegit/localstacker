@@ -32,6 +32,9 @@ import { SchedulerServiceView } from "@/components/scheduler/SchedulerServiceVie
 import { ScheduleGroupView } from "@/components/scheduler/ScheduleGroupView";
 import { ApigatewayServiceView } from "@/components/apigateway/ApigatewayServiceView";
 import { RestApiView } from "@/components/apigateway/RestApiView";
+import { SesServiceView } from "@/components/ses/SesServiceView";
+import { IdentityView } from "@/components/ses/IdentityView";
+import { SesMailboxView } from "@/components/ses/SesMailboxView";
 
 function EmptyState() {
   return (
@@ -207,6 +210,12 @@ export function MainArea() {
             <ApigatewayServiceView />
           ) : tab.kind === "restApi" && tab.restApiId ? (
             <RestApiView restApiId={tab.restApiId} />
+          ) : tab.kind === "service" && tab.service === "ses" ? (
+            <SesServiceView />
+          ) : tab.kind === "sesIdentity" && tab.identityName ? (
+            <IdentityView identityName={tab.identityName} />
+          ) : tab.kind === "sesMailbox" ? (
+            <SesMailboxView />
           ) : null}
         </TabsContent>
       ))}
