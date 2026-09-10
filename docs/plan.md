@@ -148,7 +148,7 @@ Notes:
   - IAM: `@aws-sdk/client-iam`, roles list, trust relationship & policies inspector (syntax-highlighted JSON viewer), inline policy editor with client-side JSON validation, user management with access keys list, status toggling, and credential copy helper (.env format).
   - Route53: `@aws-sdk/client-route-53`, hosted zones (public/private) list, virtualized ResourceRecordSets grid powered by `@tanstack/react-virtual` (A, CNAME, TXT, MX, etc.), create/edit/delete DNS records with TTL and type-specific value validation, apex record protection.
   - E2E Playwright test: create IAM role with inline policy, assert policy JSON rendered; create user, generate and deactivate access key; create hosted zone, add A and CNAME record sets, edit TTL, assert in grid, delete records and zone.
-- **M10 — EC2 Mock (Compute & Network Mock)**:
+- **M10 — EC2 Mock (Compute & Network Mock)** (Shipped ✅):
   - EC2: `@aws-sdk/client-ec2`, instances list with mock state transitions (Start, Stop, Reboot, Terminate), Key Pairs manager (create with `.pem` download, delete), Security Groups list with visual Inbound/Outbound rule matrix visualizer, Authorize/Revoke ingress/egress rules.
   - E2E Playwright test: create security group, add ingress rule for port 443, assert in rule matrix, revoke rule; create key pair, assert fingerprint, delete key pair and security group.
 - **v1.1 — Docker Lifecycle Management**:

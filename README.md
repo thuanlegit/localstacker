@@ -47,6 +47,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **SES** | Verified email & domain identities, send test email modal, **LocalStack Captured Mailbox** with HTML, plaintext, raw MIME, and attachment tabs |
 | **IAM** | Roles, users, and policies listing, trust relationship policy inspector, inline policy editor with syntax-highlighted JSON viewer, user access keys manager (.env copy helper) |
 | **Route 53** | Hosted zones explorer (public/private), virtualized ResourceRecordSets grid (@tanstack/react-virtual), DNS records editor (A, AAAA, CNAME, TXT, MX, etc.) with TTL & value validation |
+| **EC2** | Instances list with mock state transitions (Start, Stop, Reboot, Terminate), Key Pairs manager (create with .pem download, delete), Security Groups list with visual Inbound/Outbound rule matrix visualizer, Authorize/Revoke ingress & egress rules |
 
 ### S3 Object Preview
 ![S3 Object Preview](docs/screenshots/s3-bucket.png)
@@ -84,6 +85,12 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 ### Route 53 Hosted Zone & DNS Records Grid
 ![Route 53 Hosted Zone & DNS Records Grid](docs/screenshots/route53-zone.png)
 
+### EC2 Security Group Rule Matrix
+![EC2 Security Group Rule Matrix](docs/screenshots/ec2-security-group.png)
+
+### EC2 Instances & Mock State Transitions
+![EC2 Instances](docs/screenshots/ec2-instances.png)
+
 ## Status & Roadmap
 
 **v1.0.0 shipped** ✅. Core milestones implemented and verified with end-to-end coverage:
@@ -100,7 +107,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **M7** | **EventBridge & EventBridge Scheduler** — event buses/rules, PutEvents test publisher, schedules explorer | ✅ Done |
 | **M8** | **API Gateway REST API & SES** — resource tree, method test runner, verified identities & captured mailbox viewer | ✅ Done |
 | **M9** | **IAM & Route53** — role/policy inspector, access keys, hosted zones & DNS records grid | ✅ Done |
-| **M10** | **EC2 Mock** — instance states, security groups rule matrix, key pairs | 📋 Planned |
+| **M10** | **EC2 Mock** — instance states, security groups rule matrix, key pairs | ✅ Done |
 | **v1.1** | **Docker Lifecycle** — detect, start, stop, and restart LocalStack containers via Docker socket | 🔭 Future |
 
 See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.
