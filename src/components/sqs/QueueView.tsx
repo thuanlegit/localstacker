@@ -522,16 +522,6 @@ export function QueueView({ queueName }: QueueViewProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setIsRedriveOpen(true)}
-            className="hidden md:inline-flex whitespace-nowrap"
-          >
-            <ArrowRightLeft className="mr-1.5 size-4" />
-            Redrive to…
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
             onClick={() => setIsAttachLambdaOpen(true)}
             className="hidden lg:inline-flex whitespace-nowrap"
             title="Attach this SQS queue as a Lambda trigger"
@@ -547,16 +537,13 @@ export function QueueView({ queueName }: QueueViewProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => setIsRedriveOpen(true)}>
+                <ArrowRightLeft className="mr-2 size-4" />
+                Redrive to other queue
+              </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setIsAttachLambdaOpen(true)}>
                 <Zap className="mr-2 size-4 text-amber-500" />
-                Attach Lambda trigger…
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => setIsRedriveOpen(true)}
-                className="md:hidden"
-              >
-                <ArrowRightLeft className="mr-2 size-4" />
-                Redrive to…
+                Attach Lambda
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
@@ -631,11 +618,10 @@ export function QueueView({ queueName }: QueueViewProps) {
                     >
                       <Badge
                         variant={t.state === "Enabled" ? "default" : "outline"}
-                        className={`text-[9px] px-1.5 py-0 h-4 cursor-pointer hover:opacity-80 transition-opacity ${
-                          t.state === "Enabled"
-                            ? "bg-green-600/80 hover:bg-green-600 text-white border-transparent"
-                            : "text-muted-foreground border-border bg-background/50"
-                        }`}
+                        className={`text-[9px] px-1.5 py-0 h-4 cursor-pointer hover:opacity-80 transition-opacity ${t.state === "Enabled"
+                          ? "bg-green-600/80 hover:bg-green-600 text-white border-transparent"
+                          : "text-muted-foreground border-border bg-background/50"
+                          }`}
                       >
                         {t.state}
                       </Badge>

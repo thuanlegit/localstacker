@@ -272,13 +272,21 @@ describe("QueueView", () => {
     fireEvent.click(confirmBtn);
 
     expect(purgeQueue).toHaveBeenCalledWith(mockClient, demoQueue.url);
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
   });
-
   it("redrives messages to selected target queue excluding self", async () => {
     renderWithProviders(<QueueView queueName="demo-queue" />);
+    const actionsBtn = screen.getByRole("button", { name: "Queue actions" });
+    fireEvent.keyDown(actionsBtn, { key: "ArrowDown", code: "ArrowDown" });
 
-    fireEvent.click(screen.getByRole("button", { name: /Redrive to…/i }));
-    const dialog = screen.getByRole("dialog");
+    const redriveMenuItem = await screen.findByRole("menuitem", {
+      name: /Redrive/i,
+    });
+    fireEvent.click(redriveMenuItem);
+
+    const dialog = await screen.findByRole("dialog");
     expect(
       within(dialog).getByRole("heading", { name: "Redrive messages" }),
     ).toBeInTheDocument();
