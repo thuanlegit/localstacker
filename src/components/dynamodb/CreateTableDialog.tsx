@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Plus, Sparkles } from "lucide-react";
+import { Info, Loader2, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -224,6 +224,19 @@ export function CreateTableDialog({
                   </Select>
                 </div>
               )}
+            </div>
+
+            {/* Schemaless Explainer Callout */}
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground leading-relaxed">
+              <div className="flex items-center gap-1.5 font-medium text-foreground pb-1">
+                <Info className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>Why only 1 or 2 keys?</span>
+              </div>
+              DynamoDB is a schemaless NoSQL store. Unlike SQL databases, you only
+              define primary key attributes (partition key + optional sort key)
+              at table creation. All other attributes ("columns" like name,
+              email, address, price) are added dynamically to each item when you
+              insert data.
             </div>
           </div>
 

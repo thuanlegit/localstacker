@@ -122,8 +122,9 @@ function ItemDialog({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>
-              Enter the item as a valid JSON object. Binary (B) attributes
-              cannot be expressed in JSON.
+              Enter the item as a valid JSON object. Include all primary key
+              attributes plus any custom attributes (e.g. name, email, data).
+              Binary (B) attributes cannot be expressed in JSON.
             </DialogDescription>
           </DialogHeader>
 
@@ -731,12 +732,14 @@ export function TableView({ tableName }: TableViewProps) {
         onOpenChange={setIsAddOpen}
         title="Add new item"
         initialValue={JSON.stringify(
-          Object.fromEntries(
-            table.keySchema.map((k) => [
+          Object.fromEntries([
+            ...table.keySchema.map((k) => [
               k.name,
               k.type === "N" ? 1 : `${k.name}-value`,
             ]),
-          ),
+            ["name", "Sample item"],
+            ["status", "active"],
+          ]),
           null,
           2,
         )}
