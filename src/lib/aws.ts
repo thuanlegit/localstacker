@@ -11,6 +11,8 @@ import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
 import { SSMClient } from "@aws-sdk/client-ssm";
 import { EventBridgeClient } from "@aws-sdk/client-eventbridge";
 import { SchedulerClient } from "@aws-sdk/client-scheduler";
+import { APIGatewayClient } from "@aws-sdk/client-api-gateway";
+import { SESClient } from "@aws-sdk/client-ses";
 import type { ConnectionProfile } from "@/types";
 
 /** LocalStack ignores SigV4 identity, but SDKs require credentials to sign. */
@@ -54,6 +56,8 @@ export interface ServiceClients {
   ssm: SSMClient;
   eventbridge: EventBridgeClient;
   scheduler: SchedulerClient;
+  apigateway: APIGatewayClient;
+  ses: SESClient;
 }
 
 export function makeClients(profile: ConnectionProfile): ServiceClients {
@@ -71,5 +75,7 @@ export function makeClients(profile: ConnectionProfile): ServiceClients {
     ssm: new SSMClient(config),
     eventbridge: new EventBridgeClient(config),
     scheduler: new SchedulerClient(config),
+    apigateway: new APIGatewayClient(config),
+    ses: new SESClient(config),
   };
 }

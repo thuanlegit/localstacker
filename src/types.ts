@@ -8,7 +8,9 @@ export type ServiceKind =
   | "logs"
   | "ssm"
   | "eventbridge"
-  | "scheduler";
+  | "scheduler"
+  | "apigateway"
+  | "ses";
 
 export interface ConnectionProfile {
   id: string;
@@ -35,7 +37,10 @@ export type TabKind =
   | "logGroup"
   | "parameter"
   | "eventBus"
-  | "scheduleGroup";
+  | "scheduleGroup"
+  | "restApi"
+  | "sesIdentity"
+  | "sesMailbox";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -51,5 +56,7 @@ export interface TabDescriptor {
   parameterName?: string;
   busName?: string;
   groupName?: string;
+  restApiId?: string;
+  identityName?: string;
   title: string;
 }

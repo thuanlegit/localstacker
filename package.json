@@ -16,6 +16,7 @@
     "screenshots": "playwright test --grep @screenshot"
   },
   "dependencies": {
+    "@aws-sdk/client-api-gateway": "^3.1128.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.1127.0",
     "@aws-sdk/client-dynamodb": "^3.1127.0",
     "@aws-sdk/client-eventbridge": "^3.1128.0",
@@ -23,6 +24,7 @@
     "@aws-sdk/client-s3": "^3.1127.0",
     "@aws-sdk/client-scheduler": "^3.1128.0",
     "@aws-sdk/client-secrets-manager": "^3.1127.0",
+    "@aws-sdk/client-ses": "^3.1128.0",
     "@aws-sdk/client-sns": "^3.1127.0",
     "@aws-sdk/client-sqs": "^3.1127.0",
     "@aws-sdk/client-ssm": "^3.1127.0",
