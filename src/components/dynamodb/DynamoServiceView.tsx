@@ -1,16 +1,49 @@
-import { CircleAlert, Database, Loader2, RotateCw } from "lucide-react";
+import { useState } from "react";
+import {
+  BookOpen,
+  CircleAlert,
+  Database,
+  Loader2,
+  MoreHorizontal,
+  Plus,
+  RotateCw,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { ServiceDisabledView } from "@/components/ServiceDisabledView";
 import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
-import { useTables } from "@/hooks/use-dynamodb";
+import { useTables, useTableActions } from "@/hooks/use-dynamodb";
+import { CreateTableDialog } from "./CreateTableDialog";
+import { DynamoGuideDialog } from "./DynamoGuideDialog";
+import { DynamoGuideCard } from "./DynamoGuideCard";
 
 export function DynamoServiceView() {
   const profile = useActiveProfile();
   const serviceStatus = useServiceStatus("dynamodb");
-  const { data: tables, isPending, error, refetch, isFetching } = useTables(profile.id);
+  const {
+    data: tables,
+    isPending,
+    error,
+    refetch,
+    isFetching,
+  } = useTables(profile.id);
   const openTab = useTabs((s) => s.openTab);
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [tableToDelete, setTableToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const { deleteTable } = useTableActions();
 
   if (serviceStatus === "disabled" || (error && isServiceDisabledError(error))) {
     return <ServiceDisabledView service="dynamodb" />;
@@ -23,6 +56,19 @@ export function DynamoServiceView() {
       tableName: name,
       title: name,
     });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!tableToDelete) return;
+    setIsDeleting(true);
+    try {
+      const ok = await deleteTable(tableToDelete);
+      if (ok) {
+        setTableToDelete(null);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -40,6 +86,26 @@ export function DynamoServiceView() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsGuideOpen(true)}
+            className="gap-1.5"
+            title="DynamoDB Setup & CLI/SDK Guide"
+          >
+            <BookOpen className="h-4 w-4" />
+            <span className="hidden sm:inline">Guide</span>
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => setIsCreateOpen(true)}
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Create table</span>
+          </Button>
+
           <Button
             variant="outline"
             size="sm"
@@ -72,19 +138,18 @@ export function DynamoServiceView() {
           </Button>
         </div>
       ) : !tables || tables.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-          <Database className="h-10 w-10 stroke-1" />
-          <p className="text-sm font-medium">No DynamoDB tables</p>
-          <p className="text-xs">
-            Create tables in LocalStack via AWS CLI or SDK.
-          </p>
-        </div>
+        <DynamoGuideCard
+          onCreateTable={() => setIsCreateOpen(true)}
+          onOpenGuide={() => setIsGuideOpen(true)}
+          onTableCreated={(name) => handleRowClick(name)}
+        />
       ) : (
         <div className="flex-1 overflow-auto">
           <table className="w-full text-left text-sm">
             <thead className="sticky top-0 border-b bg-muted/50 text-xs font-medium text-muted-foreground">
               <tr>
                 <th className="px-6 py-3">Name</th>
+                <th className="w-12 px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -101,13 +166,65 @@ export function DynamoServiceView() {
                     }
                   }}
                 >
-                  <td className="px-6 py-3 font-medium">{name}</td>
+                  <td className="px-6 py-3 font-medium">
+                    <span className="font-mono text-xs sm:text-sm">{name}</span>
+                  </td>
+                  <td
+                    className="px-6 py-3 text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-label={`Actions for ${name}`}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setTableToDelete(name)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete table
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+
+      {/* Dialogs */}
+      <CreateTableDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onCreated={(name) => handleRowClick(name)}
+      />
+
+      <DynamoGuideDialog
+        open={isGuideOpen}
+        onOpenChange={setIsGuideOpen}
+        onCreateTableClick={() => setIsCreateOpen(true)}
+      />
+
+      <DeleteConfirmDialog
+        open={tableToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setTableToDelete(null);
+        }}
+        title="Delete table"
+        description={`Are you sure you want to delete table "${tableToDelete}"? All items will be permanently removed. This action cannot be undone.`}
+        confirmLabel="Delete table"
+        isPending={isDeleting}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

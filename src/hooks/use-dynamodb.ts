@@ -5,9 +5,12 @@ import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { toast } from "sonner";
 import { makeClients } from "@/lib/aws";
 import { useActiveProfile } from "@/store/profiles";
+import { useTabs } from "@/store/tabs";
 import {
   listTables,
   describeTable,
+  createTable,
+  deleteTable,
   scanItems,
   queryItems,
   putItem,
@@ -15,6 +18,7 @@ import {
   clearTable,
   buildKeyCondition,
   type KeyConditionInput,
+  type CreateTableInput,
 } from "@/lib/dynamodb";
 
 function toErrorMessage(e: unknown): string {
@@ -211,5 +215,50 @@ export function useItemActions(tableName: string) {
     putItem: putItemAction,
     deleteItem: deleteItemAction,
     clearTable: clearTableAction,
+  };
+}
+
+export function useTableActions() {
+  const client = useDynamoClient();
+  const queryClient = useQueryClient();
+  const profile = useActiveProfile();
+
+  const createTableAction = async (
+    input: CreateTableInput,
+  ): Promise<{ arn?: string } | null> => {
+    try {
+      const res = await createTable(client, input);
+      toast.success(`Table "${input.name.trim()}" created`);
+      queryClient.invalidateQueries({
+        queryKey: dynamodbKeys.tables(profile.id, profile.region),
+      });
+      return res;
+    } catch (e) {
+      toast.error(`Failed to create table: ${toErrorMessage(e)}`);
+      return null;
+    }
+  };
+
+  const deleteTableAction = async (tableName: string): Promise<boolean> => {
+    try {
+      await deleteTable(client, tableName);
+      toast.success(`Table "${tableName}" deleted`);
+      queryClient.invalidateQueries({
+        queryKey: dynamodbKeys.tables(profile.id, profile.region),
+      });
+      queryClient.removeQueries({
+        queryKey: dynamodbKeys.table(profile.id, tableName, profile.region),
+      });
+      useTabs.getState().closeTab(`table:${tableName}`);
+      return true;
+    } catch (e) {
+      toast.error(`Failed to delete table: ${toErrorMessage(e)}`);
+      return false;
+    }
+  };
+
+  return {
+    createTable: createTableAction,
+    deleteTable: deleteTableAction,
   };
 }

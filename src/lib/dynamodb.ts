@@ -1,6 +1,8 @@
 import {
   ListTablesCommand,
   DescribeTableCommand,
+  CreateTableCommand,
+  DeleteTableCommand,
   type DynamoDBClient,
   type ListTablesCommandOutput,
 } from "@aws-sdk/client-dynamodb";
@@ -125,6 +127,79 @@ export async function describeTable(
     indexes,
     attributeTypes,
   };
+}
+
+export interface CreateTableInput {
+  name: string;
+  partitionKey: { name: string; type: "S" | "N" | "B" };
+  sortKey?: { name: string; type: "S" | "N" | "B" };
+}
+
+export async function createTable(
+  client: DynamoDBClient,
+  input: CreateTableInput,
+): Promise<{ arn?: string }> {
+  const name = input.name.trim();
+  if (!name) {
+    throw new Error("Table name is required");
+  }
+  const pkName = input.partitionKey.name.trim();
+  if (!pkName) {
+    throw new Error("Partition key name is required");
+  }
+
+  const attributeDefinitions: Array<{
+    AttributeName: string;
+    AttributeType: "S" | "N" | "B";
+  }> = [
+    {
+      AttributeName: pkName,
+      AttributeType: input.partitionKey.type,
+    },
+  ];
+
+  const keySchema: Array<{
+    AttributeName: string;
+    KeyType: "HASH" | "RANGE";
+  }> = [
+    {
+      AttributeName: pkName,
+      KeyType: "HASH",
+    },
+  ];
+
+  if (input.sortKey && input.sortKey.name.trim()) {
+    const skName = input.sortKey.name.trim();
+    if (skName === pkName) {
+      throw new Error("Partition key and sort key must have different names");
+    }
+    attributeDefinitions.push({
+      AttributeName: skName,
+      AttributeType: input.sortKey.type,
+    });
+    keySchema.push({
+      AttributeName: skName,
+      KeyType: "RANGE",
+    });
+  }
+
+  const res = await client.send(
+    new CreateTableCommand({
+      TableName: name,
+      AttributeDefinitions: attributeDefinitions,
+      KeySchema: keySchema,
+      BillingMode: "PAY_PER_REQUEST",
+    }),
+  );
+
+  return { arn: res.TableDescription?.TableArn };
+}
+
+export async function deleteTable(
+  client: DynamoDBClient,
+  name: string,
+): Promise<void> {
+  await client.send(new DeleteTableCommand({ TableName: name }));
 }
 
 export interface KeyConditionInput {

@@ -4,6 +4,8 @@ import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import {
   listTables,
   describeTable,
+  createTable,
+  deleteTable,
   buildKeyCondition,
   scanItems,
   queryItems,
@@ -455,5 +457,99 @@ describe("clearTable", () => {
     });
 
     expect(res.deleted).toBe(5);
+  });
+});
+
+describe("createTable", () => {
+  it("creates a table with partition key only", async () => {
+    const send = vi.fn().mockResolvedValueOnce({
+      TableDescription: {
+        TableArn: "arn:aws:dynamodb:us-east-1:000000000000:table/users",
+      },
+    });
+    const client = { send } as unknown as DynamoDBClient;
+
+    const res = await createTable(client, {
+      name: "users",
+      partitionKey: { name: "id", type: "S" },
+    });
+
+    expect(res.arn).toBe("arn:aws:dynamodb:us-east-1:000000000000:table/users");
+    expect(send).toHaveBeenCalledTimes(1);
+    const cmd = send.mock.calls[0][0];
+    expect(cmd.input).toEqual({
+      TableName: "users",
+      AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }],
+      KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+      BillingMode: "PAY_PER_REQUEST",
+    });
+  });
+
+  it("creates a table with partition and sort keys", async () => {
+    const send = vi.fn().mockResolvedValueOnce({
+      TableDescription: {
+        TableArn: "arn:aws:dynamodb:us-east-1:000000000000:table/orders",
+      },
+    });
+    const client = { send } as unknown as DynamoDBClient;
+
+    const res = await createTable(client, {
+      name: "orders",
+      partitionKey: { name: "userId", type: "S" },
+      sortKey: { name: "orderId", type: "N" },
+    });
+
+    expect(res.arn).toBe("arn:aws:dynamodb:us-east-1:000000000000:table/orders");
+    const cmd = send.mock.calls[0][0];
+    expect(cmd.input.KeySchema).toEqual([
+      { AttributeName: "userId", KeyType: "HASH" },
+      { AttributeName: "orderId", KeyType: "RANGE" },
+    ]);
+    expect(cmd.input.AttributeDefinitions).toEqual([
+      { AttributeName: "userId", AttributeType: "S" },
+      { AttributeName: "orderId", AttributeType: "N" },
+    ]);
+  });
+
+  it("rejects empty table name", async () => {
+    const client = { send: vi.fn() } as unknown as DynamoDBClient;
+    await expect(
+      createTable(client, {
+        name: "  ",
+        partitionKey: { name: "id", type: "S" },
+      }),
+    ).rejects.toThrow("Table name is required");
+  });
+
+  it("rejects empty partition key name", async () => {
+    const client = { send: vi.fn() } as unknown as DynamoDBClient;
+    await expect(
+      createTable(client, {
+        name: "users",
+        partitionKey: { name: "", type: "S" },
+      }),
+    ).rejects.toThrow("Partition key name is required");
+  });
+
+  it("rejects duplicate key names", async () => {
+    const client = { send: vi.fn() } as unknown as DynamoDBClient;
+    await expect(
+      createTable(client, {
+        name: "users",
+        partitionKey: { name: "id", type: "S" },
+        sortKey: { name: "id", type: "N" },
+      }),
+    ).rejects.toThrow("Partition key and sort key must have different names");
+  });
+});
+
+describe("deleteTable", () => {
+  it("sends DeleteTableCommand with table name", async () => {
+    const send = vi.fn().mockResolvedValueOnce({});
+    const client = { send } as unknown as DynamoDBClient;
+
+    await deleteTable(client, "users");
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][0].input).toEqual({ TableName: "users" });
   });
 });
