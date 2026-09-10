@@ -34,7 +34,8 @@ export type TabKind =
   | "topic"
   | "logGroup"
   | "parameter"
-  | "eventBus";
+  | "eventBus"
+  | "scheduleGroup";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -49,5 +50,6 @@ export interface TabDescriptor {
   logGroupName?: string;
   parameterName?: string;
   busName?: string;
+  groupName?: string;
   title: string;
 }

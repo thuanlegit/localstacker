@@ -28,6 +28,8 @@ import { SsmServiceView } from "@/components/ssm/SsmServiceView";
 import { ParameterView } from "@/components/ssm/ParameterView";
 import { EventBridgeServiceView } from "@/components/eventbridge/EventBridgeServiceView";
 import { EventBusView } from "@/components/eventbridge/EventBusView";
+import { SchedulerServiceView } from "@/components/scheduler/SchedulerServiceView";
+import { ScheduleGroupView } from "@/components/scheduler/ScheduleGroupView";
 
 function EmptyState() {
   return (
@@ -195,6 +197,10 @@ export function MainArea() {
             <EventBridgeServiceView />
           ) : tab.kind === "eventBus" && tab.busName ? (
             <EventBusView busName={tab.busName} />
+          ) : tab.kind === "service" && tab.service === "scheduler" ? (
+            <SchedulerServiceView />
+          ) : tab.kind === "scheduleGroup" && tab.groupName ? (
+            <ScheduleGroupView groupName={tab.groupName} />
           ) : null}
         </TabsContent>
       ))}

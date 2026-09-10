@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Database, HardDrive, KeyRound, ListOrdered, ListTree, Moon, Radio, ScrollText, Sun, Webhook, Zap } from "lucide-react";
+import { CalendarClock, Database, HardDrive, KeyRound, ListOrdered, ListTree, Moon, Radio, ScrollText, Sun, Webhook, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -22,6 +22,7 @@ import { useTopics } from "@/hooks/use-sns";
 import { useLogGroups } from "@/hooks/use-logs";
 import { useParameters } from "@/hooks/use-ssm";
 import { useEventBuses } from "@/hooks/use-eventbridge";
+import { useScheduleGroups } from "@/hooks/use-scheduler";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -36,6 +37,7 @@ export function CommandPalette() {
   const { data: logGroups } = useLogGroups(profile.id, { enabled: open });
   const { data: parameters } = useParameters(profile.id, { enabled: open });
   const { data: buses } = useEventBuses(profile.id, { enabled: open });
+  const { data: scheduleGroups } = useScheduleGroups(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -275,6 +277,29 @@ export function CommandPalette() {
               >
                 <Webhook />
                 {b.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {scheduleGroups && scheduleGroups.length > 0 && (
+          <CommandGroup heading="Schedule groups">
+            {scheduleGroups.map((g) => (
+              <CommandItem
+                key={g.name}
+                value={g.name}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `scheduleGroup:${g.name}`,
+                      kind: "scheduleGroup",
+                      groupName: g.name,
+                      title: g.name,
+                    }),
+                  )
+                }
+              >
+                <CalendarClock />
+                {g.name}
               </CommandItem>
             ))}
           </CommandGroup>
