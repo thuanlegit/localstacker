@@ -10,6 +10,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { InstanceListView } from "./InstanceListView";
+import { SecurityGroupListView } from "./SecurityGroupListView";
+import { KeyPairListView } from "./KeyPairListView";
 import {
   useInstances,
   useKeyPairs,
@@ -136,19 +138,11 @@ export function Ec2ServiceView({
         </TabsContent>
 
         <TabsContent value="securityGroups" className="m-0">
-          {securityGroupsContent || (
-            <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground text-sm">
-              Security Groups management view is available in the Security Groups tab.
-            </div>
-          )}
+          {securityGroupsContent || <SecurityGroupListView />}
         </TabsContent>
 
         <TabsContent value="keyPairs" className="m-0">
-          {keyPairsContent || (
-            <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground text-sm">
-              Key Pairs management view is available in the Key Pairs tab.
-            </div>
-          )}
+          {keyPairsContent || <KeyPairListView />}
         </TabsContent>
       </Tabs>
     </div>

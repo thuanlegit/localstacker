@@ -41,6 +41,7 @@ import { UserView } from "@/components/iam/UserView";
 import { Route53ServiceView } from "@/components/route53/Route53ServiceView";
 import { HostedZoneView } from "@/components/route53/HostedZoneView";
 import { Ec2ServiceView } from "@/components/ec2/Ec2ServiceView";
+import { SecurityGroupDetailView } from "@/components/ec2/SecurityGroupDetailView";
 
 function EmptyState() {
   return (
@@ -234,6 +235,8 @@ export function MainArea() {
             <HostedZoneView zoneId={tab.zoneId} />
           ) : tab.kind === "service" && tab.service === "ec2" ? (
             <Ec2ServiceView />
+          ) : tab.kind === "securityGroup" && tab.securityGroupId ? (
+            <SecurityGroupDetailView groupId={tab.securityGroupId} />
           ) : null}
         </TabsContent>
       ))}
