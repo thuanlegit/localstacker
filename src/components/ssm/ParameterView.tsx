@@ -109,8 +109,8 @@ function EditDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-xl">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="sm:max-w-xl max-w-xl">
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Edit parameter</DialogTitle>
             <DialogDescription>
@@ -118,7 +118,7 @@ function EditDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             <div className="space-y-1">
               <Label>Type</Label>
               <div className="pt-1">

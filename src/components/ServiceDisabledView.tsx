@@ -86,8 +86,8 @@ export function ServiceDisabledView({
         </div>
 
         {/* Configuration guidance box */}
-        <div className="rounded-lg border border-border/70 bg-card/60 text-left shadow-xs">
-          <div className="flex items-center justify-between border-b border-border/50 px-3 py-1.5 bg-muted/30">
+        <div className="rounded-lg border border-border/70 bg-card/60 text-left shadow-xs min-w-0 w-full overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border/50 px-3 py-1.5 bg-muted/30 min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground">
                 To enable in:
@@ -133,7 +133,7 @@ export function ServiceDisabledView({
             </Button>
           </div>
 
-          <pre className="p-3 font-mono text-xs text-foreground/90 overflow-x-auto whitespace-pre">
+          <pre className="p-3 font-mono text-xs text-foreground/90 overflow-x-auto min-w-0 w-full whitespace-pre">
             {activeSnippet}
           </pre>
         </div>

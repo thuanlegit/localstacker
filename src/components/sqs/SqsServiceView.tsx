@@ -80,7 +80,7 @@ function CreateQueueDialog({ open, onOpenChange }: CreateQueueDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Create queue</DialogTitle>
             <DialogDescription>
@@ -88,7 +88,7 @@ function CreateQueueDialog({ open, onOpenChange }: CreateQueueDialogProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             <div className="space-y-2">
               <Label htmlFor="new-queue-name">Queue name</Label>
               <Input

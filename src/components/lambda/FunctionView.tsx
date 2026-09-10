@@ -99,8 +99,8 @@ function InvokeDialog({ open, onOpenChange, functionName }: InvokeDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-        <form onSubmit={handleInvoke}>
+      <DialogContent className="max-h-[85vh] sm:max-w-2xl max-w-2xl overflow-y-auto">
+        <form onSubmit={handleInvoke} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Invoke {functionName}</DialogTitle>
             <DialogDescription>
@@ -317,8 +317,8 @@ function EnvVarsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="max-h-[85vh] sm:max-w-xl max-w-xl overflow-y-auto">
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Edit environment variables</DialogTitle>
             <DialogDescription>

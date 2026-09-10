@@ -92,7 +92,7 @@ function CreateSecretDialog({ open, onOpenChange }: CreateSecretDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Create secret</DialogTitle>
             <DialogDescription>
@@ -100,7 +100,7 @@ function CreateSecretDialog({ open, onOpenChange }: CreateSecretDialogProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             <div className="space-y-2">
               <Label htmlFor="new-secret-name">Name</Label>
               <Input

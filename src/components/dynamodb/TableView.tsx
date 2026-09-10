@@ -117,8 +117,8 @@ function ItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="sm:max-w-2xl max-w-2xl">
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>
@@ -128,7 +128,7 @@ function ItemDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3 py-4">
+          <div className="space-y-3 py-4 min-w-0">
             <div className="space-y-1">
               <Label htmlFor="item-json">Item JSON</Label>
               <textarea

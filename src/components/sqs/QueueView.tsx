@@ -109,7 +109,7 @@ function SendMessageDialog({ open, onOpenChange, queue }: SendMessageDialogProps
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Send message</DialogTitle>
             <DialogDescription>
@@ -117,7 +117,7 @@ function SendMessageDialog({ open, onOpenChange, queue }: SendMessageDialogProps
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             {queue.isFifo && (
               <div className="space-y-2">
                 <Label htmlFor="message-group-id">Message group ID</Label>

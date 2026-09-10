@@ -111,8 +111,8 @@ export function DynamoGuideCard({
         </div>
 
         {/* Quick Snippet Box */}
-        <div className="rounded-lg border border-border/80 bg-card/60 text-left shadow-xs">
-          <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-3 py-2">
+        <div className="rounded-lg border border-border/80 bg-card/60 text-left shadow-xs min-w-0 w-full overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-3 py-2 min-w-0">
             {/* Snippet Selector Buttons */}
             <div className="flex flex-wrap gap-1">
               {(["awslocal", "awsCli", "sdk"] as const).map((key) => {
@@ -151,7 +151,7 @@ export function DynamoGuideCard({
             </Button>
           </div>
 
-          <pre className="max-h-48 overflow-auto p-3 font-mono text-xs text-foreground/90 whitespace-pre">
+          <pre className="max-h-48 min-w-0 w-full overflow-x-auto overflow-y-auto p-3 font-mono text-xs text-foreground/90 whitespace-pre">
             {snippet.code}
           </pre>
         </div>

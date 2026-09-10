@@ -143,8 +143,8 @@ function PublishDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="sm:max-w-xl max-w-xl">
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Publish message</DialogTitle>
             <DialogDescription>
@@ -152,7 +152,7 @@ function PublishDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             {isFifo && (
               <div className="space-y-1">
                 <Label htmlFor="message-group-id">Message group ID</Label>

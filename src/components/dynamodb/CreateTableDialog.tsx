@@ -111,8 +111,8 @@ export function CreateTableDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="sm:max-w-md max-w-md">
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <div className="flex items-center justify-between pr-6">
               <DialogTitle>Create DynamoDB table</DialogTitle>

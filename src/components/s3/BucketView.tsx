@@ -550,14 +550,14 @@ function CreateDirectoryDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Create directory</DialogTitle>
             <DialogDescription>
               Directories in S3 are virtual prefixes ending with a trailing slash.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 py-4">
+          <div className="space-y-2 py-4 min-w-0">
             <Label htmlFor="new-directory-name">Directory name</Label>
             <Input
               id="new-directory-name"

@@ -82,7 +82,7 @@ export function ObjectPreview({ bucket, entry, onClose }: ObjectPreviewProps) {
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="py-2">
+        <div className="py-2 min-w-0">
           {isPending ? (
             <div className="flex h-64 items-center justify-center">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />

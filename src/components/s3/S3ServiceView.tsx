@@ -80,14 +80,14 @@ function CreateBucketDialog({ open, onOpenChange }: CreateBucketDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Create bucket</DialogTitle>
             <DialogDescription>
               Bucket names must be globally unique across AWS and follow S3 naming conventions.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 py-4">
+          <div className="space-y-2 py-4 min-w-0">
             <Label htmlFor="new-bucket-name">Bucket name</Label>
             <Input
               id="new-bucket-name"
