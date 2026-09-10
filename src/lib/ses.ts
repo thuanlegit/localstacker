@@ -217,11 +217,24 @@ export async function listCapturedMessages(
   },
 ): Promise<CapturedEmail[]> {
   const fetchFn = opts?.fetchFn ?? platformFetch;
-  const url = `${endpoint.replace(/\/+$/, "")}/_localstack/ses`;
+  const cleanEndpoint = endpoint.replace(/\/+$/, "");
   const headers: Record<string, string> = { accept: "application/json" };
   if (opts?.authToken) headers.authorization = opts.authToken;
 
-  const res = await fetchFn(url, { headers, signal: opts?.signal });
+  let res = await fetchFn(`${cleanEndpoint}/_aws/ses`, {
+    headers,
+    signal: opts?.signal,
+  });
+  if (res.status === 404) {
+    const fallbackRes = await fetchFn(`${cleanEndpoint}/_localstack/ses`, {
+      headers,
+      signal: opts?.signal,
+    });
+    if (fallbackRes.ok) {
+      res = fallbackRes;
+    }
+  }
+
   if (!res.ok) {
     throw new Error(`SES mailbox unavailable (HTTP ${res.status})`);
   }
@@ -240,11 +253,20 @@ export async function clearCapturedMessages(
   },
 ): Promise<void> {
   const fetchFn = opts?.fetchFn ?? platformFetch;
-  const url = `${endpoint.replace(/\/+$/, "")}/_localstack/ses`;
+  const cleanEndpoint = endpoint.replace(/\/+$/, "");
   const headers: Record<string, string> = { accept: "application/json" };
   if (opts?.authToken) headers.authorization = opts.authToken;
 
-  const res = await fetchFn(url, { method: "DELETE", headers });
+  let res = await fetchFn(`${cleanEndpoint}/_aws/ses`, {
+    method: "DELETE",
+    headers,
+  });
+  if (res.status === 404) {
+    res = await fetchFn(`${cleanEndpoint}/_localstack/ses`, {
+      method: "DELETE",
+      headers,
+    });
+  }
   if (!res.ok) {
     throw new Error(`SES mailbox unavailable (HTTP ${res.status})`);
   }

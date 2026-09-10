@@ -243,7 +243,7 @@ describe("ses data plane", () => {
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "http://localhost:4566/_localstack/ses",
+        "http://localhost:4566/_aws/ses",
         expect.objectContaining({
           headers: {
             accept: "application/json",
@@ -257,10 +257,10 @@ describe("ses data plane", () => {
     });
 
     it("throws error when response not ok (e.g. 404)", async () => {
-      const mockFetch = vi.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-      });
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ ok: false, status: 404 });
 
       await expect(
         listCapturedMessages("http://localhost:4566", {
@@ -283,7 +283,7 @@ describe("ses data plane", () => {
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "http://localhost:4566/_localstack/ses",
+        "http://localhost:4566/_aws/ses",
         expect.objectContaining({
           method: "DELETE",
           headers: {

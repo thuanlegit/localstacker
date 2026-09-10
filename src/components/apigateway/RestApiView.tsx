@@ -672,7 +672,6 @@ export function RestApiView({ restApiId }: RestApiViewProps) {
       setIsDeletingStage(false);
     }
   };
-
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -732,7 +731,7 @@ export function RestApiView({ restApiId }: RestApiViewProps) {
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="API actions">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -778,6 +777,7 @@ export function RestApiView({ restApiId }: RestApiViewProps) {
                   key={resource.id}
                   className="flex items-center justify-between p-2.5 hover:bg-muted/30 transition-colors"
                   style={{ paddingLeft: `${Math.max(depth * 1.5, 0.75)}rem` }}
+                  data-testid={`resource-row-${resource.path}`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="font-mono text-xs font-medium truncate">

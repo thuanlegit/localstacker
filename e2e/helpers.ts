@@ -10,6 +10,8 @@ import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
 import { SSMClient } from "@aws-sdk/client-ssm";
 import { EventBridgeClient } from "@aws-sdk/client-eventbridge";
 import { SchedulerClient } from "@aws-sdk/client-scheduler";
+import { APIGatewayClient } from "@aws-sdk/client-api-gateway";
+import { SESClient } from "@aws-sdk/client-ses";
 export const ENDPOINT = process.env.LOCALSTACK_ENDPOINT || "http://127.0.0.1:4566";
 
 export async function requireLocalStack(): Promise<void> {
@@ -57,6 +59,8 @@ export function makeClients() {
     ssm: new SSMClient(config),
     eventbridge: new EventBridgeClient(config),
     scheduler: new SchedulerClient(config),
+    apigateway: new APIGatewayClient(config),
+    ses: new SESClient(config),
   };
 }
 
