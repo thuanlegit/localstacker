@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 
 export interface ServiceMeta {
@@ -66,6 +66,20 @@ export const SERVICES: readonly ServiceMeta[] = [
     icon: ListTree,
     blurb: "Parameters",
   },
+  {
+    kind: "eventbridge",
+    label: "EventBridge",
+    shortLabel: "EventBridge",
+    icon: Webhook,
+    blurb: "Event buses & rules",
+  },
+  {
+    kind: "scheduler",
+    label: "EventBridge Scheduler",
+    shortLabel: "Scheduler",
+    icon: CalendarClock,
+    blurb: "Schedules",
+  },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
@@ -83,4 +97,6 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   sns: "sns",
   logs: "logs",
   ssm: "ssm",
+  eventbridge: "events",
+  scheduler: "scheduler",
 };

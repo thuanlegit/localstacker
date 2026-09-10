@@ -6,7 +6,9 @@ export type ServiceKind =
   | "dynamodb"
   | "sns"
   | "logs"
-  | "ssm";
+  | "ssm"
+  | "eventbridge"
+  | "scheduler";
 
 export interface ConnectionProfile {
   id: string;
@@ -31,7 +33,8 @@ export type TabKind =
   | "table"
   | "topic"
   | "logGroup"
-  | "parameter";
+  | "parameter"
+  | "eventBus";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -45,5 +48,6 @@ export interface TabDescriptor {
   topicArn?: string;
   logGroupName?: string;
   parameterName?: string;
+  busName?: string;
   title: string;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Database, HardDrive, KeyRound, ListOrdered, ListTree, Moon, Radio, ScrollText, Sun, Zap } from "lucide-react";
+import { Database, HardDrive, KeyRound, ListOrdered, ListTree, Moon, Radio, ScrollText, Sun, Webhook, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -21,6 +21,7 @@ import { useTables } from "@/hooks/use-dynamodb";
 import { useTopics } from "@/hooks/use-sns";
 import { useLogGroups } from "@/hooks/use-logs";
 import { useParameters } from "@/hooks/use-ssm";
+import { useEventBuses } from "@/hooks/use-eventbridge";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -34,6 +35,7 @@ export function CommandPalette() {
   const { data: topics } = useTopics(profile.id, { enabled: open });
   const { data: logGroups } = useLogGroups(profile.id, { enabled: open });
   const { data: parameters } = useParameters(profile.id, { enabled: open });
+  const { data: buses } = useEventBuses(profile.id, { enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -250,6 +252,29 @@ export function CommandPalette() {
               >
                 <ListTree />
                 {p.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {buses && buses.length > 0 && (
+          <CommandGroup heading="Event buses">
+            {buses.map((b) => (
+              <CommandItem
+                key={b.name}
+                value={b.name}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `eventBus:${b.name}`,
+                      kind: "eventBus",
+                      busName: b.name,
+                      title: b.name,
+                    }),
+                  )
+                }
+              >
+                <Webhook />
+                {b.name}
               </CommandItem>
             ))}
           </CommandGroup>

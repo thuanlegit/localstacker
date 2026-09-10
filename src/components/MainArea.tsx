@@ -26,6 +26,8 @@ import { LogsServiceView } from "@/components/logs/LogsServiceView";
 import { LogGroupView } from "@/components/logs/LogGroupView";
 import { SsmServiceView } from "@/components/ssm/SsmServiceView";
 import { ParameterView } from "@/components/ssm/ParameterView";
+import { EventBridgeServiceView } from "@/components/eventbridge/EventBridgeServiceView";
+import { EventBusView } from "@/components/eventbridge/EventBusView";
 
 function EmptyState() {
   return (
@@ -189,6 +191,10 @@ export function MainArea() {
             <SsmServiceView />
           ) : tab.kind === "parameter" && tab.parameterName ? (
             <ParameterView parameterName={tab.parameterName} />
+          ) : tab.kind === "service" && tab.service === "eventbridge" ? (
+            <EventBridgeServiceView />
+          ) : tab.kind === "eventBus" && tab.busName ? (
+            <EventBusView busName={tab.busName} />
           ) : null}
         </TabsContent>
       ))}
