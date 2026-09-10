@@ -133,9 +133,9 @@ export function CreateTableDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-2.5 text-xs text-destructive">
+              <div className="rounded-md bg-destructive/10 p-2.5 text-xs text-destructive break-words">
                 {error}
               </div>
             )}

@@ -99,7 +99,7 @@ export function AttachLambdaDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Attach Lambda Trigger</DialogTitle>
             <DialogDescription>
@@ -108,9 +108,9 @@ export function AttachLambdaDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             {/* Target Queue info */}
-            <div className="rounded-md bg-muted/50 p-3 space-y-1">
+            <div className="rounded-md bg-muted/50 p-3 space-y-1 min-w-0">
               <span className="text-xs font-medium text-muted-foreground uppercase">
                 Source Queue
               </span>
@@ -118,7 +118,7 @@ export function AttachLambdaDialog({
                 {queue.name}
               </p>
               <p
-                className="font-mono text-[11px] text-muted-foreground truncate"
+                className="font-mono text-[11px] text-muted-foreground break-all"
                 title={queue.attributes.arn}
               >
                 ARN: {queue.attributes.arn || "Loading ARN..."}
@@ -126,7 +126,7 @@ export function AttachLambdaDialog({
             </div>
 
             {/* Lambda Function Selector */}
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-0">
               <Label htmlFor="lambda-select">Target Lambda Function</Label>
               {isLoadingFunctions ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">

@@ -108,7 +108,7 @@ export function AddTriggerDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Add Event Source Trigger</DialogTitle>
             <DialogDescription>
@@ -118,7 +118,7 @@ export function AddTriggerDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             {/* Trigger source type */}
             <div className="space-y-2">
               <Label>Source Type</Label>
@@ -147,7 +147,7 @@ export function AddTriggerDialog({
 
             {/* SQS Queue Selection */}
             {triggerType === "sqs" ? (
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <Label htmlFor="sqs-select">Select SQS Queue</Label>
                 {isLoadingQueues ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
@@ -187,7 +187,7 @@ export function AddTriggerDialog({
                   </Select>
                 )}
                 {selectedQueue?.attributes.arn && (
-                  <p className="text-[11px] font-mono text-muted-foreground truncate" title={selectedQueue.attributes.arn}>
+                  <p className="text-[11px] font-mono text-muted-foreground break-all" title={selectedQueue.attributes.arn}>
                     ARN: {selectedQueue.attributes.arn}
                   </p>
                 )}

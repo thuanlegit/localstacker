@@ -80,7 +80,7 @@ export function TargetPicker({ arn, onArnChange }: TargetPickerProps) {
     type === "custom" && customArn.length > 0 && !/^arn:./.test(customArn);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0 w-full">
       <div className="space-y-2">
         <Label htmlFor="target-type">Target type</Label>
         <Select
@@ -122,7 +122,7 @@ export function TargetPicker({ arn, onArnChange }: TargetPickerProps) {
           )}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0 w-full">
           <Label htmlFor="target-resource">
             {type === "sqs"
               ? "Queue"
@@ -161,7 +161,7 @@ export function TargetPicker({ arn, onArnChange }: TargetPickerProps) {
           </Select>
           {arn ? (
             <p
-              className="truncate font-mono text-xs text-muted-foreground"
+              className="break-all font-mono text-xs text-muted-foreground"
               title={arn}
             >
               {arn}

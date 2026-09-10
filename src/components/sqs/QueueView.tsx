@@ -235,7 +235,7 @@ function RedriveDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Redrive messages</DialogTitle>
             <DialogDescription>
@@ -244,7 +244,7 @@ function RedriveDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             <div className="space-y-2">
               <Label htmlFor="target-queue">Target queue</Label>
               <select

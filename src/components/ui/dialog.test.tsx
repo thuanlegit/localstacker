@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { Dialog, DialogContent } from "./dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./dialog";
 
 describe("DialogContent layout and overflow protection", () => {
   it("includes viewport max-height, vertical scroll, and min-w-0 by default", () => {
@@ -17,6 +17,8 @@ describe("DialogContent layout and overflow protection", () => {
     expect(dialog.className).toContain("max-h-[calc(100vh-4rem)]");
     expect(dialog.className).toContain("overflow-y-auto");
     expect(dialog.className).toContain("sm:max-w-lg");
+    expect(dialog.className).toContain("overflow-x-hidden");
+    expect(dialog.className).toContain("[&>*]:min-w-0");
   });
 
   it("does not inject sm:max-w-lg when custom max-w is provided", () => {
@@ -59,5 +61,27 @@ describe("DialogContent layout and overflow protection", () => {
     const dialog = screen.getByRole("dialog");
     expect(dialog.className).toContain("overflow-hidden");
     expect(dialog.className).not.toContain("overflow-y-auto");
+  });
+
+  it("includes break-words on DialogTitle and DialogDescription to prevent long text blowout", () => {
+    render(
+      <Dialog open={true}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>SuperLongWordWithoutSpacesThatCouldBlowOutModalWidth</DialogTitle>
+            <DialogDescription>
+              arn:aws:lambda:ap-southeast-1:000000000000:function:super-long-unbroken-arn
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const title = screen.getByText("SuperLongWordWithoutSpacesThatCouldBlowOutModalWidth");
+    const description = screen.getByText(
+      "arn:aws:lambda:ap-southeast-1:000000000000:function:super-long-unbroken-arn",
+    );
+    expect(title.className).toContain("break-words");
+    expect(description.className).toContain("break-words");
   });
 });

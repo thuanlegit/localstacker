@@ -31,8 +31,8 @@ export function DeleteConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={!isPending}>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="break-words">{title}</DialogTitle>
+          <DialogDescription className="break-words">{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button

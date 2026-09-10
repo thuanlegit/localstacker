@@ -184,7 +184,7 @@ function CreateResourceDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Create Resource</DialogTitle>
             <DialogDescription>
@@ -192,7 +192,7 @@ function CreateResourceDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             <div className="space-y-2">
               <Label htmlFor="resource-path-part">Resource path</Label>
               <div className="flex items-center gap-2">
@@ -332,16 +332,16 @@ function CreateMethodDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 min-w-0">
           <DialogHeader>
             <DialogTitle>Create Method</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="break-all">
               Add an HTTP method to resource{" "}
               <code className="font-mono text-xs">{resource?.path}</code>.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 min-w-0">
             <div className="space-y-1.5">
               <Label htmlFor="method-verb">HTTP Verb</Label>
               <Select value={httpMethod} onValueChange={setHttpMethod}>
@@ -489,7 +489,7 @@ function DeployStageDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Deploy to Stage</DialogTitle>
             <DialogDescription>
@@ -497,7 +497,7 @@ function DeployStageDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             <div className="space-y-2">
               <Label htmlFor="stage-name">Stage name</Label>
               <Input

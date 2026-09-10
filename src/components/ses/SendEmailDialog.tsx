@@ -116,7 +116,7 @@ export function SendEmailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 min-w-0">
           <DialogHeader>
             <DialogTitle>Send Test Email</DialogTitle>
             <DialogDescription>
@@ -131,7 +131,7 @@ export function SendEmailDialog({
               identity first before sending.
             </div>
           ) : (
-            <div className="space-y-3 py-1">
+            <div className="space-y-3 py-1 min-w-0">
               <div className="space-y-1.5">
                 <Label htmlFor="send-from">From (Verified Identity)</Label>
                 <Select
@@ -143,7 +143,7 @@ export function SendEmailDialog({
                   </SelectTrigger>
                   <SelectContent>
                     {verifiedIdentities.map((id) => (
-                      <SelectItem key={id.identity} value={id.identity}>
+                      <SelectItem key={id.identity} value={id.identity} className="break-all font-mono text-xs">
                         {id.identity}
                       </SelectItem>
                     ))}

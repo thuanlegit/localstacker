@@ -266,7 +266,7 @@ function SubscribeQueueDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="min-w-0">
           <DialogHeader>
             <DialogTitle>Subscribe SQS queue</DialogTitle>
             <DialogDescription>
@@ -274,8 +274,8 @@ function SubscribeQueueDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-1">
+          <div className="space-y-4 py-4 min-w-0">
+            <div className="space-y-1 min-w-0">
               <Label>Select SQS queue</Label>
               {isQueuesPending ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">

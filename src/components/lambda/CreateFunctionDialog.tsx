@@ -232,9 +232,9 @@ export function CreateFunctionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-1">
+        <form onSubmit={handleSubmit} className="space-y-4 py-1 min-w-0">
           {error && (
-            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive">
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive break-words">
               {error}
             </div>
           )}

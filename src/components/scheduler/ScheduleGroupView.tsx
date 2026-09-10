@@ -88,13 +88,13 @@ function ScheduleDetailDialog({
               </Badge>
             )}
           </div>
-          <DialogDescription className="font-mono text-xs">
+          <DialogDescription className="font-mono text-xs break-all">
             {schedule.arn}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2 text-xs">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 border-y py-3">
+        <div className="space-y-4 py-2 text-xs min-w-0">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 border-y py-3 min-w-0">
             <div>
               <p className="text-muted-foreground">Expression</p>
               <p className="font-mono font-medium">{schedule.expression || "—"}</p>

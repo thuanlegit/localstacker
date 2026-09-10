@@ -136,13 +136,13 @@ function InvokeDialog({ open, onOpenChange, functionName }: InvokeDialogProps) {
       <DialogContent className="max-h-[85vh] sm:max-w-2xl max-w-2xl overflow-y-auto">
         <form onSubmit={handleInvoke} className="min-w-0">
           <DialogHeader>
-            <DialogTitle>Invoke {functionName}</DialogTitle>
+            <DialogTitle className="break-all">Invoke {functionName}</DialogTitle>
             <DialogDescription>
               Execute the function with a test payload.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 min-w-0">
             <div className="space-y-2">
               <Label htmlFor="invoke-payload">Payload (JSON)</Label>
               <textarea
@@ -404,7 +404,7 @@ function EnvVarsDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3 py-4">
+          <div className="space-y-3 py-4 min-w-0">
             {hasDuplicate && (
               <p className="text-xs text-destructive">Duplicate key</p>
             )}

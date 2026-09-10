@@ -101,11 +101,11 @@ export function MethodTestDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-        <form onSubmit={handleRun} className="space-y-4">
+        <form onSubmit={handleRun} className="space-y-4 min-w-0">
           <DialogHeader>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-wrap">
               <DialogTitle>Method Test Runner</DialogTitle>
-              <Badge variant="outline" className="font-mono">
+              <Badge variant="outline" className="font-mono break-all">
                 {httpMethod} {resourcePath}
               </Badge>
             </div>
@@ -115,7 +115,7 @@ export function MethodTestDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 min-w-0">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="test-path">Path</Label>
@@ -194,7 +194,7 @@ export function MethodTestDialog({
                       <span className="text-xs font-medium text-muted-foreground">
                         Response Headers
                       </span>
-                      <pre className="max-h-24 overflow-x-auto rounded bg-background p-2 text-xs font-mono">
+                      <pre className="max-h-24 overflow-x-auto rounded bg-background p-2 text-xs font-mono whitespace-pre-wrap break-all">
                         {Object.entries(result.headers)
                           .map(([k, v]) => `${k}: ${v}`)
                           .join("\n")}
@@ -207,7 +207,7 @@ export function MethodTestDialog({
                     Response Body
                   </span>
                   {result.body ? (
-                    <pre className="max-h-48 overflow-x-auto rounded bg-background p-3 text-xs font-mono whitespace-pre-wrap">
+                    <pre className="max-h-48 overflow-x-auto rounded bg-background p-3 text-xs font-mono whitespace-pre-wrap break-all">
                       {tryFormatJson(result.body)}
                     </pre>
                   ) : (
@@ -222,7 +222,7 @@ export function MethodTestDialog({
                     <span className="text-xs font-medium text-muted-foreground">
                       Execution Log
                     </span>
-                    <pre className="max-h-36 overflow-x-auto rounded bg-background p-2 text-xs font-mono text-muted-foreground whitespace-pre-wrap">
+                    <pre className="max-h-36 overflow-x-auto rounded bg-background p-2 text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
                       {result.log}
                     </pre>
                   </div>
