@@ -196,4 +196,48 @@ describe("LogGroupView", () => {
 
     expect(mockDeleteGroup).toHaveBeenCalledWith(mockLogGroupName);
   });
+
+  it("expands a log event row to show full details and copy button", async () => {
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+    });
+
+    renderWithProviders(<LogGroupView logGroupName={mockLogGroupName} />);
+
+    // Initially collapsed, find expand button on first row
+    const expandBtns = screen.getAllByRole("button", {
+      name: "Expand log event",
+    });
+    expect(expandBtns.length).toBeGreaterThanOrEqual(1);
+
+    // Click expand
+    fireEvent.click(expandBtns[0]);
+
+    // Should show collapse button now
+    expect(
+      screen.getByRole("button", { name: "Collapse log event" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Full view" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument();
+
+    // Click Full view to open full dialog
+    fireEvent.click(screen.getByRole("button", { name: "Full view" }));
+    expect(screen.getByText("Log Event Details")).toBeInTheDocument();
+  });
+
+  it("toggles wrap lines and expand all", () => {
+    renderWithProviders(<LogGroupView logGroupName={mockLogGroupName} />);
+
+    const wrapBtn = screen.getByRole("button", { name: /wrap lines/i });
+    fireEvent.click(wrapBtn);
+
+    const expandAllBtn = screen.getByRole("button", { name: /expand all/i });
+    fireEvent.click(expandAllBtn);
+
+    expect(screen.getByRole("button", { name: /collapse all/i })).toBeInTheDocument();
+  });
 });

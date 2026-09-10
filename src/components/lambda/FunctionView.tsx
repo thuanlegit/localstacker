@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  Check,
   CircleAlert,
+  Copy,
   Loader2,
+  Maximize2,
   Play,
   Plus,
   RotateCw,
@@ -56,6 +59,29 @@ function InvokeDialog({ open, onOpenChange, functionName }: InvokeDialogProps) {
   const [isInvoking, setIsInvoking] = useState(false);
   const [invokeResult, setInvokeResult] = useState<InvocationResult | null>(null);
   const [invokeError, setInvokeError] = useState<string | null>(null);
+  const [isLogsExpanded, setIsLogsExpanded] = useState(false);
+  const [copiedLogs, setCopiedLogs] = useState(false);
+
+  const handleCopyLogs = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedLogs(true);
+      toast.success("Logs copied to clipboard");
+      setTimeout(() => setCopiedLogs(false), 2000);
+    } catch {
+      toast.error("Failed to copy logs");
+    }
+  };
+
+  const handleOpenLogsTab = () => {
+    onOpenChange(false);
+    useTabs.getState().openTab({
+      id: `logGroup:/aws/lambda/${functionName}`,
+      kind: "logGroup",
+      logGroupName: `/aws/lambda/${functionName}`,
+      title: `/aws/lambda/${functionName}`,
+    });
+  };
   const client = useLambdaClient();
 
   let isValidJson = false;
@@ -163,12 +189,56 @@ function InvokeDialog({ open, onOpenChange, functionName }: InvokeDialogProps) {
                   </pre>
                 </div>
 
-                <div className="space-y-1">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">
-                    Logs (last 4 KB)
-                  </span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">
+                      Logs (last 4 KB)
+                    </span>
+                    {invokeResult.logs !== undefined && (
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                          onClick={() => handleCopyLogs(invokeResult.logs!)}
+                        >
+                          {copiedLogs ? (
+                            <Check className="size-3 text-emerald-500" />
+                          ) : (
+                            <Copy className="size-3" />
+                          )}
+                          Copy
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                          onClick={() => setIsLogsExpanded(!isLogsExpanded)}
+                        >
+                          <Maximize2 className="size-3" />
+                          {isLogsExpanded ? "Collapse" : "Expand"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-xs gap-1 text-primary hover:text-primary"
+                          onClick={handleOpenLogsTab}
+                        >
+                          <ScrollText className="size-3" />
+                          CloudWatch Logs
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                   {invokeResult.logs !== undefined ? (
-                    <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-md bg-muted/50 p-2 font-mono text-xs">
+                    <pre
+                      className={`overflow-auto whitespace-pre-wrap break-all rounded-md bg-muted/50 p-2.5 font-mono text-xs ${
+                        isLogsExpanded ? "max-h-[50vh]" : "max-h-48"
+                      }`}
+                    >
                       {invokeResult.logs}
                     </pre>
                   ) : (

@@ -1,15 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   CircleAlert,
+  Copy,
   Loader2,
+  Maximize2,
   Pause,
   Play,
   RotateCw,
   ScrollText,
   Search,
   Trash2,
+  WrapText,
 } from "lucide-react";
+import { toast } from "sonner";
+import { LogEventDetailDialog } from "./LogEventDetailDialog";
+import type { LogEventRecord } from "@/lib/logs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -89,6 +100,48 @@ export function LogGroupView({ logGroupName }: LogGroupViewProps) {
         e.streamName.toLowerCase().includes(pattern),
     );
   }, [events, filterPattern]);
+
+  // Log expansion, wrap, copy, and modal state
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [isWrapLines, setIsWrapLines] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<LogEventRecord | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const toggleRowExpanded = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const isAllExpanded =
+    displayEvents.length > 0 && expandedIds.size === displayEvents.length;
+
+  const toggleExpandAll = () => {
+    if (isAllExpanded) {
+      setExpandedIds(new Set());
+    } else {
+      setExpandedIds(new Set(displayEvents.map((e) => e.id)));
+    }
+  };
+
+  const copyMessage = async (
+    id: string,
+    text: string,
+    e?: React.MouseEvent,
+  ) => {
+    e?.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      toast.success("Log message copied to clipboard");
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      toast.error("Failed to copy log message");
+    }
+  };
 
   // Virtualizer
   const parentRef = useRef<HTMLDivElement>(null);
@@ -241,18 +294,54 @@ export function LogGroupView({ logGroupName }: LogGroupViewProps) {
               </Button>
             )}
           </div>
+
+          {/* View options: Wrap & Expand */}
+          <div className="flex items-center gap-1.5 ml-auto">
+            <Button
+              variant={isWrapLines ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => setIsWrapLines(!isWrapLines)}
+              className="h-8 text-xs gap-1.5"
+              title="Toggle line wrapping for all events"
+            >
+              <WrapText className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Wrap lines</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleExpandAll}
+              disabled={displayEvents.length === 0}
+              className="h-8 text-xs gap-1.5"
+              title={isAllExpanded ? "Collapse all events" : "Expand all events"}
+            >
+              {isAllExpanded ? (
+                <>
+                  <ChevronsDownUp className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Collapse all</span>
+                </>
+              ) : (
+                <>
+                  <ChevronsUpDown className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Expand all</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
-
       {/* Events Viewer */}
       <div className="flex flex-1 flex-col overflow-hidden bg-background">
         {/* Table header */}
         <div className="border-b bg-muted/40 text-xs font-medium text-muted-foreground flex items-center px-4 py-2 select-none">
-          <div className="w-28 font-mono">Timestamp</div>
+          <div className="w-7 flex-none" />
+          <div className="w-28 flex-none font-mono">Timestamp</div>
           {showStreamColumn && (
-            <div className="w-48 font-mono truncate">Log Stream</div>
+            <div className="w-48 flex-none font-mono truncate">Log Stream</div>
           )}
           <div className="flex-1 font-mono">Message</div>
+          <div className="w-16 flex-none text-right font-mono text-[11px] pr-2">Actions</div>
         </div>
 
         {isInitialLoading ? (
@@ -289,33 +378,159 @@ export function LogGroupView({ logGroupName }: LogGroupViewProps) {
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const ev = displayEvents[virtualRow.index];
+                const isExpanded = expandedIds.has(ev.id);
+
                 return (
                   <div
                     key={virtualRow.key}
                     data-index={virtualRow.index}
                     ref={rowVirtualizer.measureElement}
-                    className="absolute top-0 left-0 w-full flex items-center px-4 py-1 text-xs border-b border-border/40 hover:bg-muted/40 font-mono transition-colors"
+                    className={`absolute top-0 left-0 w-full border-b border-border/40 font-mono transition-colors ${
+                      isExpanded
+                        ? "bg-muted/20 p-3"
+                        : "flex items-center px-4 py-1.5 hover:bg-muted/40"
+                    }`}
                     style={{
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
-                    <div className="w-28 flex-none text-muted-foreground text-[11px] truncate">
-                      {formatTimestamp(ev.timestamp)}
-                    </div>
-                    {showStreamColumn && (
+                    {isExpanded ? (
+                      <div className="w-full space-y-2">
+                        <div
+                          className="flex items-center justify-between text-[11px] text-muted-foreground border-b border-border/40 pb-1.5 cursor-pointer select-none"
+                          onClick={() => toggleRowExpanded(ev.id)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleRowExpanded(ev.id);
+                              }}
+                              className="flex items-center text-foreground font-semibold"
+                              aria-label="Collapse log event"
+                            >
+                              <ChevronDown className="h-3.5 w-3.5 mr-1" />
+                              <span>{new Date(ev.timestamp).toISOString()}</span>
+                            </button>
+                            <span>·</span>
+                            <span className="truncate max-w-[200px]" title={ev.streamName}>
+                              {ev.streamName}
+                            </span>
+                            {ev.id && (
+                              <>
+                                <span>·</span>
+                                <span
+                                  className="text-[10px] text-muted-foreground/70 truncate max-w-[180px]"
+                                  title={ev.id}
+                                >
+                                  {ev.id}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-6 px-2 text-[11px] gap-1"
+                              onClick={(e) => copyMessage(ev.id, ev.message, e)}
+                            >
+                              {copiedId === ev.id ? (
+                                <Check className="h-3 w-3 text-emerald-500" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                              Copy
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-6 px-2 text-[11px] gap-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEvent(ev);
+                              }}
+                            >
+                              <Maximize2 className="h-3 w-3" />
+                              Full view
+                            </Button>
+                          </div>
+                        </div>
+                        <pre className="whitespace-pre-wrap break-all text-xs font-mono bg-muted/40 p-3 rounded-md border border-border/60 text-foreground/90 overflow-x-auto select-text">
+                          {ev.message}
+                        </pre>
+                      </div>
+                    ) : (
                       <div
-                        className="w-48 flex-none text-muted-foreground/80 truncate pr-2 text-[11px]"
-                        title={ev.streamName}
+                        className="flex items-center w-full min-w-0 cursor-pointer"
+                        onClick={() => toggleRowExpanded(ev.id)}
                       >
-                        {ev.streamName}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleRowExpanded(ev.id);
+                          }}
+                          className="w-7 flex-none flex items-center justify-start text-muted-foreground hover:text-foreground"
+                          aria-label="Expand log event"
+                        >
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+                        <div className="w-28 flex-none text-muted-foreground text-[11px] truncate">
+                          {formatTimestamp(ev.timestamp)}
+                        </div>
+                        {showStreamColumn && (
+                          <div
+                            className="w-48 flex-none text-muted-foreground/80 truncate pr-2 text-[11px]"
+                            title={ev.streamName}
+                          >
+                            {ev.streamName}
+                          </div>
+                        )}
+                        <div
+                          className={`flex-1 min-w-0 text-[12px] select-text pr-2 ${
+                            isWrapLines
+                              ? "whitespace-pre-wrap break-all"
+                              : "truncate whitespace-pre"
+                          }`}
+                          title={isWrapLines ? undefined : ev.message}
+                        >
+                          {ev.message}
+                        </div>
+                        <div className="w-16 flex-none flex items-center justify-end gap-1 opacity-60 hover:opacity-100">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                            title="Copy message"
+                            onClick={(e) => copyMessage(ev.id, ev.message, e)}
+                          >
+                            {copiedId === ev.id ? (
+                              <Check className="h-3 w-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                            title="Open in modal"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEvent(ev);
+                            }}
+                          >
+                            <Maximize2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     )}
-                    <div
-                      className="flex-1 truncate select-text whitespace-pre text-[12px]"
-                      title={ev.message}
-                    >
-                      {ev.message}
-                    </div>
                   </div>
                 );
               })}
@@ -365,6 +580,15 @@ export function LogGroupView({ logGroupName }: LogGroupViewProps) {
         confirmLabel="Delete stream"
         isPending={isDeletingStream}
         onConfirm={handleDeleteStream}
+      />
+
+      <LogEventDetailDialog
+        event={selectedEvent}
+        logGroupName={logGroupName}
+        open={!!selectedEvent}
+        onOpenChange={(open) => {
+          if (!open) setSelectedEvent(null);
+        }}
       />
     </div>
   );
