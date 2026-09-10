@@ -30,6 +30,7 @@ export type NewProfile = Omit<ConnectionProfile, "id" | "builtIn"> & {
 };
 
 export type TabKind =
+  | "docker"
   | "service"
   | "bucket"
   | "queue"

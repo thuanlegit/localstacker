@@ -194,6 +194,31 @@ vi.mock("@/hooks/use-route53", () => ({
   useRecordSetActions: vi.fn(() => ({ deleteRecordSet: vi.fn(), createRecordSet: vi.fn() })),
 }));
 
+vi.mock("@/hooks/use-docker", () => ({
+  useDockerAdapter: vi.fn(() => ({ kind: "tauri" })),
+  useDockerStatus: vi.fn(() => ({
+    data: { available: true, version: "27.0.0" },
+    isLoading: false,
+    refetch: vi.fn(),
+  })),
+  useDockerContainers: vi.fn(() => ({
+    data: [],
+    isLoading: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  })),
+  useDockerInspect: vi.fn(() => ({ data: undefined, isLoading: false })),
+  useDockerActions: vi.fn(() => ({
+    willLoseState: vi.fn(() => true),
+    startContainer: vi.fn(),
+    stopContainer: vi.fn(),
+    restartContainer: vi.fn(),
+    removeContainer: vi.fn(),
+    connectContainer: vi.fn(),
+    createAndConnect: vi.fn(),
+  })),
+}));
+
 vi.mock("@/lib/lambda", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/lambda")>();
   return {
@@ -288,7 +313,6 @@ describe("AppShell", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Secrets Manager/ }));
     expect(screen.getByText("db-password")).toBeInTheDocument();
     expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Secrets");
-
     fireEvent.click(screen.getByText("db-password"));
 
     expect(useTabs.getState().tabs.map((t) => t.id)).toEqual([
@@ -296,6 +320,36 @@ describe("AppShell", () => {
       "secret:db-password",
     ]);
     expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("db-password");
+  });
+
+  it("opens the IAM tab and displays IAM service view", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^IAM/ }));
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual(["service:iam"]);
+    expect(screen.getByRole("tab", { name: /^IAM/ })).toHaveAttribute("data-state", "active");
+  });
+
+  it("opens the Route 53 tab and displays Route 53 service view", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^Route 53/ }));
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual(["service:route53"]);
+    expect(screen.getByRole("tab", { name: /^Route 53/ })).toHaveAttribute("data-state", "active");
+  });
+
+  it("opens the EC2 tab and displays EC2 service view", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^EC2/ }));
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual(["service:ec2"]);
+    expect(screen.getByRole("tab", { name: /^EC2/ })).toHaveAttribute("data-state", "active");
+  });
+
+  it("opens the Docker tab and displays the Docker panel", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^Docker/ }));
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual(["docker"]);
+    expect(screen.getByRole("tab", { name: /^Docker/ })).toHaveAttribute("data-state", "active");
+    expect(screen.getByText("LocalStack container lifecycle")).toBeInTheDocument();
+    expect(screen.getByText(/Docker daemon/)).toBeInTheDocument();
   });
 
   it("opens the Lambda tab and navigates into a function", async () => {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Check,
   ChevronsUpDown,
+  Container,
   Globe,
   Moon,
   Sun,
@@ -48,11 +49,14 @@ import type { ConnectionProfile, ServiceKind } from "@/types";
 function toErrorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
-
 export function openServiceTab(kind: ServiceKind, title: string) {
   useTabs
     .getState()
     .openTab({ id: `service:${kind}`, kind: "service", service: kind, title });
+}
+
+export function openDockerTab() {
+  useTabs.getState().openTab({ id: "docker", kind: "docker", title: "Docker" });
 }
 
 export function Sidebar() {
@@ -341,6 +345,46 @@ export function Sidebar() {
           isCollapsed ? "px-2" : "px-3",
         )}
       >
+        {!isCollapsed ? (
+          <p className="px-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Docker
+          </p>
+        ) : (
+          <div className="my-1 border-t border-sidebar-border/40" />
+        )}
+        {isCollapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={openDockerTab}
+                aria-label="Docker"
+                className={cn(
+                  "relative flex size-9 items-center justify-center rounded-md mx-auto text-sm transition-colors hover:bg-sidebar-accent/50",
+                  activeTabId === "docker" &&
+                    "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent",
+                )}
+              >
+                <Container className="size-4 shrink-0" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Docker</TooltipContent>
+          </Tooltip>
+        ) : (
+          <button
+            type="button"
+            onClick={openDockerTab}
+            aria-label="Docker"
+            className={cn(
+              "relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent/50",
+              activeTabId === "docker" &&
+                "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent",
+            )}
+          >
+            <Container className="size-4 shrink-0" />
+            <span>Docker</span>
+          </button>
+        )}
         {!isCollapsed ? (
           <p className="px-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Services

@@ -42,6 +42,7 @@ import { Route53ServiceView } from "@/components/route53/Route53ServiceView";
 import { HostedZoneView } from "@/components/route53/HostedZoneView";
 import { Ec2ServiceView } from "@/components/ec2/Ec2ServiceView";
 import { SecurityGroupDetailView } from "@/components/ec2/SecurityGroupDetailView";
+import { DockerView } from "@/components/docker/DockerView";
 
 function EmptyState() {
   return (
@@ -233,6 +234,8 @@ export function MainArea() {
             <Route53ServiceView />
           ) : tab.kind === "hostedZone" && tab.zoneId ? (
             <HostedZoneView zoneId={tab.zoneId} />
+          ) : tab.kind === "docker" ? (
+            <DockerView />
           ) : tab.kind === "service" && tab.service === "ec2" ? (
             <Ec2ServiceView />
           ) : tab.kind === "securityGroup" && tab.securityGroupId ? (
