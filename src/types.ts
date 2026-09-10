@@ -12,7 +12,8 @@ export type ServiceKind =
   | "apigateway"
   | "ses"
   | "iam"
-  | "route53";
+  | "route53"
+  | "ec2";
 
 export interface ConnectionProfile {
   id: string;
@@ -45,7 +46,8 @@ export type TabKind =
   | "sesMailbox"
   | "iamRole"
   | "iamUser"
-  | "hostedZone";
+  | "hostedZone"
+  | "securityGroup";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -65,6 +67,7 @@ export interface TabDescriptor {
   identityName?: string;
   roleName?: string;
   zoneId?: string;
+  securityGroupId?: string;
   userName?: string;
   title: string;
 }

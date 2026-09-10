@@ -324,6 +324,12 @@ describe("AppShell", () => {
     expect(useTabs.getState().tabs.map((t) => t.id)).toEqual(["service:route53"]);
     expect(screen.getByRole("tab", { name: /^Route 53/ })).toHaveAttribute("data-state", "active");
   });
+  it("opens the EC2 tab and displays EC2 service view", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: /^EC2/ }));
+    expect(useTabs.getState().tabs.map((t) => t.id)).toEqual(["service:ec2"]);
+    expect(screen.getByRole("tab", { name: /^EC2/ })).toHaveAttribute("data-state", "active");
+  });
 
   it("opens the palette with Cmd-K and navigates to SQS from it", () => {
     renderApp();

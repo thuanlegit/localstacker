@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, Server, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 
 export interface ServiceMeta {
@@ -108,6 +108,13 @@ export const SERVICES: readonly ServiceMeta[] = [
     icon: Globe,
     blurb: "Hosted zones & DNS records",
   },
+  {
+    kind: "ec2",
+    label: "EC2",
+    shortLabel: "EC2",
+    icon: Server,
+    blurb: "Instances, key pairs & security groups",
+  },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
@@ -131,4 +138,5 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   ses: "ses",
   iam: "iam",
   route53: "route53",
+  ec2: "ec2",
 };
