@@ -53,6 +53,22 @@ import {
   DeleteScheduleGroupCommand,
   DeleteScheduleCommand,
 } from "@aws-sdk/client-scheduler";
+import {
+  CreateRestApiCommand,
+  GetResourcesCommand,
+  CreateResourceCommand,
+  PutMethodCommand,
+  PutIntegrationCommand,
+  PutMethodResponseCommand,
+  PutIntegrationResponseCommand,
+  CreateDeploymentCommand,
+  DeleteRestApiCommand,
+} from "@aws-sdk/client-api-gateway";
+import {
+  VerifyEmailIdentityCommand,
+  SendEmailCommand,
+  DeleteIdentityCommand,
+} from "@aws-sdk/client-ses";
 import { GetQueueAttributesCommand } from "@aws-sdk/client-sqs";
 import { zipSync, strToU8 } from "fflate";
 import { requireLocalStack, makeClients, unique } from "./helpers";
@@ -60,7 +76,10 @@ import { requireLocalStack, makeClients, unique } from "./helpers";
 test.describe("@screenshot Capture screenshots", () => {
   test.use({ viewport: { width: 1600, height: 1000 } });
 
-  const { s3, sqs, lambda, dynamodb, dynamoDoc, sns, logs, ssm, eventbridge, scheduler } = makeClients();
+  const { s3, sqs, lambda, dynamodb, dynamoDoc, sns, logs, ssm, eventbridge, scheduler, apigateway, ses } = makeClients();
+  const apiName = unique("petstore-api");
+  let restApiId: string;
+  const sesSender = "team@localstacker.dev";
   const ebBusName = unique("orders-bus");
   const ebRuleName = "order-placed-rule";
   const schedGroupName = unique("ecommerce-schedules");
@@ -339,6 +358,89 @@ test.describe("@screenshot Capture screenshots", () => {
         State: "DISABLED",
       }),
     );
+
+    // 10. Seed API Gateway REST API
+    const apiRes = await apigateway.send(
+      new CreateRestApiCommand({
+        name: apiName,
+        description: "Petstore REST API with stages",
+      }),
+    );
+    restApiId = apiRes.id!;
+    const resourcesRes = await apigateway.send(
+      new GetResourcesCommand({ restApiId, embed: ["methods"] }),
+    );
+    const rootRes = resourcesRes.items?.find((r) => r.path === "/");
+    const rootId = rootRes?.id!;
+    const petRes = await apigateway.send(
+      new CreateResourceCommand({
+        restApiId,
+        parentId: rootId,
+        pathPart: "pets",
+      }),
+    );
+    const petId = petRes.id!;
+
+    await apigateway.send(
+      new PutMethodCommand({
+        restApiId,
+        resourceId: petId,
+        httpMethod: "GET",
+        authorizationType: "NONE",
+        apiKeyRequired: false,
+      }),
+    );
+    await apigateway.send(
+      new PutIntegrationCommand({
+        restApiId,
+        resourceId: petId,
+        httpMethod: "GET",
+        type: "MOCK",
+        requestTemplates: { "application/json": '{"statusCode": 200}' },
+      }),
+    );
+    await apigateway.send(
+      new PutMethodResponseCommand({
+        restApiId,
+        resourceId: petId,
+        httpMethod: "GET",
+        statusCode: "200",
+      }),
+    );
+    await apigateway.send(
+      new PutIntegrationResponseCommand({
+        restApiId,
+        resourceId: petId,
+        httpMethod: "GET",
+        statusCode: "200",
+        responseTemplates: {
+          "application/json": '{"message":"mock response"}',
+        },
+      }),
+    );
+    await apigateway.send(
+      new CreateDeploymentCommand({ restApiId, stageName: "dev" }),
+    );
+
+    // 11. Seed SES identity and message
+    await ses.send(new VerifyEmailIdentityCommand({ EmailAddress: sesSender }));
+    await ses.send(
+      new SendEmailCommand({
+        Source: sesSender,
+        Destination: { ToAddresses: ["developer@localstacker.dev"] },
+        Message: {
+          Subject: { Data: "Welcome to LocalStacker" },
+          Body: {
+            Html: {
+              Data: "<h1>Welcome to LocalStacker</h1><p>Your local cloud environment is running smoothly.</p>",
+            },
+            Text: {
+              Data: "Welcome to LocalStacker. Your local cloud environment is running smoothly.",
+            },
+          },
+        },
+      }),
+    );
   });
 
   test.afterAll(async () => {
@@ -445,6 +547,22 @@ test.describe("@screenshot Capture screenshots", () => {
       ).catch(() => {});
     } catch (err) {
       console.warn("Scheduler cleanup error:", err);
+    }
+
+    // Cleanup API Gateway
+    try {
+      if (restApiId) {
+        await apigateway.send(new DeleteRestApiCommand({ restApiId })).catch(() => {});
+      }
+    } catch (err) {
+      console.warn("API Gateway cleanup error:", err);
+    }
+
+    // Cleanup SES
+    try {
+      await ses.send(new DeleteIdentityCommand({ Identity: sesSender })).catch(() => {});
+    } catch (err) {
+      console.warn("SES cleanup error:", err);
     }
   });
 
@@ -563,5 +681,26 @@ test.describe("@screenshot Capture screenshots", () => {
       page.getByText(/LocalStack community stores schedules but does not execute them/),
     ).toBeVisible();
     await page.screenshot({ path: "docs/screenshots/scheduler-schedules.png", animations: "disabled" });
+
+    // 10. API Gateway REST API screenshot (resource tree + method inspector + stages)
+    await page.locator("aside").getByRole("button", { name: /^API Gateway/ }).click();
+    const apiRow = page.getByText(apiName, { exact: true });
+    await expect(apiRow).toBeVisible({ timeout: 15_000 });
+    await apiRow.click();
+    await expect(page.getByText("/pets", { exact: true })).toBeVisible({ timeout: 10_000 });
+    const getBadge = page.getByTestId("resource-row-/pets").getByText("GET");
+    await getBadge.click();
+    await expect(page.getByText("Method Details")).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({ path: "docs/screenshots/apigateway-api.png", animations: "disabled" });
+
+    // 11. SES captured mailbox screenshot (message list + HTML preview)
+    await page.locator("aside").getByRole("button", { name: /^SES/ }).click();
+    await page.getByRole("button", { name: /Captured mailbox/i }).click();
+    await expect(page.getByRole("heading", { name: "SES Mailbox" })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Welcome to LocalStacker").first()).toBeVisible({ timeout: 10_000 });
+    await page.getByText("Welcome to LocalStacker").first().click();
+    const iframe = page.locator("iframe[title='HTML email preview']");
+    await expect(iframe).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({ path: "docs/screenshots/ses-mailbox.png", animations: "disabled" });
   });
 });

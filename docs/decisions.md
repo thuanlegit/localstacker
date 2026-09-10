@@ -162,3 +162,21 @@ Compact record of the foundational decisions. Each entry: context â†’ decision â
 - Rather than gating Scheduler behind a Pro license badge, an informational banner ("LocalStack community stores schedules but does not execute them") is displayed following the D13 secrets-token precedent, allowing full local CRUD testing.
 
 **Consequences**: Data planes are thin and idiomatic over `@aws-sdk/client-eventbridge` and `@aws-sdk/client-scheduler`. Scheduler views show complete expressions and input payloads. E2E tests exercise complete EventBridge event delivery to SQS queues and full Scheduler CRUD without requiring a LocalStack Pro license.
+
+## D18. M8 API Gateway + SES: TestInvokeMethod-backed Method Test Runner, curated integration creation, captured mailbox via internal endpoint
+
+**Context**: API Gateway REST APIs require stages and deployments for live invocations, but LocalStack implements `TestInvokeMethod` in its legacy provider, allowing direct method simulation without deployment. Method creation in AWS API Gateway has complex multi-step sequences across methods, integrations, method responses, and integration responses. In SES, emails sent locally in LocalStack are intercepted rather than sent externally; modern LocalStack stores captured emails in an internal endpoint (`/_aws/ses`, historically `/_localstack/ses`), which is lazily registered on first SES API use. SES `SendEmail` strictly requires a verified sender identity.
+
+**Decision**:
+- In `src/lib/apigateway.ts`, `testInvokeMethod` leverages `TestInvokeMethodCommand` to execute synchronous test invocations, extracting status, response headers, response body, latency, and execution log. Status codes in the 4xx and 5xx ranges are treated as valid simulation results and rendered directly in the Test Runner results panel rather than thrown as exceptions. LocalStack reports latency as an integer representing whole seconds (often reading ~0 ms); the raw number is displayed faithfully.
+- Method creation is curated into three well-defined integration types:
+  1. **MOCK**: Automatically provisions the four-step sequence (`PutMethod` -> `PutIntegration` -> `PutMethodResponse` -> `PutIntegrationResponse`) with default request templates and an editable JSON response template.
+  2. **AWS_PROXY (Lambda)**: Configures Lambda proxy integration using `POST` and a constructed integration URI (`arn:aws:apigateway:<region>:lambda:path/2015-03-31/functions/<arn>/invocations`), reusing `<TargetPicker />` from EventBridge.
+  3. **HTTP_PROXY**: Configures HTTP passthrough to arbitrary target URLs.
+- Deployed stage invoke URLs follow LocalStack's ASF route structure: `{endpoint}/restapis/{apiId}/{stageName}/_user_request_{path}`.
+- In `src/lib/ses.ts`, `listIdentities` fans out `GetIdentityVerificationAttributesCommand` to resolve verification status and tokens for all identities. `sendEmail` guards that either text or HTML body is provided.
+- LocalStack Captured Mailbox accesses `/_aws/ses` with automatic fallback to `/_localstack/ses`. If the endpoint is unavailable (e.g. before any SES call has registered the route or on non-LocalStack endpoints), an informational banner is shown ("Captured mailbox is unavailable on this LocalStack instance"), preserving identity management functionality per D13 precedent.
+- Client-side MIME attachment parsing (`parseAttachments`) parses `Content-Disposition: attachment; filename="..."` headers out of raw MIME data, providing attachment listing and size breakdown.
+- The Send Test Email dialog automatically restricts the sender address (`From`) to verified email identities, preventing `MessageRejected` errors.
+
+**Consequences**: The Method Test Runner and Captured Mailbox provide interactive local feedback loops without needing external curl commands or deployed infrastructure. The integration creation wizard eliminates low-level AWS API Gateway wiring boilerplate.
