@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, Database, HardDrive, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, Sun, Webhook, Zap } from "lucide-react";
+import { CalendarClock, Database, HardDrive, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, ShieldCheck, Sun, User, Webhook, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -25,6 +25,7 @@ import { useEventBuses } from "@/hooks/use-eventbridge";
 import { useScheduleGroups } from "@/hooks/use-scheduler";
 import { useRestApis } from "@/hooks/use-apigateway";
 import { useIdentities } from "@/hooks/use-ses";
+import { useRoles, useUsers } from "@/hooks/use-iam";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const theme = useTheme((s) => s.theme);
@@ -42,6 +43,8 @@ export function CommandPalette() {
   const { data: scheduleGroups } = useScheduleGroups(profile.id, { enabled: open });
   const { data: restApis } = useRestApis(profile.id, { enabled: open });
   const { data: identities } = useIdentities(profile.id, { enabled: open });
+  const { data: iamRoles } = useRoles({ enabled: open });
+  const { data: iamUsers } = useUsers({ enabled: open });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -367,6 +370,52 @@ export function CommandPalette() {
             </CommandItem>
           ))}
         </CommandGroup>
+        {iamRoles && iamRoles.length > 0 && (
+          <CommandGroup heading="IAM Roles">
+            {iamRoles.map((r) => (
+              <CommandItem
+                key={r.roleName}
+                value={`IAM role ${r.roleName}`}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `iamRole:${r.roleName}`,
+                      kind: "iamRole",
+                      roleName: r.roleName,
+                      title: r.roleName,
+                    }),
+                  )
+                }
+              >
+                <ShieldCheck />
+                {r.roleName}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {iamUsers && iamUsers.length > 0 && (
+          <CommandGroup heading="IAM Users">
+            {iamUsers.map((u) => (
+              <CommandItem
+                key={u.userName}
+                value={`IAM user ${u.userName}`}
+                onSelect={() =>
+                  run(() =>
+                    openTab({
+                      id: `iamUser:${u.userName}`,
+                      kind: "iamUser",
+                      userName: u.userName,
+                      title: u.userName,
+                    }),
+                  )
+                }
+              >
+                <User />
+                {u.userName}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
         <CommandGroup heading="Preferences">
           <CommandItem
             value="Toggle theme"

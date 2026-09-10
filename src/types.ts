@@ -10,7 +10,8 @@ export type ServiceKind =
   | "eventbridge"
   | "scheduler"
   | "apigateway"
-  | "ses";
+  | "ses"
+  | "iam";
 
 export interface ConnectionProfile {
   id: string;
@@ -40,7 +41,9 @@ export type TabKind =
   | "scheduleGroup"
   | "restApi"
   | "sesIdentity"
-  | "sesMailbox";
+  | "sesMailbox"
+  | "iamRole"
+  | "iamUser";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -58,5 +61,7 @@ export interface TabDescriptor {
   groupName?: string;
   restApiId?: string;
   identityName?: string;
+  roleName?: string;
+  userName?: string;
   title: string;
 }

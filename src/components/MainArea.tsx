@@ -35,6 +35,9 @@ import { RestApiView } from "@/components/apigateway/RestApiView";
 import { SesServiceView } from "@/components/ses/SesServiceView";
 import { IdentityView } from "@/components/ses/IdentityView";
 import { SesMailboxView } from "@/components/ses/SesMailboxView";
+import { IamServiceView } from "@/components/iam/IamServiceView";
+import { RoleView } from "@/components/iam/RoleView";
+import { UserView } from "@/components/iam/UserView";
 
 function EmptyState() {
   return (
@@ -216,6 +219,12 @@ export function MainArea() {
             <IdentityView identityName={tab.identityName} />
           ) : tab.kind === "sesMailbox" ? (
             <SesMailboxView />
+          ) : tab.kind === "service" && tab.service === "iam" ? (
+            <IamServiceView />
+          ) : tab.kind === "iamRole" && tab.roleName ? (
+            <RoleView roleName={tab.roleName} />
+          ) : tab.kind === "iamUser" && tab.userName ? (
+            <UserView userName={tab.userName} />
           ) : null}
         </TabsContent>
       ))}

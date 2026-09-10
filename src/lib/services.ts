@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 
 export interface ServiceMeta {
@@ -94,6 +94,13 @@ export const SERVICES: readonly ServiceMeta[] = [
     icon: Mail,
     blurb: "Email identities & mailbox",
   },
+  {
+    kind: "iam",
+    label: "IAM",
+    shortLabel: "IAM",
+    icon: ShieldCheck,
+    blurb: "Roles, users & policies",
+  },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
@@ -115,4 +122,5 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   scheduler: "scheduler",
   apigateway: "apigateway",
   ses: "ses",
+  iam: "iam",
 };
