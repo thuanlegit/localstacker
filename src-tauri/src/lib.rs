@@ -1,3 +1,5 @@
+pub mod docker;
+
 use std::collections::HashMap;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -70,7 +72,22 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .invoke_handler(tauri::generate_handler![greet, forward_request])
+        .manage(docker::DockerSessions::default())
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            forward_request,
+            docker::docker_status,
+            docker::docker_list_containers,
+            docker::docker_inspect_container,
+            docker::docker_start_container,
+            docker::docker_stop_container,
+            docker::docker_restart_container,
+            docker::docker_remove_container,
+            docker::docker_create_container,
+            docker::docker_cancel,
+            docker::docker_container_logs,
+            docker::docker_stop_logs,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
