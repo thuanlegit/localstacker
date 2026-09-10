@@ -8,6 +8,8 @@ import type {
 } from "./docker";
 import { isPersistImage } from "./docker";
 
+const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
 interface MockContainerState {
   summary: ContainerSummary;
   detail: ContainerDetail;
@@ -174,16 +176,19 @@ export const mockDockerAdapter: DockerAdapter = {
   ): Promise<ContainerSummary> {
     activePulls.add(sessionId);
 
-    // Short pull event sequence
+    // Short pull event sequence, paced so the progress UI is observable.
     onEvent({ status: "Pulling fs layer", layerId: "layer-1", current: 100, total: 1000, done: false });
+    await delay(300);
     if (!activePulls.has(sessionId)) {
       throw new Error("Pull cancelled");
     }
     onEvent({ status: "Downloading", layerId: "layer-1", current: 500, total: 1000, done: false });
+    await delay(300);
     if (!activePulls.has(sessionId)) {
       throw new Error("Pull cancelled");
     }
     onEvent({ status: "Extracting", layerId: "layer-1", current: 1000, total: 1000, done: false });
+    await delay(300);
     onEvent({ status: "Creating container…", done: false });
     onEvent({ status: "Starting container…", done: false });
     onEvent({ status: "Container started", done: true });

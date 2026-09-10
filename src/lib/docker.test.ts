@@ -352,9 +352,11 @@ describe("mock adapter behavior", () => {
       persistVolume: true,
     };
 
-    const summary = await mockDockerAdapter.createContainer(input, "sess-create-1", (e) => {
+    const summaryPromise = mockDockerAdapter.createContainer(input, "sess-create-1", (e) => {
       events.push(e);
     });
+    await vi.advanceTimersByTimeAsync(1_000);
+    const summary = await summaryPromise;
 
     expect(events.length).toBeGreaterThanOrEqual(4);
     expect(events.some((e) => e.status.includes("Pulling"))).toBe(true);

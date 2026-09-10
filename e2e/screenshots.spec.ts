@@ -959,4 +959,17 @@ test.describe("@screenshot Capture screenshots", () => {
     await expect(page.getByText(ec2InstanceName)).toBeVisible({ timeout: 15_000 });
     await page.screenshot({ path: "docs/screenshots/ec2-instances.png", animations: "disabled" });
   });
+
+  test("captures docker panel screenshot", async ({ page }) => {
+    // Mock adapter drives the panel in the browser — no SDK seeding needed.
+    await page.goto("/");
+    await page.locator("aside").getByRole("button", { name: /^Docker/ }).click();
+    await expect(
+      page.locator("tr", { hasText: "demo-localstack" }).first(),
+    ).toBeVisible();
+    await page.screenshot({
+      path: "docs/screenshots/docker-panel.png",
+      animations: "disabled",
+    });
+  });
 });
