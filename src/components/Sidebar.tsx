@@ -52,7 +52,7 @@ export function Sidebar() {
   const [dialogProfile, setDialogProfile] = useState<ConnectionProfile | undefined>(undefined);
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
-      <div className="flex flex-col gap-2 p-3">
+      <div className="flex shrink-0 flex-col gap-2 p-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-auto w-full justify-between gap-2 px-3 py-2">
@@ -188,7 +188,7 @@ export function Sidebar() {
         />
       </div>
 
-      <nav className="flex flex-col gap-0.5 px-3">
+      <nav className="min-h-0 flex-1 overflow-y-auto flex flex-col gap-0.5 px-3">
         <p className="px-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
           Services
         </p>
@@ -228,7 +228,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto border-t border-sidebar-border p-2">
+      <div className="mt-auto shrink-0 border-t border-sidebar-border p-2">
         <Button
           variant="ghost"
           size="icon"
