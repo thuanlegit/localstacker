@@ -5,6 +5,8 @@ import type { LambdaClient } from "@aws-sdk/client-lambda";
 import { makeClients } from "@/lib/aws";
 import { useActiveProfile } from "@/store/profiles";
 import {
+  type CreateFunctionParams,
+  createFunction,
   createDemoFunction,
   deleteFunction,
   getFunctionConfig,
@@ -64,6 +66,20 @@ export function useLambdaActions() {
   const profile = useActiveProfile();
   const queryClient = useQueryClient();
 
+  const create = async (params: CreateFunctionParams): Promise<string | null> => {
+    try {
+      const res = await createFunction(client, params);
+      toast.success(`Function "${res.name}" created`);
+      await queryClient.invalidateQueries({
+        queryKey: lambdaKeys.functions(profile.id, profile.region),
+      });
+      return res.name;
+    } catch (e) {
+      toast.error(`Failed to create function: ${toErrorMessage(e)}`);
+      return null;
+    }
+  };
+
   const createDemo = async (name = "demo-hello"): Promise<string | null> => {
     try {
       const res = await createDemoFunction(client, name);
@@ -92,5 +108,5 @@ export function useLambdaActions() {
     }
   };
 
-  return { createDemo, removeFunction };
+  return { create, createDemo, removeFunction };
 }

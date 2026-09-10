@@ -3,6 +3,7 @@ import {
   BookOpen,
   CircleAlert,
   Loader2,
+  Plus,
   RotateCw,
   Zap,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import { useTabs } from "@/store/tabs";
 import { useFunctions, useLambdaActions } from "@/hooks/use-lambda";
 import { LambdaGuideDialog } from "./LambdaGuideDialog";
 import { LambdaGuideCard } from "./LambdaGuideCard";
+import { CreateFunctionDialog } from "./CreateFunctionDialog";
 import { formatBytes, formatDate } from "@/lib/format";
 
 export function LambdaServiceView() {
@@ -27,6 +29,7 @@ export function LambdaServiceView() {
     { enabled: serviceStatus !== "disabled" },
   );
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { createDemo } = useLambdaActions();
 
   const handleOpenFunction = (name: string) => {
@@ -71,6 +74,15 @@ export function LambdaServiceView() {
           </Button>
 
           <Button
+            size="sm"
+            onClick={() => setIsCreateOpen(true)}
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Create function</span>
+          </Button>
+
+          <Button
             variant="ghost"
             size="icon"
             aria-label="Refresh functions"
@@ -99,6 +111,7 @@ export function LambdaServiceView() {
         </div>
       ) : !data || data.length === 0 ? (
         <LambdaGuideCard
+          onCreateFunction={() => setIsCreateOpen(true)}
           onOpenGuide={() => setIsGuideOpen(true)}
           onFunctionCreated={handleOpenFunction}
         />
@@ -177,7 +190,14 @@ export function LambdaServiceView() {
       <LambdaGuideDialog
         open={isGuideOpen}
         onOpenChange={setIsGuideOpen}
+        onCreateFunctionClick={() => setIsCreateOpen(true)}
         onCreateDemoClick={handleCreateDemo}
+      />
+
+      <CreateFunctionDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onCreated={handleOpenFunction}
       />
     </div>
   );

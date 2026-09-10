@@ -6,6 +6,7 @@ import {
   ListFunctionsCommand,
   UpdateFunctionConfigurationCommand,
   type LambdaClient,
+  type Runtime,
 } from "@aws-sdk/client-lambda";
 import { zipSync, strToU8 } from "fflate";
 
@@ -174,42 +175,97 @@ export async function updateFunctionEnvVars(
   );
 }
 
-export async function createDemoFunction(
-  client: LambdaClient,
-  name = "demo-hello",
-): Promise<string> {
-  const codeZip = zipSync({
-    "index.js": strToU8(
-      "exports.handler = async (event) => {\n" +
-        "  console.log('Demo lambda invoked with event:', JSON.stringify(event));\n" +
-        "  return {\n" +
-        "    statusCode: 200,\n" +
-        "    body: JSON.stringify({\n" +
-        "      message: 'Hello from LocalStack Lambda!',\n" +
-        "      timestamp: new Date().toISOString(),\n" +
-        "      event,\n" +
-        "    }),\n" +
-        "  };\n" +
-        "};",
-    ),
-  });
+export interface CreateFunctionParams {
+  name: string;
+  runtime: string;
+  handler: string;
+  codeZip: Uint8Array;
+  description?: string;
+  role?: string;
+  timeout?: number;
+  memorySize?: number;
+  envVars?: Record<string, string>;
+}
 
-  await client.send(
+export const NODE_STARTER_CODE = `export const handler = async (event) => {
+  console.log("Received event:", JSON.stringify(event, null, 2));
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: "Hello from LocalStack Lambda!",
+      timestamp: new Date().toISOString(),
+      event,
+    }),
+  };
+};
+`;
+
+export const PYTHON_STARTER_CODE = `import json
+from datetime import datetime, timezone
+
+def lambda_handler(event, context):
+    print("Received event:", json.dumps(event, indent=2))
+    return {
+        "statusCode": 200,
+        "body": json.dumps({
+            "message": "Hello from LocalStack Lambda!",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event": event,
+        }),
+    }
+`;
+
+export function buildStarterZip(runtime: string, code: string): Uint8Array {
+  const filename = runtime.startsWith("python")
+    ? "lambda_function.py"
+    : "index.mjs";
+  return zipSync({
+    [filename]: strToU8(code),
+  });
+}
+
+export async function createFunction(
+  client: LambdaClient,
+  params: CreateFunctionParams,
+): Promise<{ name: string; arn?: string }> {
+  const res = await client.send(
     new CreateFunctionCommand({
-      FunctionName: name,
-      Runtime: "nodejs22.x",
-      Handler: "index.handler",
-      Role: "arn:aws:iam::000000000000:role/lambda-demo-role",
-      Description: "Demo function created from Localstacker",
+      FunctionName: params.name,
+      Runtime: params.runtime as Runtime,
+      Handler: params.handler,
+      Role: params.role || "arn:aws:iam::000000000000:role/lambda-role",
+      Description: params.description,
+      Timeout: params.timeout ?? 3,
+      MemorySize: params.memorySize ?? 128,
+      Environment: params.envVars
+        ? { Variables: params.envVars }
+        : undefined,
       Code: {
-        ZipFile: codeZip,
+        ZipFile: params.codeZip,
       },
     }),
   );
 
-  return name;
+  return {
+    name: res.FunctionName ?? params.name,
+    arn: res.FunctionArn,
+  };
 }
 
+export async function createDemoFunction(
+  client: LambdaClient,
+  name = "demo-hello",
+): Promise<string> {
+  const codeZip = buildStarterZip("nodejs22.x", NODE_STARTER_CODE);
+  const res = await createFunction(client, {
+    name,
+    runtime: "nodejs22.x",
+    handler: "index.handler",
+    codeZip,
+    description: "Demo function created from Localstacker",
+  });
+  return res.name;
+}
 export async function deleteFunction(
   client: LambdaClient,
   name: string,

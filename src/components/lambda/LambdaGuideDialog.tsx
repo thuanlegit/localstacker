@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy, BookOpen, Layers, Sparkles } from "lucide-react";
+import { Check, Copy, BookOpen, Layers, Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
 interface LambdaGuideDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCreateFunctionClick?: () => void;
   onCreateDemoClick?: () => void;
 }
 
@@ -158,6 +159,7 @@ resource "aws_lambda_function" "demo" {
 export function LambdaGuideDialog({
   open,
   onOpenChange,
+  onCreateFunctionClick,
   onCreateDemoClick,
 }: LambdaGuideDialogProps) {
   const [activeTab, setActiveTab] =
@@ -204,8 +206,21 @@ export function LambdaGuideDialog({
               CloudWatch Logs. Functions are deployed via your build pipeline or
               CLI.
             </p>
-            {onCreateDemoClick && (
-              <div className="pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {onCreateFunctionClick && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onCreateFunctionClick();
+                  }}
+                  className="gap-1.5 h-7 text-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Create function
+                </Button>
+              )}
+              {onCreateDemoClick && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -216,12 +231,11 @@ export function LambdaGuideDialog({
                   className="gap-1.5 h-7 text-xs"
                 >
                   <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  Create quick demo function
+                  Quick demo function
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-
           {/* Snippet Tabs */}
           <div className="flex flex-wrap gap-1 border-b pb-2">
             {(

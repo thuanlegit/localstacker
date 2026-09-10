@@ -5,8 +5,10 @@ import {
   getFunctionConfig,
   invokeFunction,
   updateFunctionEnvVars,
+  createFunction,
   createDemoFunction,
   deleteFunction,
+  buildStarterZip,
 } from "./lambda";
 
 describe("lambda data plane", () => {
@@ -232,6 +234,53 @@ describe("lambda data plane", () => {
           envVars: {},
         }),
       ).rejects.toThrow("Update failed");
+    });
+  });
+
+  describe("buildStarterZip", () => {
+    it("packages node starter code into a zip buffer", () => {
+      const zip = buildStarterZip("nodejs22.x", "exports.handler = () => {};");
+      expect(zip).toBeInstanceOf(Uint8Array);
+      expect(zip.length).toBeGreaterThan(0);
+    });
+
+    it("packages python starter code into a zip buffer", () => {
+      const zip = buildStarterZip("python3.12", "def lambda_handler(): pass");
+      expect(zip).toBeInstanceOf(Uint8Array);
+      expect(zip.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("createFunction", () => {
+    it("sends CreateFunctionCommand with custom params", async () => {
+      const send = vi.fn().mockResolvedValue({
+        FunctionName: "custom-fn",
+        FunctionArn: "arn:aws:lambda:us-east-1:000000000000:function:custom-fn",
+      });
+      const client = { send } as unknown as LambdaClient;
+      const zip = new Uint8Array([1, 2, 3]);
+
+      const res = await createFunction(client, {
+        name: "custom-fn",
+        runtime: "python3.12",
+        handler: "lambda_function.lambda_handler",
+        codeZip: zip,
+        description: "My custom function",
+        timeout: 10,
+        memorySize: 256,
+        envVars: { FOO: "bar" },
+      });
+
+      expect(res.name).toBe("custom-fn");
+      expect(send).toHaveBeenCalledOnce();
+      const input = send.mock.calls[0][0].input;
+      expect(input.FunctionName).toBe("custom-fn");
+      expect(input.Runtime).toBe("python3.12");
+      expect(input.Handler).toBe("lambda_function.lambda_handler");
+      expect(input.Timeout).toBe(10);
+      expect(input.MemorySize).toBe(256);
+      expect(input.Environment).toEqual({ Variables: { FOO: "bar" } });
+      expect(input.Code.ZipFile).toBe(zip);
     });
   });
 

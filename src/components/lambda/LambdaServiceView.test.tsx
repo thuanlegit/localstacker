@@ -27,6 +27,7 @@ vi.mock("@/hooks/use-lambda", () => ({
     refetch: vi.fn(),
   }),
   useLambdaActions: () => ({
+    create: vi.fn().mockResolvedValue("new-fn"),
     createDemo: vi.fn().mockResolvedValue("demo-hello"),
     removeFunction: vi.fn().mockResolvedValue(true),
   }),
@@ -109,5 +110,24 @@ describe("LambdaServiceView", () => {
     fireEvent.click(guideBtn);
 
     expect(screen.getByText("Lambda Setup & Usage Guide")).toBeInTheDocument();
+  });
+
+  it("opens create function dialog when clicking Create function button in header", () => {
+    renderWithProviders(<LambdaServiceView />);
+
+    const createBtn = screen.getByRole("button", { name: /create function/i });
+    fireEvent.click(createBtn);
+
+    expect(screen.getByText("Create Lambda Function")).toBeInTheDocument();
+  });
+  it("opens create function dialog from empty state guide card", () => {
+    currentFunctions = [];
+    renderWithProviders(<LambdaServiceView />);
+
+    const createBtns = screen.getAllByRole("button", { name: /create function/i });
+    expect(createBtns.length).toBeGreaterThanOrEqual(2);
+    fireEvent.click(createBtns[1]); // The guide card button
+
+    expect(screen.getByText("Create Lambda Function")).toBeInTheDocument();
   });
 });

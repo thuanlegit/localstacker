@@ -4,6 +4,7 @@ import {
   Check,
   Copy,
   Loader2,
+  Plus,
   Sparkles,
   Zap,
 } from "lucide-react";
@@ -13,11 +14,13 @@ import { LAMBDA_GUIDE_SNIPPETS } from "./LambdaGuideDialog";
 import { useLambdaActions } from "@/hooks/use-lambda";
 
 interface LambdaGuideCardProps {
+  onCreateFunction?: () => void;
   onOpenGuide: () => void;
   onFunctionCreated?: (name: string) => void;
 }
 
 export function LambdaGuideCard({
+  onCreateFunction,
   onOpenGuide,
   onFunctionCreated,
 }: LambdaGuideCardProps) {
@@ -71,24 +74,36 @@ export function LambdaGuideCard({
 
         {/* Quick Action Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-2">
+          {onCreateFunction && (
+            <Button
+              size="sm"
+              onClick={onCreateFunction}
+              className="gap-1.5 shadow-xs"
+            >
+              <Plus className="h-4 w-4" />
+              Create function
+            </Button>
+          )}
+
           <Button
             size="sm"
+            variant={onCreateFunction ? "outline" : "default"}
             onClick={handleCreateDemo}
             disabled={isCreatingDemo}
-            className="gap-1.5 shadow-xs"
+            className="gap-1.5"
             title="Instantly create 'demo-hello' Node.js function in LocalStack"
           >
             {isCreatingDemo ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
             )}
             Quick demo function
           </Button>
 
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={onOpenGuide}
             className="gap-1.5 text-muted-foreground hover:text-foreground"
           >
