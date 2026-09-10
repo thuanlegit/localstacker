@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Loader2, Radio } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,15 @@ export function AddTriggerDialog({
   const [enabled, setEnabled] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Auto-select first queue when queues load
+  useEffect(() => {
+    if (open) {
+      setSelectedQueueUrl("");
+      setCustomArn("");
+      setBatchSize(10);
+      setBatchWindow(0);
+      setEnabled(true);
+    }
+  }, [open]);
   const selectedQueue = useMemo(() => {
     if (!queues || queues.length === 0) return null;
     return queues.find((q) => q.url === selectedQueueUrl) ?? queues[0] ?? null;

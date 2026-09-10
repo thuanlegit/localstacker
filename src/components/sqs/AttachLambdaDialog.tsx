@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,15 @@ export function AttachLambdaDialog({
   const [batchWindow, setBatchWindow] = useState<number>(0);
   const [enabled, setEnabled] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedFunctionName("");
+      setBatchSize(10);
+      setBatchWindow(0);
+      setEnabled(true);
+    }
+  }, [open]);
 
   const selectedFunction = useMemo(() => {
     if (!functions || functions.length === 0) return null;
