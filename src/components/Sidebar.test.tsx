@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { renderWithProviders } from "@/test/utils";
 import { LOCAL_PROFILE_ID, localProfile, useProfiles } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
+import { useSidebar } from "@/store/sidebar";
 
 const mockHealthData = {
   status: "up" as const,
@@ -25,6 +26,7 @@ vi.mock("@/hooks/use-health", () => ({
 describe("Sidebar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useSidebar.setState({ isCollapsed: false });
     useTabs.setState({ tabs: [], activeTabId: null });
     useProfiles.setState({
       profiles: [localProfile()],
@@ -106,5 +108,52 @@ describe("Sidebar", () => {
     });
     expect(regionTrigger).toBeInTheDocument();
     expect(regionTrigger).toHaveTextContent("us-east-1");
+  });
+
+  it("collapses and expands via collapse toggle button", () => {
+    const { container } = renderWithProviders(<Sidebar />);
+    const aside = container.querySelector("aside");
+    expect(aside).toHaveClass("w-60");
+
+    const collapseBtn = screen.getByRole("button", {
+      name: "Collapse sidebar",
+    });
+    fireEvent.click(collapseBtn);
+
+    expect(aside).toHaveClass("w-14");
+    expect(useSidebar.getState().isCollapsed).toBe(true);
+
+    const expandBtn = screen.getByRole("button", { name: "Expand sidebar" });
+    fireEvent.click(expandBtn);
+
+    expect(aside).toHaveClass("w-60");
+    expect(useSidebar.getState().isCollapsed).toBe(false);
+  });
+
+  it("toggles collapse with Cmd+B and Ctrl+B keyboard shortcut", () => {
+    const { container } = renderWithProviders(<Sidebar />);
+    const aside = container.querySelector("aside");
+    expect(aside).toHaveClass("w-60");
+
+    fireEvent.keyDown(window, { key: "b", metaKey: true });
+    expect(aside).toHaveClass("w-14");
+    expect(useSidebar.getState().isCollapsed).toBe(true);
+
+    fireEvent.keyDown(window, { key: "b", ctrlKey: true });
+    expect(aside).toHaveClass("w-60");
+    expect(useSidebar.getState().isCollapsed).toBe(false);
+  });
+
+  it("renders compact accessible icon buttons when collapsed", () => {
+    useSidebar.setState({ isCollapsed: true });
+    renderWithProviders(<Sidebar />);
+
+    const ec2Btn = screen.getByRole("button", { name: "EC2" });
+    expect(ec2Btn).toBeInTheDocument();
+
+    fireEvent.click(ec2Btn);
+    expect(useTabs.getState().tabs).toEqual([
+      { id: "service:ec2", kind: "service", service: "ec2", title: "EC2" },
+    ]);
   });
 });

@@ -8,7 +8,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export function HealthBadge() {
+interface HealthBadgeProps {
+  collapsed?: boolean;
+}
+
+export function HealthBadge({ collapsed = false }: HealthBadgeProps) {
   const profile = useActiveProfile();
   const { data, isPending } = useHealth();
 
@@ -36,19 +40,24 @@ export function HealthBadge() {
       <TooltipTrigger asChild>
         <div
           data-testid="health-badge"
-          className="flex items-center gap-2 rounded-md border border-sidebar-border bg-card/60 px-2 py-1.5 text-xs text-muted-foreground"
+          className={cn(
+            "flex items-center rounded-md border border-sidebar-border bg-card/60 text-xs text-muted-foreground transition-all",
+            collapsed
+              ? "size-9 justify-center p-0 mx-auto"
+              : "gap-2 px-2 py-1.5",
+          )}
         >
           {isPending ? (
             <Loader2 className="size-3 animate-spin" />
           ) : (
-            <span className={cn("relative flex size-2")}>
+            <span className={cn("relative flex size-2 shrink-0")}>
               {up && (
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
               )}
               <span className={cn("relative inline-flex size-2 rounded-full", dotClass)} />
             </span>
           )}
-          <span className="truncate">{label}</span>
+          {!collapsed && <span className="truncate">{label}</span>}
         </div>
       </TooltipTrigger>
       <TooltipContent side="right" className="max-w-72 text-xs">{tooltip}</TooltipContent>
