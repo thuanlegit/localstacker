@@ -12,6 +12,8 @@ import { EventBridgeClient } from "@aws-sdk/client-eventbridge";
 import { SchedulerClient } from "@aws-sdk/client-scheduler";
 import { APIGatewayClient } from "@aws-sdk/client-api-gateway";
 import { SESClient } from "@aws-sdk/client-ses";
+import { IAMClient } from "@aws-sdk/client-iam";
+import { Route53Client } from "@aws-sdk/client-route-53";
 export const ENDPOINT = process.env.LOCALSTACK_ENDPOINT || "http://127.0.0.1:4566";
 
 export async function requireLocalStack(): Promise<void> {
@@ -61,6 +63,8 @@ export function makeClients() {
     scheduler: new SchedulerClient(config),
     apigateway: new APIGatewayClient(config),
     ses: new SESClient(config),
+    iam: new IAMClient(config),
+    route53: new Route53Client(config),
   };
 }
 

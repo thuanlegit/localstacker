@@ -69,6 +69,18 @@ import {
   SendEmailCommand,
   DeleteIdentityCommand,
 } from "@aws-sdk/client-ses";
+import {
+  CreateRoleCommand,
+  PutRolePolicyCommand,
+  DeleteRolePolicyCommand,
+  DeleteRoleCommand,
+} from "@aws-sdk/client-iam";
+import {
+  CreateHostedZoneCommand,
+  ChangeResourceRecordSetsCommand,
+  DeleteHostedZoneCommand,
+  ListResourceRecordSetsCommand,
+} from "@aws-sdk/client-route-53";
 import { GetQueueAttributesCommand } from "@aws-sdk/client-sqs";
 import { zipSync, strToU8 } from "fflate";
 import { requireLocalStack, makeClients, unique } from "./helpers";
@@ -76,7 +88,10 @@ import { requireLocalStack, makeClients, unique } from "./helpers";
 test.describe("@screenshot Capture screenshots", () => {
   test.use({ viewport: { width: 1600, height: 1000 } });
 
-  const { s3, sqs, lambda, dynamodb, dynamoDoc, sns, logs, ssm, eventbridge, scheduler, apigateway, ses } = makeClients();
+  const { s3, sqs, lambda, dynamodb, dynamoDoc, sns, logs, ssm, eventbridge, scheduler, apigateway, ses, iam, route53 } = makeClients();
+  const iamRoleName = unique("app-execution-role");
+  const r53ZoneName = `${unique("zone").toLowerCase()}.local`;
+  let r53ZoneId = "";
   const apiName = unique("petstore-api");
   let restApiId: string;
   const sesSender = "team@localstacker.dev";
@@ -441,6 +456,85 @@ test.describe("@screenshot Capture screenshots", () => {
         },
       }),
     );
+    // 12. Seed IAM role with inline policy
+    await iam.send(
+      new CreateRoleCommand({
+        RoleName: iamRoleName,
+        Description: "Production microservices execution role",
+        AssumeRolePolicyDocument: JSON.stringify({
+          Version: "2012-10-17",
+          Statement: [
+            {
+              Effect: "Allow",
+              Principal: { Service: "lambda.amazonaws.com" },
+              Action: "sts:AssumeRole",
+            },
+          ],
+        }),
+      }),
+    );
+    await iam.send(
+      new PutRolePolicyCommand({
+        RoleName: iamRoleName,
+        PolicyName: "DynamoDBReadAccess",
+        PolicyDocument: JSON.stringify(
+          {
+            Version: "2012-10-17",
+            Statement: [
+              {
+                Effect: "Allow",
+                Action: ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:Scan"],
+                Resource: "*",
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+      }),
+    );
+
+    // 13. Seed Route 53 hosted zone with A and CNAME records
+    const zoneRes = await route53.send(
+      new CreateHostedZoneCommand({
+        Name: `${r53ZoneName}.`,
+        CallerReference: Date.now().toString(),
+        HostedZoneConfig: {
+          Comment: "Internal production DNS zone",
+          PrivateZone: false,
+        },
+      }),
+    );
+    r53ZoneId = zoneRes.HostedZone?.Id?.replace(/^\/?hostedzone\//, "") ?? "";
+    if (r53ZoneId) {
+      await route53.send(
+        new ChangeResourceRecordSetsCommand({
+          HostedZoneId: r53ZoneId,
+          ChangeBatch: {
+            Changes: [
+              {
+                Action: "CREATE",
+                ResourceRecordSet: {
+                  Name: `api.${r53ZoneName}.`,
+                  Type: "A",
+                  TTL: 300,
+                  ResourceRecords: [{ Value: "10.0.1.50" }, { Value: "10.0.1.51" }],
+                },
+              },
+              {
+                Action: "CREATE",
+                ResourceRecordSet: {
+                  Name: `web.${r53ZoneName}.`,
+                  Type: "CNAME",
+                  TTL: 600,
+                  ResourceRecords: [{ Value: `api.${r53ZoneName}.` }],
+                },
+              },
+            ],
+          },
+        }),
+      );
+    }
   });
 
   test.afterAll(async () => {
@@ -563,6 +657,35 @@ test.describe("@screenshot Capture screenshots", () => {
       await ses.send(new DeleteIdentityCommand({ Identity: sesSender })).catch(() => {});
     } catch (err) {
       console.warn("SES cleanup error:", err);
+    }
+    // Cleanup IAM
+    try {
+      await iam.send(new DeleteRolePolicyCommand({ RoleName: iamRoleName, PolicyName: "DynamoDBReadAccess" })).catch(() => {});
+      await iam.send(new DeleteRoleCommand({ RoleName: iamRoleName })).catch(() => {});
+    } catch (err) {
+      console.warn("IAM cleanup error:", err);
+    }
+
+    // Cleanup Route 53
+    try {
+      if (r53ZoneId) {
+        const recordsRes = await route53.send(new ListResourceRecordSetsCommand({ HostedZoneId: r53ZoneId }));
+        if (recordsRes.ResourceRecordSets) {
+          for (const r of recordsRes.ResourceRecordSets) {
+            if (r.Type !== "NS" && r.Type !== "SOA") {
+              await route53.send(
+                new ChangeResourceRecordSetsCommand({
+                  HostedZoneId: r53ZoneId,
+                  ChangeBatch: { Changes: [{ Action: "DELETE", ResourceRecordSet: r }] },
+                }),
+              ).catch(() => {});
+            }
+          }
+        }
+        await route53.send(new DeleteHostedZoneCommand({ Id: r53ZoneId })).catch(() => {});
+      }
+    } catch (err) {
+      console.warn("Route 53 cleanup error:", err);
     }
   });
 
@@ -702,5 +825,20 @@ test.describe("@screenshot Capture screenshots", () => {
     const iframe = page.locator("iframe[title='HTML email preview']");
     await expect(iframe).toBeVisible({ timeout: 10_000 });
     await page.screenshot({ path: "docs/screenshots/ses-mailbox.png", animations: "disabled" });
+    // 12. IAM Role screenshot (role view + syntax-highlighted trust policy)
+    await page.locator("aside").getByRole("button", { name: /^IAM/ }).click();
+    const roleRow = page.getByText(iamRoleName, { exact: true });
+    await expect(roleRow).toBeVisible({ timeout: 15_000 });
+    await roleRow.click();
+    await expect(page.getByText('"sts:AssumeRole"')).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({ path: "docs/screenshots/iam-role.png", animations: "disabled" });
+
+    // 13. Route 53 Hosted Zone screenshot (hosted zone view + virtualized records grid)
+    await page.locator("aside").getByRole("button", { name: /^Route 53/ }).click();
+    const zoneRow = page.getByText(new RegExp(r53ZoneName)).first();
+    await expect(zoneRow).toBeVisible({ timeout: 15_000 });
+    await zoneRow.click();
+    await expect(page.getByText(`api.${r53ZoneName}.`).first()).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({ path: "docs/screenshots/route53-zone.png", animations: "disabled" });
   });
 });
