@@ -81,6 +81,15 @@ import {
   DeleteHostedZoneCommand,
   ListResourceRecordSetsCommand,
 } from "@aws-sdk/client-route-53";
+import {
+  CreateSecurityGroupCommand,
+  AuthorizeSecurityGroupIngressCommand,
+  DeleteSecurityGroupCommand,
+  CreateKeyPairCommand,
+  DeleteKeyPairCommand,
+  RunInstancesCommand,
+  TerminateInstancesCommand,
+} from "@aws-sdk/client-ec2";
 import { GetQueueAttributesCommand } from "@aws-sdk/client-sqs";
 import { zipSync, strToU8 } from "fflate";
 import { requireLocalStack, makeClients, unique } from "./helpers";
@@ -88,7 +97,12 @@ import { requireLocalStack, makeClients, unique } from "./helpers";
 test.describe("@screenshot Capture screenshots", () => {
   test.use({ viewport: { width: 1600, height: 1000 } });
 
-  const { s3, sqs, lambda, dynamodb, dynamoDoc, sns, logs, ssm, eventbridge, scheduler, apigateway, ses, iam, route53 } = makeClients();
+  const { s3, sqs, lambda, dynamodb, dynamoDoc, sns, logs, ssm, eventbridge, scheduler, apigateway, ses, iam, route53, ec2 } = makeClients();
+  const ec2SgName = "demo-web-sg";
+  let ec2SgId = "";
+  const ec2KeyName = "production-bastion-key";
+  const ec2InstanceName = "api-server-prod";
+  let ec2InstanceId = "";
   const iamRoleName = unique("app-execution-role");
   const r53ZoneName = `${unique("zone").toLowerCase()}.local`;
   let r53ZoneId = "";
@@ -535,6 +549,80 @@ test.describe("@screenshot Capture screenshots", () => {
         }),
       );
     }
+
+    // 14. Seed EC2 demo resources
+    try {
+      const sgRes = await ec2.send(
+        new CreateSecurityGroupCommand({
+          GroupName: ec2SgName,
+          Description: "Production Web Firewall",
+        }),
+      );
+      if (sgRes.GroupId) {
+        ec2SgId = sgRes.GroupId;
+        await ec2.send(
+          new AuthorizeSecurityGroupIngressCommand({
+            GroupId: ec2SgId,
+            IpPermissions: [
+              {
+                IpProtocol: "tcp",
+                FromPort: 80,
+                ToPort: 80,
+                IpRanges: [{ CidrIp: "0.0.0.0/0", Description: "HTTP" }],
+              },
+              {
+                IpProtocol: "tcp",
+                FromPort: 443,
+                ToPort: 443,
+                IpRanges: [{ CidrIp: "0.0.0.0/0", Description: "HTTPS" }],
+              },
+              {
+                IpProtocol: "tcp",
+                FromPort: 22,
+                ToPort: 22,
+                IpRanges: [{ CidrIp: "10.0.0.0/16", Description: "SSH Bastion" }],
+              },
+            ],
+          }),
+        );
+      }
+    } catch {
+      // ignore
+    }
+
+    try {
+      await ec2.send(
+        new CreateKeyPairCommand({
+          KeyName: ec2KeyName,
+        }),
+      );
+    } catch {
+      // ignore
+    }
+
+    try {
+      const runRes = await ec2.send(
+        new RunInstancesCommand({
+          ImageId: "ami-12345678",
+          InstanceType: "t2.micro",
+          MinCount: 1,
+          MaxCount: 1,
+          KeyName: ec2KeyName,
+          SecurityGroupIds: ec2SgId ? [ec2SgId] : undefined,
+          TagSpecifications: [
+            {
+              ResourceType: "instance",
+              Tags: [{ Key: "Name", Value: ec2InstanceName }],
+            },
+          ],
+        }),
+      );
+      if (runRes.Instances?.[0]?.InstanceId) {
+        ec2InstanceId = runRes.Instances[0].InstanceId;
+      }
+    } catch {
+      // ignore
+    }
   });
 
   test.afterAll(async () => {
@@ -687,6 +775,20 @@ test.describe("@screenshot Capture screenshots", () => {
     } catch (err) {
       console.warn("Route 53 cleanup error:", err);
     }
+    // Cleanup EC2
+    if (ec2InstanceId) {
+      try {
+        await ec2.send(new TerminateInstancesCommand({ InstanceIds: [ec2InstanceId] }));
+      } catch {}
+    }
+    if (ec2SgId) {
+      try {
+        await ec2.send(new DeleteSecurityGroupCommand({ GroupId: ec2SgId }));
+      } catch {}
+    }
+    try {
+      await ec2.send(new DeleteKeyPairCommand({ KeyName: ec2KeyName }));
+    } catch {}
   });
 
   test("captures full application screenshots", async ({ page }) => {
@@ -840,5 +942,21 @@ test.describe("@screenshot Capture screenshots", () => {
     await zoneRow.click();
     await expect(page.getByText(`api.${r53ZoneName}.`).first()).toBeVisible({ timeout: 10_000 });
     await page.screenshot({ path: "docs/screenshots/route53-zone.png", animations: "disabled" });
+
+    // 14. EC2 Security Group screenshot (rules matrix)
+    await page.locator("aside").getByRole("button", { name: /^EC2/ }).click();
+    await page.getByRole("tab", { name: /Security Groups/i }).click();
+    const sgRow = page.locator("tr", { hasText: ec2SgName });
+    await expect(sgRow).toBeVisible({ timeout: 15_000 });
+    await sgRow.getByRole("button", { name: /Manage Rules/i }).click();
+    await expect(page.getByRole("heading", { name: ec2SgName })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("443")).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({ path: "docs/screenshots/ec2-security-group.png", animations: "disabled" });
+
+    // 15. EC2 Instances screenshot
+    await page.locator("aside").getByRole("button", { name: /^EC2/ }).click();
+    await page.getByRole("tab", { name: /Instances/i }).click();
+    await expect(page.getByText(ec2InstanceName)).toBeVisible({ timeout: 15_000 });
+    await page.screenshot({ path: "docs/screenshots/ec2-instances.png", animations: "disabled" });
   });
 });
