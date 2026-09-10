@@ -73,6 +73,10 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **M4** | Hardening — Playwright e2e suite, release engineering, auto-updater, v1.0.0 | ✅ Done |
 | **M5** | **DynamoDB & SNS** — table inspector, scan/query, document editor; topic pub/sub & SQS subscription helper | ✅ Done |
 | **M6** | **CloudWatch Logs & SSM Parameter Store** — log groups/streams viewer, live tailing, parameter hierarchy & SecureString decryption | ✅ Done |
+| **M7** | **EventBridge & EventBridge Scheduler** — event buses/rules, PutEvents test publisher, schedules explorer | 📋 Planned |
+| **M8** | **API Gateway REST API & SES** — resource tree, method test runner, verified identities & captured mailbox viewer | 📋 Planned |
+| **M9** | **IAM & Route53** — role/policy inspector, access keys, hosted zones & DNS records grid | 📋 Planned |
+| **M10** | **EC2 Mock** — instance states, security groups rule matrix, key pairs | 📋 Planned |
 | **v1.1** | **Docker Lifecycle** — detect, start, stop, and restart LocalStack containers via Docker socket | 🔭 Future |
 
 See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.

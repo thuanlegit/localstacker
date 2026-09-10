@@ -73,16 +73,30 @@ Notes:
 
 | Service | Milestone | Browse | Curated write actions | Explicitly skipped |
 |---|---|---|---|---|
-| **DynamoDB** | M5 | Tables list; key schema (`HASH`/`RANGE`), GSIs/LSIs; virtualized item grid; Scan & Query (PK/SK condition expressions); raw JSON & document inspector | Put/edit item (validated JSON); delete item; truncate/clear table | Complex table creation wizard; secondary index mutation; auto-scaling / throughput editing; backup / PITR |
-| **SNS** | M5 | Topics list (standard & FIFO); attributes; subscriptions list (protocol, endpoint, status) | Create/delete topic; publish message (payload + JSON attributes); subscribe SQS queue helper | Delivery retry policies; SMS sandbox management; data protection policies |
-| **CloudWatch Logs** | M6 | Log groups; log streams (sorted by event time); virtualized log viewer with live tailing & search filter | Create/delete log group; delete stream; deep-link from Lambda FunctionView | Metric filters; subscription filters; CloudWatch metrics/alarms |
-| **SSM Parameter Store** | M6 | Parameters (path hierarchy & flat views); type badges (`String`, `StringList`, `SecureString`); decrypted value toggle | Create/update parameter; delete parameter; decrypt `SecureString` using local KMS | Parameter tier editing; advanced policies; history diffing |
+| **DynamoDB** | M5 (Shipped ✅) | Tables list; key schema (`HASH`/`RANGE`), GSIs/LSIs; virtualized item grid; Scan & Query (PK/SK condition expressions); raw JSON & document inspector | Put/edit item (validated JSON); delete item; truncate/clear table | Complex table creation wizard; secondary index mutation; auto-scaling / throughput editing; backup / PITR |
+| **SNS** | M5 (Shipped ✅) | Topics list (standard & FIFO); attributes; subscriptions list (protocol, endpoint, status) | Create/delete topic; publish message (payload + JSON attributes); subscribe SQS queue helper | Delivery retry policies; SMS sandbox management; data protection policies |
+| **CloudWatch Logs** | M6 (Shipped ✅) | Log groups; log streams (sorted by event time); virtualized log viewer with live tailing & search filter | Create/delete log group; delete stream; deep-link from Lambda FunctionView | Metric filters; subscription filters; CloudWatch metrics/alarms |
+| **SSM Parameter Store** | M6 (Shipped ✅) | Parameters (path hierarchy & flat views); type badges (`String`, `StringList`, `SecureString`); decrypted value toggle | Create/update parameter; delete parameter; decrypt `SecureString` using local KMS | Parameter tier editing; advanced policies; history diffing |
+| **EventBridge** | M7 | Event buses list (default & custom); rules list per bus (status, schedule/pattern); targets list per rule (target type, ARN, input transformer) | Create/delete event bus; create/edit/delete rule (event pattern JSON editor); add/remove targets; **PutEvents test publisher modal** (DetailType, Source, Detail JSON) | Archive & Replay; Schema Registry; Partner Event Sources; CloudWatch Alarms / cross-region replication |
+| **EventBridge Scheduler** | M7 | Schedule groups; schedules list (state `ENABLED`/`DISABLED`, expression: rate/cron/at, target ARN, time window) | Create/delete schedule (name, group, cron/rate expression, payload JSON, target ARN); enable/disable toggle | Complex retry policies with DLQ routing; cross-account IAM role assumptions |
+| **API Gateway REST API** | M8 | REST APIs list; resource tree hierarchy (`/`, `/{proxy+}`); method inspector (verb, auth, integration: Lambda/Mock/HTTP); stages list with deployment history and direct URL | Create/delete REST API; create resource and method; deploy API to stage; **Built-in Method Test Runner** (path/query params, headers, body → invoke against LocalStack → display status, latency, headers, body, logs) | WebSocket APIs; HTTP APIs v2 (REST only in this slice); Authorizer creation wizards; VPC Links; Usage Plans / API Keys |
+| **SES** | M8 | Verified email addresses and domain identities; **LocalStack Captured Mailbox** (`GET /_localstack/ses`): sent email list with timestamp, sender, recipients, subject, tabbed HTML preview, plaintext preview, raw MIME headers, attachments | Verify email/domain identity; delete identity; **Send test email modal** (To, From, Subject, Text/HTML body) with instant capture into Mailbox | DKIM signing configuration; configuration sets; dedicated IP pools; custom verification email templates |
+| **IAM** | M9 | Roles list; policies list (AWS managed + customer inline/managed); users list. Role detail: Trust relationship policy doc, attached policies, inline policies with syntax-highlighted JSON viewer. User detail: attached policies, access keys list | Create/delete role; create/update/delete inline role policy; create/delete user; create/deactivate/delete access key; copy ARN / Access Key ID | SAML/OIDC identity providers; Permission Boundaries; Access Analyzer; credential report generation; complex MFA |
+| **Route53** | M9 | Hosted zones list (Domain Name, ID, Type: Public/Private, Record count); ResourceRecordSets virtualized grid (Name, Type: A, AAAA, CNAME, TXT, MX, etc.; TTL; Values / Routing target) | Create/delete hosted zone (domain name, comment, private zone flag); create/edit/delete DNS record sets (name, type, TTL, routing records) | Traffic Flow / Traffic Policies; Health Checks; DNSSEC configuration; Geo-location / latency routing rules |
+| **EC2** | M10 | Instances list (Instance ID, AMI, Type, State badge: running, stopped, terminated, IPs, Security Groups, Key Name); Security Groups list; Key Pairs list. Security Group Inspector: visual matrix of Inbound (Ingress) and Outbound (Egress) rules | Mock Instance state transitions (Start, Stop, Reboot, Terminate); Create/delete Security Group; Authorize/Revoke Security Group Ingress/Egress rules; Create/delete Key Pair (download private key `.pem`) | Launch Templates; EBS volume management / snapshots; Elastic IPs; NAT Gateways; Transit Gateways; complex VPC route tables |
+
 ## Information architecture
 
-- Left sidebar: connection selector + services (S3, SQS, Secrets, Lambda, DynamoDB, SNS, Logs, SSM).
-- Resources (bucket, queue, secret, function, table, topic, log group, parameter) open as **tabs** in the main area.
+- Left sidebar: connection selector + services organized into collapsible categories:
+  - **Compute & Edge**: Lambda, API Gateway, EC2
+  - **Storage & Database**: S3, DynamoDB
+  - **Messaging & Integration**: SQS, SNS, EventBridge, EventBridge Scheduler, SES
+  - **Security & Configuration**: IAM, Secrets Manager, SSM Parameter Store
+  - **Observability & DNS**: CloudWatch Logs, Route53
+- Resources open as **tabs** in the main area:
+  - Shipped: `bucket`, `queue`, `secret`, `function`, `table`, `topic`, `logGroup`, `parameter`.
+  - M7–M10: `eventBus`, `scheduleGroup`, `restApi`, `sesIdentity`, `sesMailbox`, `iamRole`, `iamPolicy`, `iamUser`, `hostedZone`, `securityGroup`, `ec2Instance`.
 - **Cmd-K** quick-jump palette to open any resource by name (additive, not primary).
-
 ## Quality & release engineering
 
 - **Tests**: Vitest + Testing Library (units/components). CI runs data-plane
@@ -122,9 +136,23 @@ Notes:
     virtualized live log tailing with search filter, deep link from Lambda function view.
   - SSM Parameter Store: `@aws-sdk/client-ssm`, path hierarchy browser,
     parameter editing, local KMS `SecureString` decryption.
-- **v1.1 — Docker Lifecycle & Advanced Tooling**:
-  - LocalStack Docker container lifecycle management via local Docker socket (detect/start/stop/restart).
-  - EventBridge event buses and rules inspection.
+- **M7 — EventBridge & EventBridge Scheduler (Event-Driven Messaging & Schedules)**:
+  - EventBridge: `@aws-sdk/client-eventbridge`, bus listing (default/custom), create/delete bus, rules explorer with event pattern JSON viewer, targets list (Lambda, SQS, SNS), rule toggle, PutEvents test event publisher modal.
+  - EventBridge Scheduler: `@aws-sdk/client-scheduler`, schedule group explorer, schedule listing (rate/cron/at), create/delete schedule, enable/disable toggle, payload inspector.
+  - E2E Playwright test: create bus, create rule with SQS target, publish event via PutEvents modal, assert message received on target queue with matched detail.
+- **M8 — API Gateway REST API & SES (Edge Routing & Email Testing)**:
+  - API Gateway REST: `@aws-sdk/client-api-gateway`, REST APIs list, resource hierarchy tree, method viewer (Lambda/Mock/HTTP integration), stage deployments, built-in Method Test Runner (headers, query params, request body, latency & status inspection).
+  - SES: `@aws-sdk/client-ses`, verified email/domain identities management, send test email modal, LocalStack Captured Mailbox (`GET /_localstack/ses`) with tabbed HTML rendered preview, plaintext view, raw headers, and attachments.
+  - E2E Playwright test: deploy REST API with mock integration, execute method test invoke in console, assert status 200 + response body; verify email identity, send email via modal, assert email captured in LocalStack Mailbox viewer.
+- **M9 — IAM & Route53 (Cloud Security & DNS)**:
+  - IAM: `@aws-sdk/client-iam`, roles list, trust relationship & policies inspector (syntax-highlighted JSON viewer), inline policy editor, user management with access keys list and credential copy helper.
+  - Route53: `@aws-sdk/client-route-53`, hosted zones (public/private) list, virtualized ResourceRecordSets grid (A, CNAME, TXT, MX, etc.), create/edit/delete DNS records with TTL and value validation.
+  - E2E Playwright test: create IAM role with inline policy, assert policy JSON rendered; create hosted zone, add A and CNAME record sets, assert in grid, delete records and zone.
+- **M10 — EC2 Mock (Compute & Network Mock)**:
+  - EC2: `@aws-sdk/client-ec2`, instances list with mock state transitions (Start, Stop, Reboot, Terminate), Key Pairs manager (create with `.pem` download, delete), Security Groups list with visual Inbound/Outbound rule matrix visualizer, Authorize/Revoke ingress/egress rules.
+  - E2E Playwright test: create security group, add ingress rule for port 443, assert in rule matrix, revoke rule; create key pair, assert fingerprint, delete key pair and security group.
+- **v1.1 — Docker Lifecycle Management**:
+  - LocalStack Docker container lifecycle management via local Docker socket (detect running container, inspect version/logs, start/stop/restart).
 ## Risks & mitigations
 
 | Risk | Mitigation |
@@ -133,3 +161,7 @@ Notes:
 | Lambda logs endpoint is LocalStack-internal and may change | Capability detection + graceful degradation to "logs unavailable" |
 | Notarization blocked on Apple Developer account | Tracked as M4 dependency; unsigned builds still shippable for personal use |
 | CORS/SDK edge cases in webview | LocalStack sends permissive CORS; Tauri allows disabling webview CORS if needed |
+| SES Captured Mailbox endpoint changes | `GET /_localstack/ses` is an internal LocalStack endpoint; capability-detect with graceful degradation to verified identities only |
+| EventBridge Scheduler community emulation depth | LocalStack community may have partial execution support; validate execution semantics, surface Pro requirement badge if scheduler engine requires token while keeping CRUD active |
+| EC2 expectation mismatch (real VMs vs mock) | UI clearly indicates "Stateful Mock" and emphasizes Security Groups / Key Pairs as the primary daily-driver value |
+| IAM policy JSON validation errors | Syntax-highlighted editor validates JSON structure client-side before sending PutRolePolicy / CreatePolicy to avoid opaque AWS errors |
