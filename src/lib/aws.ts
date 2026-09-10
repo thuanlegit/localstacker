@@ -15,6 +15,7 @@ import { APIGatewayClient } from "@aws-sdk/client-api-gateway";
 import { SESClient } from "@aws-sdk/client-ses";
 import { IAMClient } from "@aws-sdk/client-iam";
 import { Route53Client } from "@aws-sdk/client-route-53";
+import { EC2Client } from "@aws-sdk/client-ec2";
 import type { ConnectionProfile } from "@/types";
 
 /** LocalStack ignores SigV4 identity, but SDKs require credentials to sign. */
@@ -62,6 +63,7 @@ export interface ServiceClients {
   ses: SESClient;
   iam: IAMClient;
   route53: Route53Client;
+  ec2: EC2Client;
 }
 
 export function makeClients(profile: ConnectionProfile): ServiceClients {
@@ -83,5 +85,6 @@ export function makeClients(profile: ConnectionProfile): ServiceClients {
     ses: new SESClient(config),
     iam: new IAMClient(config),
     route53: new Route53Client(config),
+    ec2: new EC2Client(config),
   };
 }
