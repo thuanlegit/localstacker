@@ -39,13 +39,33 @@ import {
   PutParameterCommand,
   DeleteParameterCommand,
 } from "@aws-sdk/client-ssm";
+import {
+  CreateEventBusCommand,
+  PutRuleCommand,
+  PutTargetsCommand,
+  DeleteEventBusCommand,
+  DeleteRuleCommand,
+  RemoveTargetsCommand,
+} from "@aws-sdk/client-eventbridge";
+import {
+  CreateScheduleGroupCommand,
+  CreateScheduleCommand,
+  DeleteScheduleGroupCommand,
+  DeleteScheduleCommand,
+} from "@aws-sdk/client-scheduler";
+import { GetQueueAttributesCommand } from "@aws-sdk/client-sqs";
 import { zipSync, strToU8 } from "fflate";
 import { requireLocalStack, makeClients, unique } from "./helpers";
 
 test.describe("@screenshot Capture screenshots", () => {
   test.use({ viewport: { width: 1600, height: 1000 } });
 
-  const { s3, sqs, lambda, dynamodb, dynamoDoc, sns, logs, ssm } = makeClients();
+  const { s3, sqs, lambda, dynamodb, dynamoDoc, sns, logs, ssm, eventbridge, scheduler } = makeClients();
+  const ebBusName = unique("orders-bus");
+  const ebRuleName = "order-placed-rule";
+  const schedGroupName = unique("ecommerce-schedules");
+  const schedName1 = "nightly-report";
+  const schedName2 = "heartbeat-ping";
   const bucketName = unique("demo-assets");
   const queueName = unique("order-processing");
   const functionName = unique("process-webhook");
@@ -253,6 +273,72 @@ test.describe("@screenshot Capture screenshots", () => {
         }),
       );
     }
+
+    // 8. Seed EventBridge bus, rule, and target
+    await eventbridge.send(new CreateEventBusCommand({ Name: ebBusName }));
+    await eventbridge.send(
+      new PutRuleCommand({
+        Name: ebRuleName,
+        EventBusName: ebBusName,
+        EventPattern: JSON.stringify({ source: ["store.orders"], "detail-type": ["order.placed"] }),
+        State: "ENABLED",
+        Description: "Route completed orders to fulfillment queue",
+      }),
+    );
+
+    const queueAttrs = await sqs.send(
+      new GetQueueAttributesCommand({
+        QueueUrl: (await sqs.send(new GetQueueUrlCommand({ QueueName: queueName }))).QueueUrl!,
+        AttributeNames: ["QueueArn"],
+      }),
+    );
+    const targetArn = queueAttrs.Attributes!.QueueArn!;
+
+    await eventbridge.send(
+      new PutTargetsCommand({
+        Rule: ebRuleName,
+        EventBusName: ebBusName,
+        Targets: [
+          {
+            Id: "target-sqs-orders",
+            Arn: targetArn,
+            Input: JSON.stringify({ injected: "meta" }),
+          },
+        ],
+      }),
+    );
+
+    // 9. Seed Scheduler group and schedules
+    await scheduler.send(
+      new CreateScheduleGroupCommand({ Name: schedGroupName }),
+    );
+    await scheduler.send(
+      new CreateScheduleCommand({
+        Name: schedName1,
+        GroupName: schedGroupName,
+        ScheduleExpression: "cron(0 2 * * ? *)",
+        FlexibleTimeWindow: { Mode: "OFF" },
+        Target: {
+          Arn: targetArn,
+          RoleArn: "arn:aws:iam::000000000000:role/localstacker-scheduler",
+          Input: JSON.stringify({ report: "nightly-revenue", format: "pdf" }),
+        },
+        State: "ENABLED",
+      }),
+    );
+    await scheduler.send(
+      new CreateScheduleCommand({
+        Name: schedName2,
+        GroupName: schedGroupName,
+        ScheduleExpression: "rate(5 minutes)",
+        FlexibleTimeWindow: { Mode: "OFF" },
+        Target: {
+          Arn: targetArn,
+          RoleArn: "arn:aws:iam::000000000000:role/localstacker-scheduler",
+        },
+        State: "DISABLED",
+      }),
+    );
   });
 
   test.afterAll(async () => {
@@ -326,10 +412,44 @@ test.describe("@screenshot Capture screenshots", () => {
         console.warn("SSM cleanup error:", err);
       }
     }
+
+    // Cleanup EventBridge
+    try {
+      await eventbridge.send(
+        new RemoveTargetsCommand({
+          Rule: ebRuleName,
+          EventBusName: ebBusName,
+          Ids: ["target-sqs-orders"],
+        }),
+      ).catch(() => {});
+      await eventbridge.send(
+        new DeleteRuleCommand({ Name: ebRuleName, EventBusName: ebBusName }),
+      ).catch(() => {});
+      await eventbridge.send(
+        new DeleteEventBusCommand({ Name: ebBusName }),
+      ).catch(() => {});
+    } catch (err) {
+      console.warn("EventBridge cleanup error:", err);
+    }
+
+    // Cleanup Scheduler
+    try {
+      await scheduler.send(
+        new DeleteScheduleCommand({ Name: schedName1, GroupName: schedGroupName }),
+      ).catch(() => {});
+      await scheduler.send(
+        new DeleteScheduleCommand({ Name: schedName2, GroupName: schedGroupName }),
+      ).catch(() => {});
+      await scheduler.send(
+        new DeleteScheduleGroupCommand({ Name: schedGroupName }),
+      ).catch(() => {});
+    } catch (err) {
+      console.warn("Scheduler cleanup error:", err);
+    }
   });
 
   test("captures full application screenshots", async ({ page }) => {
-    test.setTimeout(90_000);
+    test.setTimeout(120_000);
     await page.goto("/");
     await page.locator("aside").getByRole("button", { name: /S3/ }).click();
     const bucketRow = page.getByText(bucketName, { exact: true });
@@ -422,5 +542,26 @@ test.describe("@screenshot Capture screenshots", () => {
     await page.getByRole("button", { name: "Hierarchy" }).click();
     await expect(page.getByText("production")).toBeVisible({ timeout: 5_000 });
     await page.screenshot({ path: "docs/screenshots/ssm-params.png", animations: "disabled" });
+
+    // 8. EventBridge bus view screenshot (rules + selected rule targets)
+    await page.locator("aside").getByRole("button", { name: /^EventBridge Event buses/ }).click();
+    const busRow = page.getByText(ebBusName, { exact: true });
+    await expect(busRow).toBeVisible({ timeout: 15_000 });
+    await busRow.click();
+    await expect(page.locator("table").getByText(ebRuleName, { exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("target-sqs-orders")).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({ path: "docs/screenshots/eventbridge-bus.png", animations: "disabled" });
+
+    // 9. EventBridge Scheduler group view screenshot (schedules table + community note)
+    await page.locator("aside").getByRole("button", { name: /^EventBridge Scheduler/ }).click();
+    const groupRow = page.getByText(schedGroupName, { exact: true });
+    await expect(groupRow).toBeVisible({ timeout: 15_000 });
+    await groupRow.click();
+    await expect(page.getByText(schedName1, { exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(schedName2, { exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(
+      page.getByText(/LocalStack community stores schedules but does not execute them/),
+    ).toBeVisible();
+    await page.screenshot({ path: "docs/screenshots/scheduler-schedules.png", animations: "disabled" });
   });
 });

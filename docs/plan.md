@@ -77,8 +77,8 @@ Notes:
 | **SNS** | M5 (Shipped ✅) | Topics list (standard & FIFO); attributes; subscriptions list (protocol, endpoint, status) | Create/delete topic; publish message (payload + JSON attributes); subscribe SQS queue helper | Delivery retry policies; SMS sandbox management; data protection policies |
 | **CloudWatch Logs** | M6 (Shipped ✅) | Log groups; log streams (sorted by event time); virtualized log viewer with live tailing & search filter | Create/delete log group; delete stream; deep-link from Lambda FunctionView | Metric filters; subscription filters; CloudWatch metrics/alarms |
 | **SSM Parameter Store** | M6 (Shipped ✅) | Parameters (path hierarchy & flat views); type badges (`String`, `StringList`, `SecureString`); decrypted value toggle | Create/update parameter; delete parameter; decrypt `SecureString` using local KMS | Parameter tier editing; advanced policies; history diffing |
-| **EventBridge** | M7 | Event buses list (default & custom); rules list per bus (status, schedule/pattern); targets list per rule (target type, ARN, input transformer) | Create/delete event bus; create/edit/delete rule (event pattern JSON editor); add/remove targets; **PutEvents test publisher modal** (DetailType, Source, Detail JSON) | Archive & Replay; Schema Registry; Partner Event Sources; CloudWatch Alarms / cross-region replication |
-| **EventBridge Scheduler** | M7 | Schedule groups; schedules list (state `ENABLED`/`DISABLED`, expression: rate/cron/at, target ARN, time window) | Create/delete schedule (name, group, cron/rate expression, payload JSON, target ARN); enable/disable toggle | Complex retry policies with DLQ routing; cross-account IAM role assumptions |
+| **EventBridge** | M7 (Shipped ✅) | Event buses list (default & custom); rules list per bus (status, schedule/pattern); targets list per rule (target type, ARN, input transformer) | Create/delete event bus; create/edit/delete rule (event pattern JSON editor); add/remove targets; **PutEvents test publisher modal** (DetailType, Source, Detail JSON) | Archive & Replay; Schema Registry; Partner Event Sources; CloudWatch Alarms / cross-region replication |
+| **EventBridge Scheduler** | M7 (Shipped ✅) | Schedule groups; schedules list (state `ENABLED`/`DISABLED`, expression: rate/cron/at, target ARN, time window) | Create/delete schedule (name, group, cron/rate expression, payload JSON, target ARN); enable/disable toggle | Complex retry policies with DLQ routing; cross-account IAM role assumptions |
 | **API Gateway REST API** | M8 | REST APIs list; resource tree hierarchy (`/`, `/{proxy+}`); method inspector (verb, auth, integration: Lambda/Mock/HTTP); stages list with deployment history and direct URL | Create/delete REST API; create resource and method; deploy API to stage; **Built-in Method Test Runner** (path/query params, headers, body → invoke against LocalStack → display status, latency, headers, body, logs) | WebSocket APIs; HTTP APIs v2 (REST only in this slice); Authorizer creation wizards; VPC Links; Usage Plans / API Keys |
 | **SES** | M8 | Verified email addresses and domain identities; **LocalStack Captured Mailbox** (`GET /_localstack/ses`): sent email list with timestamp, sender, recipients, subject, tabbed HTML preview, plaintext preview, raw MIME headers, attachments | Verify email/domain identity; delete identity; **Send test email modal** (To, From, Subject, Text/HTML body) with instant capture into Mailbox | DKIM signing configuration; configuration sets; dedicated IP pools; custom verification email templates |
 | **IAM** | M9 | Roles list; policies list (AWS managed + customer inline/managed); users list. Role detail: Trust relationship policy doc, attached policies, inline policies with syntax-highlighted JSON viewer. User detail: attached policies, access keys list | Create/delete role; create/update/delete inline role policy; create/delete user; create/deactivate/delete access key; copy ARN / Access Key ID | SAML/OIDC identity providers; Permission Boundaries; Access Analyzer; credential report generation; complex MFA |
@@ -94,8 +94,8 @@ Notes:
   - **Security & Configuration**: IAM, Secrets Manager, SSM Parameter Store
   - **Observability & DNS**: CloudWatch Logs, Route53
 - Resources open as **tabs** in the main area:
-  - Shipped: `bucket`, `queue`, `secret`, `function`, `table`, `topic`, `logGroup`, `parameter`.
-  - M7–M10: `eventBus`, `scheduleGroup`, `restApi`, `sesIdentity`, `sesMailbox`, `iamRole`, `iamPolicy`, `iamUser`, `hostedZone`, `securityGroup`, `ec2Instance`.
+  - Shipped: `bucket`, `queue`, `secret`, `function`, `table`, `topic`, `logGroup`, `parameter`, `eventBus`, `scheduleGroup`.
+  - M8–M10: `restApi`, `sesIdentity`, `sesMailbox`, `iamRole`, `iamPolicy`, `iamUser`, `hostedZone`, `securityGroup`, `ec2Instance`.
 - **Cmd-K** quick-jump palette to open any resource by name (additive, not primary).
 ## Quality & release engineering
 
@@ -136,7 +136,7 @@ Notes:
     virtualized live log tailing with search filter, deep link from Lambda function view.
   - SSM Parameter Store: `@aws-sdk/client-ssm`, path hierarchy browser,
     parameter editing, local KMS `SecureString` decryption.
-- **M7 — EventBridge & EventBridge Scheduler (Event-Driven Messaging & Schedules)**:
+- **M7 — EventBridge & EventBridge Scheduler (Event-Driven Messaging & Schedules)** (Shipped ✅):
   - EventBridge: `@aws-sdk/client-eventbridge`, bus listing (default/custom), create/delete bus, rules explorer with event pattern JSON viewer, targets list (Lambda, SQS, SNS), rule toggle, PutEvents test event publisher modal.
   - EventBridge Scheduler: `@aws-sdk/client-scheduler`, schedule group explorer, schedule listing (rate/cron/at), create/delete schedule, enable/disable toggle, payload inspector.
   - E2E Playwright test: create bus, create rule with SQS target, publish event via PutEvents modal, assert message received on target queue with matched detail.

@@ -148,3 +148,17 @@ Compact record of the foundational decisions. Each entry: context â†’ decision â
 - Lambda to CloudWatch Logs deep-link links directly to `/aws/lambda/<name>` log group, displaying a helpful empty state if the runtime has not yet emitted or forwarded logs.
 
 **Consequences**: Log viewer provides smooth, responsive streaming and search without multiple API abstractions. SSM parameters cleanly display both flat and tree representations, with secure reveal and editing in-place.
+
+## D17. M7 EventBridge + Scheduler: GetSchedule fan-out, failed entry error propagation, community execution note, shared TargetPicker
+
+**Context**: EventBridge and EventBridge Scheduler both route events and schedules to AWS targets (Lambda, SQS, SNS, etc.). `ListSchedules` in the Scheduler API omits critical schedule attributes such as the `ScheduleExpression`, `FlexibleTimeWindow`, and `Target.Input`. In EventBridge, `PutEvents` and `PutTargets` return HTTP 200 even when individual entries fail (`FailedEntryCount > 0`). LocalStack Community (v2.3.0+) implements Scheduler as a mocked CRUD store without actual execution or target triggering.
+
+**Decision**:
+- In `src/lib/eventbridge.ts`, `putEvents`, `putRuleTargets`, and `removeRuleTargets` inspect `FailedEntryCount` and throw an informative `Error` containing the first entry's `ErrorCode` and `ErrorMessage`, cleanly propagating API-level failures into UI toast notifications.
+- In `src/lib/scheduler.ts`, `listSchedules` fans out `GetScheduleCommand` across all returned schedule summaries using `Promise.all` (matching the SQS `listQueues` -> `getQueueAttributes` fan-out precedent), populating `expression`, `targetInput`, `timezone`, and window settings.
+- Schedule state toggling (`updateScheduleState`) fetches the current schedule with `GetScheduleCommand` and calls `UpdateScheduleCommand` retaining all configured fields while inverting `State` (`ENABLED` <-> `DISABLED`), since Scheduler has no dedicated enable/disable API verbs.
+- A shared `<TargetPicker />` component is extracted into `src/components/eventbridge/TargetPicker.tsx` and reused across both `EventBusView` and `ScheduleGroupView`. For Lambda functions (which lack ARNs in their summaries), the target ARN is deterministically constructed from the active region (`arn:aws:lambda:<region>:000000000000:function:<name>`).
+- Schedule creation uses fixed `FlexibleTimeWindow { Mode: "OFF" }` and defaults `RoleArn` to `arn:aws:iam::000000000000:role/localstacker-scheduler` (which real AWS requires and LocalStack permits).
+- Rather than gating Scheduler behind a Pro license badge, an informational banner ("LocalStack community stores schedules but does not execute them") is displayed following the D13 secrets-token precedent, allowing full local CRUD testing.
+
+**Consequences**: Data planes are thin and idiomatic over `@aws-sdk/client-eventbridge` and `@aws-sdk/client-scheduler`. Scheduler views show complete expressions and input payloads. E2E tests exercise complete EventBridge event delivery to SQS queues and full Scheduler CRUD without requiring a LocalStack Pro license.
