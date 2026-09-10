@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { maskEnv, type ContainerSummary } from "@/lib/docker";
 import { useDockerInspect } from "@/hooks/use-docker";
+import { ContainerLogsConsole } from "./ContainerLogsConsole";
 
 interface ContainerDetailPanelProps {
   container: ContainerSummary;
@@ -79,6 +80,7 @@ export function ContainerDetailPanel({ container }: ContainerDetailPanelProps) {
       <Tabs defaultValue="summary" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="summary">Summary</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="summary" className="space-y-6 m-0">
@@ -210,6 +212,10 @@ export function ContainerDetailPanel({ container }: ContainerDetailPanelProps) {
               </div>
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="logs" className="m-0 h-96">
+          <ContainerLogsConsole containerId={container.containerId} />
         </TabsContent>
       </Tabs>
     </div>
