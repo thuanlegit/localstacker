@@ -6,6 +6,8 @@ interface TabsStore {
   activeTabId: string | null;
   openTab: (tab: TabDescriptor) => void;
   closeTab: (id: string) => void;
+  closeAllTabs: () => void;
+  closeOtherTabs: (id: string) => void;
   setActiveTab: (id: string) => void;
 }
 
@@ -30,6 +32,21 @@ export const useTabs = create<TabsStore>()((set, get) => ({
         activeTabId = neighbor?.id ?? null;
       }
       return { tabs, activeTabId };
+    }),
+
+  closeAllTabs: () =>
+    set({
+      tabs: [],
+      activeTabId: null,
+    }),
+
+  closeOtherTabs: (id) =>
+    set((state) => {
+      const remaining = state.tabs.filter((t) => t.id === id);
+      return {
+        tabs: remaining,
+        activeTabId: remaining.length > 0 ? id : null,
+      };
     }),
 
   setActiveTab: (id) => {

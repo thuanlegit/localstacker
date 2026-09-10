@@ -1,4 +1,13 @@
+import { useEffect, useRef } from "react";
 import { Boxes, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTabs } from "@/store/tabs";
 import { S3ServiceView } from "@/components/s3/S3ServiceView";
@@ -32,30 +41,122 @@ export function MainArea() {
   const activeTabId = useTabs((s) => s.activeTabId);
   const setActiveTab = useTabs((s) => s.setActiveTab);
   const closeTab = useTabs((s) => s.closeTab);
+  const closeAllTabs = useTabs((s) => s.closeAllTabs);
+  const closeOtherTabs = useTabs((s) => s.closeOtherTabs);
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const activeTabRef = useRef<HTMLButtonElement | null>(null);
+
+  // Auto-scroll active tab into view when active tab changes
+  useEffect(() => {
+    if (activeTabRef.current) {
+      activeTabRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+  }, [activeTabId]);
+
+  // Translate vertical wheel scrolling to horizontal scroll when hovering over the tab bar
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.deltaY !== 0 && e.deltaX === 0) {
+      e.currentTarget.scrollLeft += e.deltaY;
+    }
+  };
 
   if (tabs.length === 0) return <EmptyState />;
 
   return (
-    <Tabs value={activeTabId ?? undefined} onValueChange={setActiveTab} className="h-full">
-      <TabsList variant="line" className="h-10 w-full justify-start rounded-none border-b px-2">
-        {tabs.map((tab) => (
-          <TabsTrigger key={tab.id} value={tab.id} className="flex-none gap-1.5 px-3">
-            {tab.title}
-            <span
-              aria-label={`Close ${tab.title}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                closeTab(tab.id);
-              }}
-              className="rounded-sm p-0.5 opacity-50 hover:opacity-100"
-            >
-              <X className="size-3.5" />
-            </span>
-          </TabsTrigger>
-        ))}
-      </TabsList>
+    <Tabs
+      value={activeTabId ?? undefined}
+      onValueChange={setActiveTab}
+      className="h-full flex flex-col min-h-0"
+    >
+      {/* Scrollable Tab Bar Header */}
+      <div className="flex h-10 w-full items-center border-b bg-background select-none shrink-0">
+        {/* Scrollable Tabs List */}
+        <div
+          ref={scrollContainerRef}
+          onWheel={handleWheel}
+          data-testid="tab-scroll-container"
+          className="flex-1 min-w-0 h-full overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <TabsList
+            variant="line"
+            className="h-full w-max justify-start rounded-none border-b-0 px-2 gap-1 bg-transparent"
+          >
+            {tabs.map((tab) => {
+              const isActive = tab.id === activeTabId;
+              return (
+                <ContextMenu key={tab.id}>
+                  <ContextMenuTrigger asChild>
+                    <div className="relative inline-flex items-center">
+                      <TabsTrigger
+                        ref={isActive ? activeTabRef : null}
+                        value={tab.id}
+                        className="flex-none gap-1.5 px-3 pr-7 h-8 text-xs font-medium max-w-[220px]"
+                        onAuxClick={(e) => {
+                          if (e.button === 1) {
+                            e.preventDefault();
+                            closeTab(tab.id);
+                          }
+                        }}
+                      >
+                        <span className="truncate">{tab.title}</span>
+                      </TabsTrigger>
+                      <button
+                        type="button"
+                        aria-label={`Close ${tab.title}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          closeTab(tab.id);
+                        }}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-xs p-0.5 opacity-60 hover:opacity-100 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent>
+                    <ContextMenuItem onClick={() => closeTab(tab.id)}>
+                      Close
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() => closeOtherTabs(tab.id)}
+                      disabled={tabs.length <= 1}
+                    >
+                      Close others
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onClick={closeAllTabs}>
+                      Close all
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
+              );
+            })}
+          </TabsList>
+        </div>
+
+        {/* Tab Bar Right Controls: Close All */}
+        <div className="flex items-center gap-1 border-l px-2 shrink-0 bg-background h-full">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={closeAllTabs}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+            title="Close all tabs"
+            aria-label="Close all tabs"
+          >
+            <X className="size-3.5" />
+            <span className="hidden sm:inline">Close all</span>
+          </Button>
+        </div>
+      </div>
+
       {tabs.map((tab) => (
-        <TabsContent key={tab.id} value={tab.id} className="min-h-0">
+        <TabsContent key={tab.id} value={tab.id} className="min-h-0 flex-1 overflow-auto m-0">
           {tab.kind === "service" && tab.service === "s3" ? (
             <S3ServiceView />
           ) : tab.kind === "bucket" && tab.bucketName ? (

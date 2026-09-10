@@ -41,4 +41,26 @@ describe("tabs store", () => {
     expect(state.activeTabId).toBeNull();
     expect(state.tabs).toHaveLength(0);
   });
+
+  it("closes all tabs and clears active tab", () => {
+    useTabs.getState().openTab({ id: "service:s3", kind: "service", service: "s3", title: "S3" });
+    useTabs.getState().openTab({ id: "service:sqs", kind: "service", service: "sqs", title: "SQS" });
+    useTabs.getState().openTab({ id: "service:lambda", kind: "service", service: "lambda", title: "Lambda" });
+
+    useTabs.getState().closeAllTabs();
+    const state = useTabs.getState();
+    expect(state.tabs).toHaveLength(0);
+    expect(state.activeTabId).toBeNull();
+  });
+
+  it("closes other tabs and keeps only target tab active", () => {
+    useTabs.getState().openTab({ id: "service:s3", kind: "service", service: "s3", title: "S3" });
+    useTabs.getState().openTab({ id: "service:sqs", kind: "service", service: "sqs", title: "SQS" });
+    useTabs.getState().openTab({ id: "service:lambda", kind: "service", service: "lambda", title: "Lambda" });
+
+    useTabs.getState().closeOtherTabs("service:sqs");
+    const state = useTabs.getState();
+    expect(state.tabs.map((t) => t.id)).toEqual(["service:sqs"]);
+    expect(state.activeTabId).toBe("service:sqs");
+  });
 });
