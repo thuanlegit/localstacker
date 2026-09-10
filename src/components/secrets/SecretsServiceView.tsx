@@ -204,13 +204,24 @@ export function SecretsServiceView() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b px-4 py-3">
+      <div className="flex items-center justify-between border-b px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <KeyRound className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base font-semibold">Secrets</h1>
+              <Badge variant="secondary" className="font-mono text-xs">
+                {data ? data.length : 0}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Encrypted secrets, API keys, and credentials
+            </p>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold">Secrets</span>
-          <Badge variant="secondary" className="font-mono text-xs">
-            {data ? data.length : 0}
-          </Badge>
-          <div className="flex-1" />
           <Button
             variant="ghost"
             size="icon"
@@ -227,13 +238,13 @@ export function SecretsServiceView() {
             Create secret
           </Button>
         </div>
-        {!profile.authToken && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            Secrets Manager may require a LocalStack auth token (Hobby+).
-            Configure one under Connections → Edit connection.
-          </p>
-        )}
       </div>
+      {!profile.authToken && (
+        <div className="border-b bg-muted/20 px-6 py-2 text-xs text-muted-foreground">
+          Secrets Manager may require a LocalStack auth token (Hobby+).
+          Configure one under Connections → Edit connection.
+        </div>
+      )}
 
       {/* Body */}
       {isPending ? (

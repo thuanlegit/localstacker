@@ -55,13 +55,34 @@ export function LambdaServiceView() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex h-12 items-center gap-2 border-b px-4">
-        <span className="text-sm font-semibold">Functions</span>
-        <Badge variant="secondary" className="font-mono text-xs">
-          {data ? data.length : 0}
-        </Badge>
-        <div className="flex-1" />
+      <div className="flex items-center justify-between border-b px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Zap className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base font-semibold">Functions</h1>
+              <Badge variant="secondary" className="font-mono text-xs">
+                {data ? data.length : 0}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Serverless functions, execution logs, and event triggers
+            </p>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Refresh functions"
+            disabled={isFetching}
+            onClick={() => refetch()}
+          >
+            <RotateCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
+          </Button>
+
           <Button
             variant="outline"
             size="sm"
@@ -79,19 +100,7 @@ export function LambdaServiceView() {
             className="gap-1.5"
           >
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Create function</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Refresh functions"
-            disabled={isFetching}
-            onClick={() => refetch()}
-          >
-            <RotateCw
-              className={`size-4 ${isFetching ? "animate-spin" : ""}`}
-            />
+            Create function
           </Button>
         </div>
       </div>

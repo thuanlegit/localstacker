@@ -592,64 +592,69 @@ export function FunctionView({ functionName }: { functionName: string }) {
   return (
     <div className="flex h-full flex-col overflow-auto">
       {/* Header */}
-      <div className="flex items-start justify-between border-b px-4 py-3">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Zap className="size-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">{fnSummary.name}</h2>
-            {fnSummary.runtime && (
-              <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
-                {fnSummary.runtime}
-              </Badge>
-            )}
-            {config?.state && (
-              <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
-                {config.state}
-              </Badge>
-            )}
+      <div className="border-b px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <Zap className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-semibold">{fnSummary.name}</h1>
+                {fnSummary.runtime && (
+                  <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                    {fnSummary.runtime}
+                  </Badge>
+                )}
+                {config?.state && (
+                  <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+                    {config.state}
+                  </Badge>
+                )}
+              </div>
+              {fnSummary.description ? (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {fnSummary.description}
+                </p>
+              ) : config?.role ? (
+                <p className="font-mono text-xs text-muted-foreground mt-0.5">
+                  Role: {config.role}
+                </p>
+              ) : null}
+            </div>
           </div>
-          {fnSummary.description && (
-            <p className="text-xs text-muted-foreground">
-              {fnSummary.description}
-            </p>
-          )}
-          {config?.role && (
-            <p className="font-mono text-xs text-muted-foreground">
-              Role: {config.role}
-            </p>
-          )}
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              useTabs.getState().openTab({
-                id: `logGroup:/aws/lambda/${functionName}`,
-                kind: "logGroup",
-                logGroupName: `/aws/lambda/${functionName}`,
-                title: `/aws/lambda/${functionName}`,
-              })
-            }
-          >
-            <ScrollText className="mr-1.5 size-3.5" />
-            View logs
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                useTabs.getState().openTab({
+                  id: `logGroup:/aws/lambda/${functionName}`,
+                  kind: "logGroup",
+                  logGroupName: `/aws/lambda/${functionName}`,
+                  title: `/aws/lambda/${functionName}`,
+                })
+              }
+            >
+              <ScrollText className="mr-1.5 size-3.5" />
+              View logs
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEnvOpen(true)}
-          >
-            <Variable className="mr-1.5 size-3.5" />
-            Edit env vars
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEnvOpen(true)}
+            >
+              <Variable className="mr-1.5 size-3.5" />
+              Edit env vars
+            </Button>
 
-          <Button size="sm" onClick={() => setIsInvokeOpen(true)}>
-            <Play className="mr-1.5 size-3.5" />
-            Invoke
-          </Button>
+            <Button size="sm" onClick={() => setIsInvokeOpen(true)}>
+              <Play className="mr-1.5 size-3.5" />
+              Invoke
+            </Button>
+          </div>
         </div>
       </div>
 

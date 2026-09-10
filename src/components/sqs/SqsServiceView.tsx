@@ -185,27 +185,39 @@ export function SqsServiceView() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex h-12 items-center gap-2 border-b px-4">
-        <span className="text-sm font-semibold">Queues</span>
-        <Badge variant="secondary" className="font-mono text-xs">
-          {data ? data.length : 0}
-        </Badge>
-        <div className="flex-1" />
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Refresh queues"
-          disabled={isFetching}
-          onClick={() => refetch()}
-        >
-          <RotateCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
-        </Button>
-        <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-          <Plus className="mr-1.5 size-4" />
-          Create queue
-        </Button>
+      <div className="flex items-center justify-between border-b px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <ListOrdered className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base font-semibold">Queues</h1>
+              <Badge variant="secondary" className="font-mono text-xs">
+                {data ? data.length : 0}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Message queues and dead-letter queue redrive
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Refresh queues"
+            disabled={isFetching}
+            onClick={() => refetch()}
+          >
+            <RotateCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
+          </Button>
+          <Button size="sm" onClick={() => setIsCreateOpen(true)}>
+            <Plus className="mr-1.5 size-4" />
+            Create queue
+          </Button>
+        </div>
       </div>
-
       {/* Body */}
       {isPending ? (
         <div className="flex flex-1 items-center justify-center">

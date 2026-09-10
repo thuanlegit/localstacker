@@ -472,87 +472,84 @@ export function QueueView({ queueName }: QueueViewProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex h-12 items-center justify-between border-b px-4 gap-3">
-        {/* Queue identity and metrics */}
-        <div className="flex items-center gap-2 min-w-0">
-          <ListOrdered className="size-4 shrink-0 text-muted-foreground" />
-          <span className="font-semibold text-sm truncate">{queue.name}</span>
-          {queue.isFifo && (
-            <Badge variant="outline" className="px-1.5 py-0 text-[10px] shrink-0 whitespace-nowrap">
-              FIFO
-            </Badge>
-          )}
-          <span className="font-mono text-xs text-muted-foreground whitespace-nowrap shrink-0 hidden sm:inline ml-1">
-            {queue.attributes.depth} messages · {queue.attributes.inFlight} in flight ·{" "}
-            {queue.attributes.delayed} delayed
-          </span>
-        </div>
+      <div className="border-b px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Queue identity and metrics */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <ListOrdered className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-semibold truncate">{queue.name}</h1>
+                {queue.isFifo && (
+                  <Badge variant="outline" className="px-1.5 py-0 text-[10px] shrink-0 whitespace-nowrap">
+                    FIFO
+                  </Badge>
+                )}
+              </div>
+              <span className="font-mono text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
+                {queue.attributes.depth} messages · {queue.attributes.inFlight} in flight ·{" "}
+                {queue.attributes.delayed} delayed
+              </span>
+            </div>
+          </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Refresh queue"
-            disabled={isFetching}
-            onClick={() => refetch()}
-          >
-            <RotateCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
-          </Button>
+          {/* Actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Refresh queue"
+              disabled={isFetching}
+              onClick={() => refetch()}
+            >
+              <RotateCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePeek}
-            className="whitespace-nowrap"
-          >
-            <Eye className="mr-1.5 size-4" />
-            Peek messages
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePeek}
+              className="whitespace-nowrap"
+            >
+              <Eye className="mr-1.5 size-4" />
+              Peek messages
+            </Button>
 
-          <Button
-            size="sm"
-            onClick={() => setIsSendOpen(true)}
-            className="whitespace-nowrap"
-          >
-            <Plus className="mr-1.5 size-4" />
-            Send message
-          </Button>
+            <Button
+              size="sm"
+              onClick={() => setIsSendOpen(true)}
+              className="whitespace-nowrap"
+            >
+              <Plus className="mr-1.5 size-4" />
+              Send message
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAttachLambdaOpen(true)}
-            className="hidden lg:inline-flex whitespace-nowrap"
-            title="Attach this SQS queue as a Lambda trigger"
-          >
-            <Zap className="mr-1.5 size-4 text-amber-500" />
-            Attach Lambda
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Queue actions">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={() => setIsRedriveOpen(true)}>
-                <ArrowRightLeft className="mr-2 size-4" />
-                Redrive to other queue
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setIsAttachLambdaOpen(true)}>
-                <Zap className="mr-2 size-4 text-amber-500" />
-                Attach Lambda
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() => setIsPurgeOpen(true)}
-              >
-                Purge queue…
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Queue actions">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setIsRedriveOpen(true)}>
+                  <ArrowRightLeft className="mr-2 size-4" />
+                  Redrive to…
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setIsAttachLambdaOpen(true)}>
+                  <Zap className="mr-2 size-4 text-amber-500" />
+                  Attach Lambda trigger…
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => setIsPurgeOpen(true)}
+                >
+                  Purge queue…
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 

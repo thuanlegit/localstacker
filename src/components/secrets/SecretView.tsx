@@ -311,52 +311,58 @@ export function SecretView({ secretName }: { secretName: string }) {
   return (
     <div className="flex h-full flex-col overflow-auto">
       {/* Header */}
-      <div className="flex items-start justify-between border-b px-4 py-3">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <KeyRound className="size-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">{secret.name}</h2>
+      <div className="border-b px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <KeyRound className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-semibold">{secret.name}</h1>
+              </div>
+              {secret.description && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {secret.description}
+                </p>
+              )}
+              <p className="font-mono text-xs text-muted-foreground truncate max-w-sm sm:max-w-md">
+                {secret.arn}
+              </p>
+            </div>
           </div>
-          {secret.description && (
-            <p className="text-xs text-muted-foreground">
-              {secret.description}
-            </p>
-          )}
-          <p className="font-mono text-xs text-muted-foreground">
-            {secret.arn}
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsUpdateOpen(true)}
-          >
-            <Pencil className="mr-1.5 size-3.5" />
-            Update value
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsUpdateOpen(true)}
+            >
+              <Pencil className="mr-1.5 size-3.5" />
+              Update value
+            </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                aria-label={`Actions for ${secret.name}`}
-              >
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => setIsDeleteOpen(true)}
-              >
-                Delete secret
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label={`Actions for ${secret.name}`}
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => setIsDeleteOpen(true)}
+                >
+                  Delete secret
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 

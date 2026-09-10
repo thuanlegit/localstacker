@@ -207,7 +207,9 @@ export function BucketView({ bucketName }: BucketViewProps) {
     >
       {/* Header / Breadcrumb toolbar */}
       <div className="flex h-12 items-center gap-1.5 border-b px-4">
-        <FolderOpen className="mr-1 size-4 text-muted-foreground" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary shrink-0 mr-1">
+          <FolderOpen className="h-4 w-4" />
+        </div>
         <nav className="flex items-center gap-1 text-sm overflow-hidden" aria-label="Breadcrumb">
           {breadcrumbSegments.map((seg, idx) => {
             const isLast = idx === breadcrumbSegments.length - 1;
