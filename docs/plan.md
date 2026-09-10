@@ -53,8 +53,8 @@ them without reaching for the CLI.
 - Built-in zero-config **Local** profile → `localhost:4566`. First-run is instant.
 - Health: poll `GET /_localstack/health`; status badge, auto-reconnect, friendly
   "not running" screen.
-- Docker: **connect-only in v1**. Container lifecycle management (detect/start/
-  stop/create via Docker socket) is a v1.1 feature.
+- Docker: container lifecycle management (detect/inspect/start/stop/restart/
+  remove/create via Docker socket) shipped in v1.1; v1 remains connect-only.
 
 ## v1 feature contract — "daily-driver tier"
 
@@ -152,7 +152,7 @@ Notes:
 - **M10 — EC2 Mock (Compute & Network Mock)** (Shipped ✅):
   - EC2: `@aws-sdk/client-ec2`, instances list with mock state transitions (Start, Stop, Reboot, Terminate), Key Pairs manager (create with `.pem` download, delete), Security Groups list with visual Inbound/Outbound rule matrix visualizer, Authorize/Revoke ingress/egress rules.
   - E2E Playwright test: create security group, add ingress rule for port 443, assert in rule matrix, revoke rule; create key pair, assert fingerprint, delete key pair and security group.
-- **v1.1 — Docker Lifecycle Management**:
+- **v1.1 — Docker Lifecycle Management** (Shipped ✅):
   - Architecture: Docker Engine access via `bollard` in the Tauri Rust backend
     (unix socket on macOS/Linux, named pipe on Windows; no CLI sidecar). Typed
     `#[tauri::command]`s: `docker_status`, `list_containers`,
