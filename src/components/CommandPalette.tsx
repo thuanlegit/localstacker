@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, Container, Database, Globe, HardDrive, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, Shield, ShieldCheck, Sun, User, Webhook, Zap } from "lucide-react";
+import { CalendarClock, Container, Database, Globe, HardDrive, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, Settings, Shield, ShieldCheck, Sun, User, Webhook, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -8,7 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { openDockerTab, openServiceTab } from "@/components/Sidebar";
+import { openDockerTab, openServiceTab, openSettingsTab } from "@/components/Sidebar";
 import { SERVICES } from "@/lib/services";
 import { resolveMode, useTheme } from "@/store/theme";
 import { useActiveProfile } from "@/store/profiles";
@@ -77,6 +77,13 @@ export function CommandPalette() {
           >
             <Container />
             Docker
+          </CommandItem>
+          <CommandItem
+            value="Settings"
+            onSelect={() => run(openSettingsTab)}
+          >
+            <Settings />
+            Settings
           </CommandItem>
           {SERVICES.map((meta) => {
             const Icon = meta.icon;

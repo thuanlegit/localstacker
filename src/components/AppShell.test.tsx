@@ -405,4 +405,24 @@ describe("AppShell", () => {
     fireEvent.click(screen.getByRole("button", { name: "Toggle theme" }));
     expect(document.documentElement).not.toHaveClass("dark");
   });
+
+  it("opens settings tab when clicking settings button in sidebar footer", () => {
+    renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "Open settings (⌘,)" }));
+
+    expect(screen.getByRole("tab", { name: /Settings/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Appearance" })).toBeInTheDocument();
+  });
+
+  it("opens settings tab with ⌘, shortcut and deduplicates opening twice", () => {
+    renderApp();
+    fireEvent.keyDown(window, { key: ",", metaKey: true });
+
+    expect(screen.getByRole("tab", { name: /Settings/ })).toBeInTheDocument();
+    expect(useTabs.getState().tabs.filter((t) => t.id === "settings")).toHaveLength(1);
+
+    fireEvent.keyDown(window, { key: ",", metaKey: true });
+    expect(useTabs.getState().tabs.filter((t) => t.id === "settings")).toHaveLength(1);
+    expect(useTabs.getState().activeTabId).toBe("settings");
+  });
 });

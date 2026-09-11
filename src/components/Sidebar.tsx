@@ -9,6 +9,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   Server,
+  Settings,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -491,21 +492,52 @@ export function Sidebar() {
       <div
         className={cn(
           "mt-auto shrink-0 border-t border-sidebar-border p-2 flex items-center",
-          isCollapsed ? "justify-center" : "justify-between",
+          isCollapsed ? "flex-col gap-1" : "justify-between",
         )}
       >
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Toggle theme"
-          onClick={() => useTheme.getState().toggle()}
-        >
-          {resolveMode(mode) === "dark" ? <Sun /> : <Moon />}
-        </Button>
-        {!isCollapsed && (
-          <span className="text-[10px] font-mono text-muted-foreground pr-1">
-            ⌘B to collapse
-          </span>
+        {isCollapsed ? (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Toggle theme"
+              onClick={() => useTheme.getState().toggle()}
+            >
+              {resolveMode(mode) === "dark" ? <Sun /> : <Moon />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Open settings (⌘,)"
+              onClick={openSettingsTab}
+            >
+              <Settings />
+            </Button>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Toggle theme"
+                onClick={() => useTheme.getState().toggle()}
+              >
+                {resolveMode(mode) === "dark" ? <Sun /> : <Moon />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open settings (⌘,)"
+                onClick={openSettingsTab}
+              >
+                <Settings />
+              </Button>
+            </div>
+            <span className="text-[10px] font-mono text-muted-foreground pr-1">
+              ⌘B to collapse
+            </span>
+          </>
         )}
       </div>
     </aside>

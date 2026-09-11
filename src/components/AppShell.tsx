@@ -1,11 +1,22 @@
+import { useEffect } from "react";
 import { CommandPalette } from "@/components/CommandPalette";
 import { MainArea } from "@/components/MainArea";
-import { Sidebar } from "@/components/Sidebar";
+import { openSettingsTab, Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { useAutoUpdate } from "@/hooks/use-auto-update";
 
 export function AppShell() {
   useAutoUpdate();
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === ",") {
+        e.preventDefault();
+        openSettingsTab();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
   return (
     <div className="flex h-screen">
       <Sidebar />
