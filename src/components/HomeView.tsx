@@ -192,8 +192,8 @@ export function HomeView() {
                 aria-label={`Open ${meta.label}${status === "off" ? "" : ` (${statusWord(status)})`}`}
                 onClick={() => openServiceTab(meta.kind, meta.shortLabel)}
                 className={cn(
-                  "relative flex flex-col gap-1 rounded-lg border border-transparent p-3 text-left transition-colors",
-                  "hover:border-border hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "relative flex flex-col gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors",
+                  "hover:border-ring/40 hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   status === "disabled" && "opacity-60",
                 )}
               >
