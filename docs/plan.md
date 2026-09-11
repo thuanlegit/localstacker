@@ -180,12 +180,16 @@ Notes:
   - Logs: snapshot (last N lines) plus follow tail with autoscroll/pause,
     in-tab console per container.
   - Create wizard: curated fields — container name, image+tag picker (both
-    families plus custom image), host port (default 4566) and extra port
-    mappings, key=value env rows (API key masked), PERSIST toggle creating a
-    named volume, network picker, restart policy (default `unless-stopped`),
-    hostname — plus Advanced JSON overrides deep-merged into the bollard
-    create request (client-side validation, merged-config preview). Image pull
-    shows layer progress and is cancellable.
+    families plus custom image), visual service picker (toggle chips for every
+    supported LocalStack service plus a free-text field for additional service
+    names; emits the `SERVICES` env var, deduped, with an all-services-when-
+    empty default; manual `SERVICES` env rows are rejected in favor of the
+    picker), host port (default 4566) and extra port mappings, key=value env
+    rows (API key masked), PERSIST toggle creating a named volume, network
+    picker, restart policy (default `unless-stopped`), hostname — plus Advanced
+    JSON overrides deep-merged into the bollard create request (client-side
+    validation, merged-config preview). Image pull shows layer progress and is
+    cancellable.
   - Post-create: wait for health, find-or-create `localhost:<port>` profile,
     auto-connect; profiles stay pure endpoint+auth, container control never
     becomes a profile field.

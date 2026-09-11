@@ -23,6 +23,8 @@ import {
   type CreateContainerInput,
   type PullProgressEvent,
 } from "@/lib/docker";
+import { LOCALSTACK_SERVICE_NAMES, SERVICES } from "@/lib/services";
+import type { ServiceKind } from "@/types";
 
 const IMAGE_PRESETS = [
   "localstack/localstack:4.14.0",
@@ -82,6 +84,8 @@ export function CreateContainerDialog({
   const [hostname, setHostname] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [extraJson, setExtraJson] = useState("");
+  const [selectedServices, setSelectedServices] = useState<Set<ServiceKind>>(new Set<ServiceKind>());
+  const [extraServices, setExtraServices] = useState("");
 
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -104,6 +108,27 @@ export function CreateContainerDialog({
       return null;
     }
   }, [extraJson]);
+  const servicesEnv = useMemo<string | null>(() => {
+    if (selectedServices.size === 0 && !extraServices.trim()) return null;
+    const seen = new Set<string>();
+    const names = [
+      ...SERVICES.filter((s) => selectedServices.has(s.kind)).map(
+        (s) => LOCALSTACK_SERVICE_NAMES[s.kind],
+      ),
+      ...extraServices.split(",").map((t) => t.trim()).filter(Boolean),
+    ].filter((name) => {
+      const key = name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    return `SERVICES=${names.join(",")}`;
+  }, [selectedServices, extraServices]);
+
+  const envList = useMemo(() => {
+    const manual = envRows.filter((r) => r.key || r.value).map((r) => `${r.key}=${r.value}`);
+    return servicesEnv ? [servicesEnv, ...manual] : manual;
+  }, [servicesEnv, envRows]);
 
   const previewConfig = useMemo(() => {
     if (parsedExtra === null) {
@@ -117,9 +142,7 @@ export function CreateContainerDialog({
         containerPort: Number(p.container),
         protocol: "tcp" as const,
       })),
-      env: maskEnvForPreview(
-        envRows.filter((r) => r.key || r.value).map((r) => `${r.key}=${r.value}`),
-      ),
+      env: maskEnvForPreview(envList),
       persistVolume: persist,
       network: network.trim() || undefined,
       restartPolicy,
@@ -131,7 +154,7 @@ export function CreateContainerDialog({
     } catch {
       return "";
     }
-  }, [containerName, resolvedImage, ports, envRows, persist, network, restartPolicy, hostname, parsedExtra]);
+  }, [containerName, resolvedImage, ports, envList, persist, network, restartPolicy, hostname, parsedExtra]);
 
   const validate = (): string[] => {
     const errs: string[] = [];
@@ -162,6 +185,17 @@ export function CreateContainerDialog({
         break;
       }
     }
+    if (envRows.some((r) => r.key.trim().toUpperCase() === "SERVICES")) {
+      errs.push("SERVICES is managed by the service picker — select chips instead of adding an env row.");
+    }
+    if (
+      extraServices
+        .split(",")
+        .map((t) => t.trim())
+        .some((t) => t && !/^[a-z0-9][a-z0-9-]*$/.test(t))
+    ) {
+      errs.push("Additional services must be comma-separated lowercase service names (e.g. kms, sts, firehose).");
+    }
     if (extraJson.trim() && parsedExtra === null) {
       errs.push("Advanced JSON must be a valid JSON object.");
     }
@@ -183,9 +217,7 @@ export function CreateContainerDialog({
         containerPort: Number(p.container),
         protocol: "tcp" as const,
       })),
-      env: envRows
-        .filter((r) => r.key || r.value)
-        .map((r) => `${r.key}=${r.value}`),
+      env: envList,
       persistVolume: persist,
       network: network.trim() || undefined,
       restartPolicy,
@@ -298,6 +330,64 @@ export function CreateContainerDialog({
                 />
               )}
             </div>
+            {/* Services */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label>Services</Label>
+                {selectedServices.size > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto py-0.5 text-xs"
+                    onClick={() => setSelectedServices(new Set<ServiceKind>())}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {SERVICES.map((s) => {
+                  const Icon = s.icon;
+                  const active = selectedServices.has(s.kind);
+                  return (
+                    <button
+                      key={s.kind}
+                      type="button"
+                      aria-pressed={active}
+                      title={s.blurb}
+                      onClick={() =>
+                        setSelectedServices((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(s.kind)) {
+                            next.delete(s.kind);
+                          } else {
+                            next.add(s.kind);
+                          }
+                          return next;
+                        })
+                      }
+                      className={
+                        active
+                          ? "inline-flex items-center gap-1.5 rounded-md border border-primary bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground transition-colors"
+                          : "inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                      }
+                    >
+                      <Icon className="size-3.5" />
+                      {s.shortLabel}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground" data-testid="services-env-hint">
+                {servicesEnv ?? "No selection = all services available (loaded lazily)."}
+              </p>
+              <Input
+                value={extraServices}
+                onChange={(e) => setExtraServices(e.target.value)}
+                placeholder="Additional services (comma-separated), e.g. kms, sts, firehose"
+                aria-label="Additional services"
+              />
+            </div>
 
             {/* Ports */}
             <div className="space-y-1.5">
@@ -358,7 +448,7 @@ export function CreateContainerDialog({
                     onChange={(e) =>
                       setEnvRows(envRows.map((r, i) => (i === idx ? { ...r, key: e.target.value } : r)))
                     }
-                    placeholder="SERVICES"
+                    placeholder="DEBUG"
                     className="w-44"
                     aria-label={`Env key ${idx + 1}`}
                   />
@@ -370,7 +460,7 @@ export function CreateContainerDialog({
                         envRows.map((r, i) => (i === idx ? { ...r, value: e.target.value } : r)),
                       )
                     }
-                    placeholder="s3,sqs"
+                    placeholder="1"
                     className="flex-1"
                     aria-label={`Env value ${idx + 1}`}
                   />

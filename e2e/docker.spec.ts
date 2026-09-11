@@ -89,6 +89,10 @@ test.describe("Docker e2e", () => {
       createDialog.getByRole("heading", { name: /Launch LocalStack container/ }),
     ).toBeVisible();
     await createDialog.getByLabel("Container name").fill("e2e-stack");
+    await createDialog.getByRole("button", { name: "S3", exact: true }).click();
+    await expect(createDialog.getByTestId("services-env-hint")).toHaveText(
+      "SERVICES=s3",
+    );
     await createDialog.getByRole("button", { name: "Launch" }).click();
 
     await expect(createDialog.getByText(/Pulling|Starting|Container started/)).toBeVisible();

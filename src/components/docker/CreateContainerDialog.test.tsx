@@ -190,4 +190,68 @@ describe("CreateContainerDialog", () => {
     });
     expect(mockOnOpenChange).not.toHaveBeenCalledWith(false);
   });
+
+  it("emits SERVICES from selected chips plus additional services, deduped", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.click(screen.getByRole("button", { name: "S3" }));
+    await user.click(screen.getByRole("button", { name: "Lambda" }));
+    await user.type(screen.getByLabelText("Additional services"), "kms,s3,sts");
+
+    expect(screen.getByTestId("services-env-hint")).toHaveTextContent(
+      "SERVICES=s3,lambda,kms,sts",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Launch" }));
+
+    await waitFor(() => {
+      expect(mockOnCreate).toHaveBeenCalledTimes(1);
+    });
+    expect(mockOnCreate.mock.calls[0][0].env).toEqual(["SERVICES=s3,lambda,kms,sts"]);
+  });
+
+  it("defaults to no SERVICES var and shows the all-services hint", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    expect(screen.getByTestId("services-env-hint")).toHaveTextContent(
+      /No selection = all services available/,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Launch" }));
+
+    await waitFor(() => {
+      expect(mockOnCreate).toHaveBeenCalledTimes(1);
+    });
+    expect(mockOnCreate.mock.calls[0][0].env).toEqual([]);
+  });
+
+  it("blocks manual SERVICES env rows in favor of the picker", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    fireEvent.change(screen.getByLabelText("Env key 1"), { target: { value: "SERVICES" } });
+    fireEvent.change(screen.getByLabelText("Env value 1"), { target: { value: "s3" } });
+
+    await user.click(screen.getByRole("button", { name: "Launch" }));
+
+    expect(
+      await screen.findByText(/SERVICES is managed by the service picker/),
+    ).toBeInTheDocument();
+    expect(mockOnCreate).not.toHaveBeenCalled();
+  });
+
+  it("validates additional service tokens", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.type(screen.getByLabelText("Additional services"), "KMS, bad name");
+    await user.click(screen.getByRole("button", { name: "Launch" }));
+
+    expect(
+      await screen.findByText(/Additional services must be comma-separated lowercase/),
+    ).toBeInTheDocument();
+    expect(mockOnCreate).not.toHaveBeenCalled();
+  });
 });

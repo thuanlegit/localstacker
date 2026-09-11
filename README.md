@@ -48,7 +48,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **IAM** | Roles, users, and policies listing, trust relationship policy inspector, inline policy editor with syntax-highlighted JSON viewer, user access keys manager (.env copy helper) |
 | **Route 53** | Hosted zones explorer (public/private), virtualized ResourceRecordSets grid (@tanstack/react-virtual), DNS records editor (A, AAAA, CNAME, TXT, MX, etc.) with TTL & value validation |
 | **EC2** | Instances list with mock state transitions (Start, Stop, Reboot, Terminate), Key Pairs manager (create with .pem download, delete), Security Groups list with visual Inbound/Outbound rule matrix visualizer, Authorize/Revoke ingress & egress rules |
-| **Docker** | Container lifecycle management via local Docker socket (`bollard`): detect/inspect LocalStack containers (including `localstack-persist`), start/stop/restart/remove with persistence-aware warnings, real-time snapshot + follow logs console, launch wizard with image pull progress & auto-connect |
+| **Docker** | Container lifecycle management via local Docker socket (`bollard`): detect/inspect LocalStack containers (including `localstack-persist`), start/stop/restart/remove with persistence-aware warnings, real-time snapshot + follow logs console, launch wizard with visual service picker (`SERVICES`), image pull progress & auto-connect |
 
 ### S3 Object Preview
 ![S3 Object Preview](docs/screenshots/s3-bucket.png)
@@ -112,7 +112,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **M8** | **API Gateway REST API & SES** — resource tree, method test runner, verified identities & captured mailbox viewer | ✅ Done |
 | **M9** | **IAM & Route53** — role/policy inspector, access keys, hosted zones & DNS records grid | ✅ Done |
 | **M10** | **EC2 Mock** — instance states, security groups rule matrix, key pairs | ✅ Done |
-| **v1.1** | **Docker Lifecycle** — dedicated container panel: detect/inspect LocalStack containers (incl. `localstack-persist` images), snapshot+follow logs, start/stop/restart/remove with persistence-aware warnings, create wizard with image pull & auto-connect — via Docker socket (`bollard` in the Rust backend, no CLI sidecar) | ✅ Done |
+| **v1.1** | **Docker Lifecycle** — dedicated container panel: detect/inspect LocalStack containers (incl. `localstack-persist` images), snapshot+follow logs, start/stop/restart/remove with persistence-aware warnings, create wizard with service picker, image pull & auto-connect — via Docker socket (`bollard` in the Rust backend, no CLI sidecar) | ✅ Done |
 
 See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.
 
