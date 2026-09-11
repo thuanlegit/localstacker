@@ -214,3 +214,21 @@
     }
   }
 }
+
+/* Sidebar services list: keep a thin, visible scrollbar affordance.
+   macOS/WKWebView overlay scrollbars are invisible until touched, which
+   makes a clipped list read as broken rather than scrollable. */
+.scrollbar-thin-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-border) transparent;
+}
+.scrollbar-thin-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin-sidebar::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: var(--sidebar-border);
+}
+.scrollbar-thin-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}

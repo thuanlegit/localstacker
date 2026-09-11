@@ -347,6 +347,7 @@ export function Sidebar() {
       <nav
         className={cn(
           "min-h-0 flex-1 overflow-y-auto flex flex-col gap-0.5",
+          "scrollbar-thin-sidebar",
           isCollapsed ? "px-2" : "px-3",
         )}
       >
