@@ -50,7 +50,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           for v in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
-            val="$(printf '%s' "${!v}" | tr -d '[:space:]')"
+            val="$(printf '%s' "${!v}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
             if [ -n "$val" ]; then printf '%s=%s\n' "$v" "$val" >> "$GITHUB_ENV"; fi
           done
       - uses: tauri-apps/tauri-action@v0
