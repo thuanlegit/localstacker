@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { AppearanceSection } from "./AppearanceSection";
+import { ConnectionsSection } from "./ConnectionsSection";
 
 export type SectionId = "appearance" | "connections" | "updates" | "data";
 
@@ -36,6 +37,7 @@ export function SettingsView() {
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-2xl space-y-8">
           {activeSection === "appearance" && <AppearanceSection />}
+          {activeSection === "connections" && <ConnectionsSection />}
         </div>
       </div>
     </div>
