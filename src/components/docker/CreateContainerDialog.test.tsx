@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CreateContainerDialog } from "./CreateContainerDialog";
 
@@ -142,13 +142,16 @@ describe("CreateContainerDialog", () => {
 
   it("surfaces pull progress events while submitting", async () => {
     const user = userEvent.setup();
+    let finishCreate!: () => void;
     mockOnCreate.mockImplementation(
       async (
         _input: unknown,
         onEvent: (e: { status: string; current?: number; total?: number }) => void,
       ) => {
         onEvent({ status: "Pulling localstack/localstack:4.14.0", current: 20, total: 100 });
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise<void>((r) => {
+          finishCreate = r;
+        });
       },
     );
     renderDialog();
@@ -158,6 +161,8 @@ describe("CreateContainerDialog", () => {
     expect(await screen.findByTestId("create-progress")).toBeInTheDocument();
     expect(screen.getByText(/Pulling localstack\/localstack:4\.14\.0/)).toBeInTheDocument();
     expect(screen.getByText("Cancel operation")).toBeInTheDocument();
+
+    finishCreate();
 
     await waitFor(() => {
       expect(mockOnOpenChange).toHaveBeenCalledWith(false);
@@ -279,5 +284,69 @@ describe("CreateContainerDialog", () => {
     await openAdvanced(user);
     const preview = screen.getByTestId("config-preview");
     expect(preview.textContent).toContain("localstacker-persist-stack:/persisted-data");
+  });
+
+  it("displays package information and monotonic overall progress across multiple layers", async () => {
+    const user = userEvent.setup();
+    let sendEvent!: (e: {
+      status: string;
+      layerId?: string;
+      current?: number;
+      total?: number;
+      done?: boolean;
+    }) => void;
+    mockOnCreate.mockImplementation(
+      async (
+        _input: unknown,
+        onEvent: (e: {
+          status: string;
+          layerId?: string;
+          current?: number;
+          total?: number;
+          done?: boolean;
+        }) => void,
+      ) => {
+        sendEvent = onEvent;
+        await new Promise(() => {}); // keep active
+      },
+    );
+    renderDialog();
+
+    await user.click(screen.getByRole("button", { name: "Launch" }));
+
+    expect(await screen.findByTestId("create-progress")).toBeInTheDocument();
+
+    // Event 1: layer-1 downloading
+    sendEvent({
+      status: "Downloading",
+      layerId: "layer-1",
+      current: 500,
+      total: 1000,
+      done: false,
+    });
+
+    const activeCard = await screen.findByTestId("active-package-card");
+    expect(within(activeCard).getByText("layer-1")).toBeInTheDocument();
+    expect(within(activeCard).getByText("500 B / 1000 B")).toBeInTheDocument();
+    expect(within(activeCard).getByTestId("package-progress-bar")).toBeInTheDocument();
+    expect(screen.getByTestId("overall-progress-bar")).toBeInTheDocument();
+
+    // Event 2: layer-2 downloading
+    sendEvent({
+      status: "Downloading",
+      layerId: "layer-2",
+      current: 200,
+      total: 1000,
+      done: false,
+    });
+
+    await waitFor(() => {
+      const activeCard2 = screen.getByTestId("active-package-card");
+      expect(within(activeCard2).getByText("layer-2")).toBeInTheDocument();
+    });
+    const pkgList = screen.getByTestId("package-list");
+    expect(within(pkgList).getByText("layer-1")).toBeInTheDocument();
+    expect(within(pkgList).getByText("layer-2")).toBeInTheDocument();
+    expect(screen.getByText("Packages (2)")).toBeInTheDocument();
   });
 });

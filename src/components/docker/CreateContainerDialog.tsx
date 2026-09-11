@@ -52,6 +52,40 @@ interface EnvRow {
   key: string;
   value: string;
 }
+
+interface LayerProgress {
+  id: string;
+  status: string;
+  current: number;
+  total: number;
+}
+
+function formatBytes(bytes?: number): string {
+  if (bytes === undefined || bytes === null || isNaN(bytes)) return "";
+  if (bytes === 0) return "0 B";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+function getLayerProgressScore(l: LayerProgress): number {
+  const status = l.status.toLowerCase();
+  if (status.includes("pull complete") || status.includes("already exists")) {
+    return 1.0;
+  }
+  if (status.includes("download complete")) {
+    return 0.5;
+  }
+  const ratio = l.total > 0 ? Math.min(1, Math.max(0, l.current / l.total)) : 0;
+  if (status.includes("downloading")) {
+    return 0.5 * ratio;
+  }
+  if (status.includes("extracting")) {
+    return 0.5 + 0.5 * ratio;
+  }
+  return 0;
+}
 function maskEnvForPreview(env: string[]): string[] {
   return env.map((line) => {
     const eq = line.indexOf("=");
@@ -98,12 +132,30 @@ export function CreateContainerDialog({
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [progressStatus, setProgressStatus] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+  const [layers, setLayers] = useState<Record<string, LayerProgress>>({});
+  const [activeLayerId, setActiveLayerId] = useState<string | null>(null);
+  const [fallbackProgress, setFallbackProgress] = useState<{ current: number; total: number } | null>(null);
+  const [maxOverallPercent, setMaxOverallPercent] = useState<number>(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const resolvedImage =
     imageChoice === CUSTOM_IMAGE ? customImage.trim() : imageChoice;
 
+  const layerList = Object.values(layers);
+  const totalLayers = layerList.length;
+  const completedLayers = layerList.filter((l) => {
+    const s = l.status.toLowerCase();
+    return s.includes("pull complete") || s.includes("already exists");
+  }).length;
+
+  const overallPercent =
+    totalLayers > 0
+      ? maxOverallPercent
+      : fallbackProgress && fallbackProgress.total > 0
+      ? Math.min(100, Math.round((fallbackProgress.current / fallbackProgress.total) * 100))
+      : null;
+
+  const activeLayer = activeLayerId ? layers[activeLayerId] : null;
   const parsedExtra = useMemo<Record<string, unknown> | null>(() => {
     if (!extraJson.trim()) return {};
     try {
@@ -235,6 +287,10 @@ export function CreateContainerDialog({
 
     setSubmitting(true);
     setProgressStatus("Preparing…");
+    setLayers({});
+    setActiveLayerId(null);
+    setFallbackProgress(null);
+    setMaxOverallPercent(0);
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
 
@@ -243,10 +299,35 @@ export function CreateContainerDialog({
         input,
         (e: PullProgressEvent) => {
           setProgressStatus(e.status);
-          if (e.current !== undefined && e.total !== undefined) {
-            setProgress({ current: e.current, total: e.total });
+          if (e.layerId) {
+            setActiveLayerId(e.layerId);
+            setLayers((prev) => {
+              const prevLayer = prev[e.layerId!];
+              const current = e.current !== undefined ? e.current : prevLayer?.current ?? 0;
+              const total = e.total !== undefined ? e.total : prevLayer?.total ?? 0;
+              const updated = {
+                ...prev,
+                [e.layerId!]: {
+                  id: e.layerId!,
+                  status: e.status,
+                  current,
+                  total,
+                },
+              };
+
+              const list = Object.values(updated);
+              if (list.length > 0) {
+                const totalScore = list.reduce((acc, l) => acc + getLayerProgressScore(l), 0);
+                const pct = Math.min(100, Math.round((totalScore / list.length) * 100));
+                setMaxOverallPercent((prevMax) => Math.max(prevMax, pct));
+              }
+
+              return updated;
+            });
+          } else if (e.current !== undefined && e.total !== undefined) {
+            setFallbackProgress({ current: e.current, total: e.total });
           } else if (e.done) {
-            setProgress(null);
+            setFallbackProgress(null);
           }
         },
         (status) => setProgressStatus(status),
@@ -257,7 +338,10 @@ export function CreateContainerDialog({
     } finally {
       setSubmitting(false);
       setProgressStatus(null);
-      setProgress(null);
+      setFallbackProgress(null);
+      setLayers({});
+      setActiveLayerId(null);
+      setMaxOverallPercent(0);
       setSessionId(null);
     }
   };
@@ -288,14 +372,144 @@ export function CreateContainerDialog({
         )}
 
         {submitting ? (
-          <div className="space-y-3 py-4" data-testid="create-progress">
-            <p className="text-sm font-medium">{progressStatus ?? "Working…"}</p>
-            {progress && progress.total > 0 && (
-              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div className="space-y-4 py-3" data-testid="create-progress">
+            {/* Action status header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin text-primary shrink-0" />
+                <p className="text-sm font-medium">{progressStatus ?? "Working…"}</p>
+              </div>
+              {overallPercent !== null && (
+                <span className="text-xs font-mono font-medium text-muted-foreground">
+                  {overallPercent}%
+                </span>
+              )}
+            </div>
+
+            {/* Overall progress bar */}
+            {overallPercent !== null && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Overall pull progress</span>
+                  {totalLayers > 0 && (
+                    <span>
+                      {completedLayers} of {totalLayers} packages completed
+                    </span>
+                  )}
+                </div>
+                <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${Math.min(100, Math.max(0, overallPercent))}%` }}
+                    data-testid="overall-progress-bar"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Active package details & package-specific progress */}
+            {activeLayer && (
+              <div
+                className="space-y-2 rounded-md border bg-muted/30 p-3 text-xs"
+                data-testid="active-package-card"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-foreground">
+                      Package: <code className="text-primary font-mono">{activeLayer.id}</code>
+                    </span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">{activeLayer.status}</span>
+                  </div>
+                  {activeLayer.total > 0 && (
+                    <span className="font-mono text-muted-foreground">
+                      {formatBytes(activeLayer.current)} / {formatBytes(activeLayer.total)}
+                    </span>
+                  )}
+                </div>
+
+                {activeLayer.total > 0 && (
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>Package progress</span>
+                      <span>
+                        {Math.min(
+                          100,
+                          Math.round((activeLayer.current / activeLayer.total) * 100),
+                        )}
+                        %
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full bg-primary/70 transition-all duration-150"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.round((activeLayer.current / activeLayer.total) * 100),
+                          )}%`,
+                        }}
+                        data-testid="package-progress-bar"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Package list */}
+            {totalLayers > 0 && (
+              <div className="space-y-1.5 pt-1">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Packages ({layerList.length})
+                </span>
                 <div
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${Math.min(100, (progress.current / progress.total) * 100)}%` }}
-                />
+                  className="max-h-36 overflow-y-auto rounded-md border bg-muted/20 divide-y text-xs font-mono"
+                  data-testid="package-list"
+                >
+                  {layerList.map((layer) => {
+                    const isDone =
+                      layer.status.toLowerCase().includes("complete") ||
+                      layer.status.toLowerCase().includes("already exists");
+                    const isActive = layer.id === activeLayerId;
+                    const pct =
+                      layer.total > 0
+                        ? Math.min(100, Math.round((layer.current / layer.total) * 100))
+                        : null;
+
+                    return (
+                      <div
+                        key={layer.id}
+                        className={`flex items-center justify-between px-3 py-1.5 transition-colors ${
+                          isActive ? "bg-accent/40 font-medium" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span
+                            className={
+                              isActive ? "text-primary font-semibold" : "text-foreground"
+                            }
+                          >
+                            {layer.id}
+                          </span>
+                          <span className="text-muted-foreground truncate">{layer.status}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-[11px]">
+                          {layer.total > 0 && (
+                            <span>
+                              {formatBytes(layer.current)} / {formatBytes(layer.total)}
+                            </span>
+                          )}
+                          {isDone ? (
+                            <span className="text-emerald-500 font-semibold">✓ Done</span>
+                          ) : pct !== null ? (
+                            <span className="w-9 text-right font-mono">{pct}%</span>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
