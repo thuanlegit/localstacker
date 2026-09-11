@@ -122,6 +122,10 @@ export function isPersistImage(image: string): boolean {
   return withoutRegistry.startsWith("gresau/localstack-persist");
 }
 
+export function persistPathForImage(image: string): string {
+  return isPersistImage(image) ? "/persisted-data" : "/var/lib/localstack";
+}
+
 export function stopTimeoutSecs(image: string): 60 | 10 {
   return isPersistImage(image) ? 60 : 10;
 }
@@ -187,7 +191,9 @@ export function buildCreateConfig(input: CreateContainerInput): Record<string, u
   };
 
   if (input.persistVolume && input.containerName) {
-    hostConfig.Binds = [`localstacker-${input.containerName}:/var/lib/localstack`];
+    hostConfig.Binds = [
+      `localstacker-${input.containerName}:${persistPathForImage(input.image)}`,
+    ];
   }
 
   if (input.network) {

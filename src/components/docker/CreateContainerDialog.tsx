@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/tooltip";
 import {
   buildCreateConfig,
+  isPersistImage,
+  persistPathForImage,
   type CreateContainerInput,
   type PullProgressEvent,
 } from "@/lib/docker";
@@ -503,7 +505,7 @@ export function CreateContainerDialog({
                 className="size-4 rounded border-gray-300 cursor-pointer"
               />
               <Label htmlFor="docker-persist" className="cursor-pointer">
-                Persist state (named volume <code>localstacker-&lt;name&gt;:/var/lib/localstack</code>)
+                Persist state (named volume <code>localstacker-&lt;name&gt;:{persistPathForImage(resolvedImage)}</code>)
               </Label>
               <TooltipProvider>
                 <Tooltip>
@@ -519,10 +521,12 @@ export function CreateContainerDialog({
                   <TooltipContent side="right" className="max-w-xs text-xs space-y-1.5 p-2.5">
                     <p className="font-semibold">LocalStack Data Persistence</p>
                     <p>
-                      Mounts a Docker named volume to <code>/var/lib/localstack</code> so AWS resources (S3 buckets, DynamoDB tables, SQS queues, etc.) survive container stops, restarts, and recreation.
+                      Mounts a Docker named volume to <code>{persistPathForImage(resolvedImage)}</code> so AWS resources (S3 buckets, DynamoDB tables, SQS queues, etc.) survive container stops, restarts, and recreation.
                     </p>
                     <p className="opacity-80">
-                      Without a volume, vanilla LocalStack loses all state on stop. Works seamlessly with both official images and <code>localstack-persist</code>.
+                      {isPersistImage(resolvedImage)
+                        ? "Automatically maps to /persisted-data for localstack-persist images."
+                        : "Without a volume, vanilla LocalStack loses all state on stop. Supports localstack-persist images too."}
                     </p>
                   </TooltipContent>
                 </Tooltip>

@@ -112,6 +112,10 @@ pub fn is_persist_image(image: &str) -> bool {
     without_registry.starts_with("gresau/localstack-persist")
 }
 
+pub fn is_persist_mount_destination(dest: &str) -> bool {
+    dest == "/var/lib/localstack" || dest == "/persisted-data"
+}
+
 pub async fn docker_client() -> Result<Docker, String> {
     Docker::connect_with_local_defaults().map_err(|e| {
         let msg = e.to_string();
@@ -286,7 +290,7 @@ pub async fn docker_inspect_container(container_id: String) -> Result<ContainerD
         }
     }
 
-    let persist_volume = mounts.iter().any(|m| m.destination == "/var/lib/localstack");
+    let persist_volume = mounts.iter().any(|m| is_persist_mount_destination(&m.destination));
 
     Ok(ContainerDetailJson {
         container_id: id,
@@ -567,6 +571,14 @@ mod tests {
         assert!(!is_localstack_image("alpine:latest"));
         assert!(!is_localstack_image("localstack/other-tool"));
         assert!(!is_localstack_image(""));
+    }
+
+    #[test]
+    fn test_is_persist_mount_destination() {
+        assert!(is_persist_mount_destination("/var/lib/localstack"));
+        assert!(is_persist_mount_destination("/persisted-data"));
+        assert!(!is_persist_mount_destination("/other/dir"));
+        assert!(!is_persist_mount_destination(""));
     }
 
     #[tokio::test]

@@ -6,7 +6,7 @@ import type {
   DockerStatus,
   PullProgressEvent,
 } from "./docker";
-import { isPersistImage } from "./docker";
+import { isPersistImage, persistPathForImage } from "./docker";
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -76,7 +76,7 @@ function getInitialMockContainers(): MockContainerState[] {
             type: "volume",
             name: "localstacker-demo-persist",
             source: "/var/lib/docker/volumes/localstacker-demo-persist/_data",
-            destination: "/var/lib/localstack",
+            destination: "/persisted-data",
           },
         ],
         networks: ["bridge"],
@@ -207,7 +207,7 @@ export const mockDockerAdapter: DockerAdapter = {
             type: "volume" as const,
             name: `localstacker-${input.containerName}`,
             source: `/var/lib/docker/volumes/localstacker-${input.containerName}/_data`,
-            destination: "/var/lib/localstack",
+            destination: persistPathForImage(input.image),
           },
         ]
       : [];

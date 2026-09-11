@@ -7,6 +7,7 @@ import {
   isLocalStackImage,
   isPersistImage,
   maskEnv,
+  persistPathForImage,
   resetDockerAdapter,
   stopTimeoutSecs,
 } from "./docker";
@@ -39,6 +40,15 @@ describe("docker pure functions", () => {
       expect(isPersistImage("registry.io:5000/gresau/localstack-persist:v1")).toBe(true);
       expect(isPersistImage("localstack/localstack:4.14.0")).toBe(false);
       expect(isPersistImage("redis:7")).toBe(false);
+    });
+  });
+
+  describe("persistPathForImage", () => {
+    it("returns /persisted-data for persist images and /var/lib/localstack for others", () => {
+      expect(persistPathForImage("gresau/localstack-persist:latest")).toBe("/persisted-data");
+      expect(persistPathForImage("gresau/localstack-persist")).toBe("/persisted-data");
+      expect(persistPathForImage("localstack/localstack:4.14.0")).toBe("/var/lib/localstack");
+      expect(persistPathForImage("localstack/localstack:latest")).toBe("/var/lib/localstack");
     });
   });
 
@@ -175,6 +185,21 @@ describe("docker pure functions", () => {
       });
       expect(config.Hostname).toBeUndefined();
     });
+
+    it("binds to /persisted-data for gresau/localstack-persist images when persistVolume is true", () => {
+      const input: CreateContainerInput = {
+        image: "gresau/localstack-persist:latest",
+        containerName: "my-persist",
+        ports: [{ hostPort: 4566, containerPort: 4566, protocol: "tcp" }],
+        env: [],
+        persistVolume: true,
+      };
+
+      const config = buildCreateConfig(input);
+      expect((config.HostConfig as { Binds?: string[] }).Binds).toEqual([
+        "localstacker-my-persist:/persisted-data",
+      ]);
+    });
   });
 });
 
@@ -297,7 +322,7 @@ describe("mock adapter behavior", () => {
 
     const persistDetail = await mockDockerAdapter.inspectContainer("c-demo-localstack-persist");
     expect(persistDetail.persistVolume).toBe(true);
-    expect(persistDetail.mounts[0].destination).toBe("/var/lib/localstack");
+    expect(persistDetail.mounts[0].destination).toBe("/persisted-data");
   });
 
   it("handles lifecycle state transitions (stop, start, restart, remove)", async () => {

@@ -259,4 +259,25 @@ describe("CreateContainerDialog", () => {
     renderDialog();
     expect(screen.getByLabelText("Persistence info")).toBeInTheDocument();
   });
+
+  it("dynamically adjusts persistence volume path to /persisted-data for persist images", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    expect(screen.getByText(/\/var\/lib\/localstack/)).toBeInTheDocument();
+
+    await user.click(screen.getByLabelText("Image"));
+    await user.click(await screen.findByText("gresau/localstack-persist:latest"));
+
+    expect(screen.getByText(/\/persisted-data/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText(/Persist state/));
+    fireEvent.change(screen.getByLabelText("Container name"), {
+      target: { value: "persist-stack" },
+    });
+
+    await openAdvanced(user);
+    const preview = screen.getByTestId("config-preview");
+    expect(preview.textContent).toContain("localstacker-persist-stack:/persisted-data");
+  });
 });
