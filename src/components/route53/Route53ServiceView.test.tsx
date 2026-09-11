@@ -5,6 +5,19 @@ import { Route53ServiceView } from "./Route53ServiceView";
 import { useTabs } from "@/store/tabs";
 
 const mockDeleteHostedZone = vi.fn();
+const { mockState } = vi.hoisted(() => ({
+  mockState: {
+    serviceStatus: "available" as string | undefined,
+    zonesError: null as Error | null,
+  },
+}));
+
+vi.mock("@/hooks/use-health", () => ({
+  useServiceStatus: () => mockState.serviceStatus,
+  useHealth: () => ({ data: undefined, refetch: vi.fn() }),
+  isServiceDisabledError: (err: unknown) =>
+    err instanceof Error && err.message.includes("is not enabled"),
+}));
 
 vi.mock("@/hooks/use-route53", () => ({
   useHostedZones: () => ({
@@ -21,6 +34,7 @@ vi.mock("@/hooks/use-route53", () => ({
     ],
     isLoading: false,
     isFetching: false,
+    error: mockState.zonesError,
     refetch: vi.fn(),
   }),
   useHostedZoneActions: () => ({
@@ -32,6 +46,25 @@ vi.mock("@/hooks/use-route53", () => ({
 describe("Route53ServiceView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockState.serviceStatus = "available";
+    mockState.zonesError = null;
+  });
+
+  it("shows the disabled view when Route 53 is disabled in LocalStack", () => {
+    mockState.serviceStatus = "disabled";
+    render(<Route53ServiceView />);
+
+    expect(screen.getByText("Route 53 is turned off")).toBeInTheDocument();
+    expect(screen.queryByText("example.local.")).not.toBeInTheDocument();
+  });
+
+  it("shows the disabled view when the Route 53 API reports it is not enabled", () => {
+    mockState.zonesError = new Error(
+      "The route53 service is not enabled in this LocalStack instance",
+    );
+    render(<Route53ServiceView />);
+
+    expect(screen.getByText("Route 53 is turned off")).toBeInTheDocument();
   });
 
   it("renders Route 53 header and lists hosted zones", () => {

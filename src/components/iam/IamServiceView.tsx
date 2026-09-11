@@ -25,6 +25,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import { ServiceDisabledView } from "@/components/ServiceDisabledView";
+import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { CreateRoleDialog } from "./CreateRoleDialog";
 import { CreateUserDialog } from "./CreateUserDialog";
 import {
@@ -39,6 +41,7 @@ import { formatDate } from "@/lib/format";
 import type { RoleSummary, UserSummary } from "@/lib/iam";
 
 export function IamServiceView() {
+  const serviceStatus = useServiceStatus("iam");
   const [activeTab, setActiveTab] = useState("roles");
 
   // Search queries
@@ -65,26 +68,38 @@ export function IamServiceView() {
     data: roles = [],
     isLoading: isRolesLoading,
     isFetching: isRolesFetching,
+    error: rolesError,
     refetch: refetchRoles,
-  } = useRoles();
+  } = useRoles({ enabled: serviceStatus !== "disabled" });
 
   const {
     data: users = [],
     isLoading: isUsersLoading,
     isFetching: isUsersFetching,
+    error: usersError,
     refetch: refetchUsers,
-  } = useUsers();
+  } = useUsers({ enabled: serviceStatus !== "disabled" });
 
   const {
     data: policies = [],
     isLoading: isPoliciesLoading,
     isFetching: isPoliciesFetching,
+    error: policiesError,
     refetch: refetchPolicies,
-  } = usePolicies(policyScope);
+  } = usePolicies(policyScope, { enabled: serviceStatus !== "disabled" });
 
   const { deleteRole } = useRoleActions();
   const { deleteUser } = useUserActions();
   const { openTab, closeTab } = useTabs();
+
+  if (
+    serviceStatus === "disabled" ||
+    [rolesError, usersError, policiesError].some(
+      (e) => e && isServiceDisabledError(e),
+    )
+  ) {
+    return <ServiceDisabledView service="iam" />;
+  }
 
   const handleCopyArn = async (arn: string) => {
     try {

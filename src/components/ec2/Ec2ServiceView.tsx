@@ -17,6 +17,8 @@ import {
   useKeyPairs,
   useSecurityGroups,
 } from "@/hooks/use-ec2";
+import { ServiceDisabledView } from "@/components/ServiceDisabledView";
+import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 
 interface Ec2ServiceViewProps {
   initialTab?: string;
@@ -30,24 +32,37 @@ export function Ec2ServiceView({
   keyPairsContent,
 }: Ec2ServiceViewProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const serviceStatus = useServiceStatus("ec2");
 
   const {
     data: instances = [],
     isFetching: isInstancesFetching,
+    error: instancesError,
     refetch: refetchInstances,
-  } = useInstances();
+  } = useInstances({ enabled: serviceStatus !== "disabled" });
 
   const {
     data: keyPairs = [],
     isFetching: isKeyPairsFetching,
+    error: keyPairsError,
     refetch: refetchKeyPairs,
-  } = useKeyPairs();
+  } = useKeyPairs({ enabled: serviceStatus !== "disabled" });
 
   const {
     data: securityGroups = [],
     isFetching: isSgFetching,
+    error: securityGroupsError,
     refetch: refetchSecurityGroups,
-  } = useSecurityGroups();
+  } = useSecurityGroups({ enabled: serviceStatus !== "disabled" });
+
+  if (
+    serviceStatus === "disabled" ||
+    [instancesError, keyPairsError, securityGroupsError].some(
+      (e) => e && isServiceDisabledError(e),
+    )
+  ) {
+    return <ServiceDisabledView service="ec2" />;
+  }
 
   const isRefreshing =
     isInstancesFetching || isKeyPairsFetching || isSgFetching;

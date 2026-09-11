@@ -22,6 +22,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import { ServiceDisabledView } from "@/components/ServiceDisabledView";
+import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
 import { CreateHostedZoneDialog } from "./CreateHostedZoneDialog";
 import {
   useHostedZones,
@@ -31,6 +33,7 @@ import { useTabs } from "@/store/tabs";
 import type { HostedZoneSummary } from "@/lib/route53";
 
 export function Route53ServiceView() {
+  const serviceStatus = useServiceStatus("route53");
   const [search, setSearch] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -45,11 +48,16 @@ export function Route53ServiceView() {
     data: zones = [],
     isLoading,
     isFetching,
+    error,
     refetch,
-  } = useHostedZones();
+  } = useHostedZones({ enabled: serviceStatus !== "disabled" });
 
   const { deleteHostedZone } = useHostedZoneActions();
   const { openTab, closeTab } = useTabs();
+
+  if (serviceStatus === "disabled" || (error && isServiceDisabledError(error))) {
+    return <ServiceDisabledView service="route53" />;
+  }
 
   const handleCopyId = async (id: string) => {
     try {

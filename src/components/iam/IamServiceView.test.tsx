@@ -6,6 +6,21 @@ import { useTabs } from "@/store/tabs";
 
 const mockDeleteRole = vi.fn();
 const mockDeleteUser = vi.fn();
+const { mockState } = vi.hoisted(() => ({
+  mockState: {
+    serviceStatus: "available" as string | undefined,
+    rolesError: null as Error | null,
+    usersError: null as Error | null,
+    policiesError: null as Error | null,
+  },
+}));
+
+vi.mock("@/hooks/use-health", () => ({
+  useServiceStatus: () => mockState.serviceStatus,
+  useHealth: () => ({ data: undefined, refetch: vi.fn() }),
+  isServiceDisabledError: (err: unknown) =>
+    err instanceof Error && err.message.includes("is not enabled"),
+}));
 
 vi.mock("@/hooks/use-iam", () => ({
   useRoles: () => ({
@@ -20,6 +35,7 @@ vi.mock("@/hooks/use-iam", () => ({
     ],
     isLoading: false,
     isFetching: false,
+    error: mockState.rolesError,
     refetch: vi.fn(),
   }),
   useUsers: () => ({
@@ -34,6 +50,7 @@ vi.mock("@/hooks/use-iam", () => ({
     ],
     isLoading: false,
     isFetching: false,
+    error: mockState.usersError,
     refetch: vi.fn(),
   }),
   usePolicies: () => ({
@@ -48,6 +65,7 @@ vi.mock("@/hooks/use-iam", () => ({
     ],
     isLoading: false,
     isFetching: false,
+    error: mockState.policiesError,
     refetch: vi.fn(),
   }),
   useRoleActions: () => ({
@@ -68,6 +86,27 @@ vi.mock("@/hooks/use-iam", () => ({
 describe("IamServiceView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockState.serviceStatus = "available";
+    mockState.rolesError = null;
+    mockState.usersError = null;
+    mockState.policiesError = null;
+  });
+
+  it("shows the disabled view when IAM is disabled in LocalStack", () => {
+    mockState.serviceStatus = "disabled";
+    render(<IamServiceView />);
+
+    expect(screen.getByText("IAM is turned off")).toBeInTheDocument();
+    expect(screen.queryByText("AppRole")).not.toBeInTheDocument();
+  });
+
+  it("shows the disabled view when the IAM API reports it is not enabled", () => {
+    mockState.rolesError = new Error(
+      "The iam service is not enabled in this LocalStack instance",
+    );
+    render(<IamServiceView />);
+
+    expect(screen.getByText("IAM is turned off")).toBeInTheDocument();
   });
 
   it("renders IAM header and lists roles", () => {
