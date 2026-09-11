@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { AppearanceSection } from "./AppearanceSection";
 import { ConnectionsSection } from "./ConnectionsSection";
 import { UpdatesSection } from "./UpdatesSection";
+import { DataSection } from "./DataSection";
 
 export type SectionId = "appearance" | "connections" | "updates" | "data";
 
@@ -40,6 +41,7 @@ export function SettingsView() {
           {activeSection === "appearance" && <AppearanceSection />}
           {activeSection === "connections" && <ConnectionsSection />}
           {activeSection === "updates" && <UpdatesSection />}
+          {activeSection === "data" && <DataSection />}
         </div>
       </div>
     </div>
