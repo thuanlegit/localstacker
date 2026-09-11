@@ -95,7 +95,9 @@ test.describe("Docker e2e", () => {
     );
     await createDialog.getByRole("button", { name: "Launch" }).click();
 
-    await expect(createDialog.getByText(/Pulling|Starting|Container started/)).toBeVisible();
+    await expect(createDialog.getByTestId("action-status")).toHaveText(
+      /Pulling|Starting|Container started/,
+    );
     await expect(
       page.locator("tr", { hasText: "e2e-stack" }),
     ).toBeVisible({ timeout: 15_000 });

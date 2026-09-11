@@ -377,7 +377,7 @@ export function CreateContainerDialog({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Loader2 className="size-4 animate-spin text-primary shrink-0" />
-                <p className="text-sm font-medium">{progressStatus ?? "Working…"}</p>
+                <p className="text-sm font-medium" data-testid="action-status">{progressStatus ?? "Working…"}</p>
               </div>
               {overallPercent !== null && (
                 <span className="text-xs font-mono font-medium text-muted-foreground">

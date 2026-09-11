@@ -12,7 +12,7 @@ test.describe("Health & Connection", () => {
     const badge = page.getByTestId("health-badge");
     await expect(badge).toContainText(/Running/, { timeout: 20_000 });
 
-    const profileBtn = page.getByRole("button", { name: /Local/i });
+    const profileBtn = page.locator("aside").getByRole("button", { name: /Local/i });
     await expect(profileBtn).toBeVisible();
     await expect(profileBtn).toContainText("Local");
   });
