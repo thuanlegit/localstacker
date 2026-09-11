@@ -2,6 +2,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { AppearanceSection } from "./AppearanceSection";
 import { ConnectionsSection } from "./ConnectionsSection";
+import { UpdatesSection } from "./UpdatesSection";
 
 export type SectionId = "appearance" | "connections" | "updates" | "data";
 
@@ -38,6 +39,7 @@ export function SettingsView() {
         <div className="max-w-2xl space-y-8">
           {activeSection === "appearance" && <AppearanceSection />}
           {activeSection === "connections" && <ConnectionsSection />}
+          {activeSection === "updates" && <UpdatesSection />}
         </div>
       </div>
     </div>
