@@ -78,7 +78,9 @@ test.describe("EC2 e2e", () => {
       .locator("aside")
       .getByRole("button", { name: /^EC2/ })
       .click();
-    await expect(page.getByRole("heading", { name: "EC2" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "EC2", exact: true }),
+    ).toBeVisible();
     await expect(page.getByText("Stateful Mock")).toBeVisible();
 
     // 2. Key Pairs Lifecycle
@@ -137,8 +139,12 @@ test.describe("EC2 e2e", () => {
     await ruleDialog.getByRole("button", { name: "Save Rule" }).click();
 
     // Assert port 443 rule in matrix
-    await expect(page.getByText("443")).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText("Allow HTTPS traffic")).toBeVisible();
+    await expect(page.locator("table").getByText("443")).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(
+      page.locator("table").getByText("Allow HTTPS traffic"),
+    ).toBeVisible();
 
     // Revoke Rule
     await page
