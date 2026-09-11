@@ -15,6 +15,15 @@ export type ServiceKind =
   | "route53"
   | "ec2";
 
+export type PaletteId =
+  | "default"
+  | "nord"
+  | "catppuccin"
+  | "gruvbox"
+  | "tokyo-night"
+  | "solarized"
+  | "rose-pine";
+
 export interface ConnectionProfile {
   id: string;
   name: string;

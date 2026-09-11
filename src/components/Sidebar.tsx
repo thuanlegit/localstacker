@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { LOCALSTACK_SERVICE_NAMES, SERVICES } from "@/lib/services";
 import { useHealth } from "@/hooks/use-health";
 import { useActiveProfile, useProfiles } from "@/store/profiles";
-import { useTheme } from "@/store/theme";
+import { resolveMode, useTheme } from "@/store/theme";
 import { useTabs } from "@/store/tabs";
 import { useSidebar } from "@/store/sidebar";
 import type { ConnectionProfile, ServiceKind } from "@/types";
@@ -67,7 +67,7 @@ export function Sidebar() {
   const updateProfile = useProfiles((s) => s.updateProfile);
   const removeProfile = useProfiles((s) => s.removeProfile);
   const queryClient = useQueryClient();
-  const theme = useTheme((s) => s.theme);
+  const mode = useTheme((s) => s.mode);
   const { data: healthData } = useHealth();
   const isCollapsed = useSidebar((s) => s.isCollapsed);
   const toggleSidebar = useSidebar((s) => s.toggle);
@@ -496,7 +496,7 @@ export function Sidebar() {
           aria-label="Toggle theme"
           onClick={() => useTheme.getState().toggle()}
         >
-          {theme === "dark" ? <Sun /> : <Moon />}
+          {resolveMode(mode) === "dark" ? <Sun /> : <Moon />}
         </Button>
         {!isCollapsed && (
           <span className="text-[10px] font-mono text-muted-foreground pr-1">

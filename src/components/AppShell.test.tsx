@@ -260,8 +260,9 @@ describe("AppShell", () => {
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.className = "";
+    delete document.documentElement.dataset.palette;
     useTabs.setState({ tabs: [], activeTabId: null });
-    useTheme.setState({ theme: "dark" });
+    useTheme.setState({ mode: "dark", palette: "default" });
     useProfiles.setState({ profiles: [localProfile()], activeProfileId: LOCAL_PROFILE_ID });
   });
 

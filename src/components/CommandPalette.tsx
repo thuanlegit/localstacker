@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/command";
 import { openDockerTab, openServiceTab } from "@/components/Sidebar";
 import { SERVICES } from "@/lib/services";
-import { useTheme } from "@/store/theme";
+import { resolveMode, useTheme } from "@/store/theme";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
 import { useBuckets } from "@/hooks/use-s3";
@@ -30,7 +30,7 @@ import { useHostedZones } from "@/hooks/use-route53";
 import { useSecurityGroups } from "@/hooks/use-ec2";
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
-  const theme = useTheme((s) => s.theme);
+  const mode = useTheme((s) => s.mode);
   const profile = useActiveProfile();
   const openTab = useTabs((s) => s.openTab);
   const { data: buckets } = useBuckets(profile.id, { enabled: open });
@@ -478,7 +478,7 @@ export function CommandPalette() {
             value="Toggle theme"
             onSelect={() => run(() => useTheme.getState().toggle())}
           >
-            {theme === "dark" ? <Sun /> : <Moon />}
+            {resolveMode(mode) === "dark" ? <Sun /> : <Moon />}
             Toggle theme
           </CommandItem>
         </CommandGroup>
