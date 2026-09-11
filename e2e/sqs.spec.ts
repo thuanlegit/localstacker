@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { GetQueueUrlCommand, DeleteQueueCommand } from "@aws-sdk/client-sqs";
 import { requireLocalStack, makeClients, unique } from "./helpers";
 

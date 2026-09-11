@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Docker e2e", () => {
   // Mock adapter drives the panel in the browser; the only outbound call is

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Settings e2e", () => {
   test("settings entry, palette selection, theme toggle, and persistence", async ({

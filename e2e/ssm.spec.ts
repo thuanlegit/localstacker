@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { DeleteParameterCommand } from "@aws-sdk/client-ssm";
 import { requireLocalStack, makeClients, unique } from "./helpers";
 

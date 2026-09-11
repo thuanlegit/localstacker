@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { DeleteIdentityCommand } from "@aws-sdk/client-ses";
 import { requireLocalStack, makeClients, unique, ENDPOINT } from "./helpers";
 
