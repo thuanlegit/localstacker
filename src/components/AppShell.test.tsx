@@ -4,6 +4,7 @@ import App from "@/App";
 import { LOCAL_PROFILE_ID, localProfile, useProfiles } from "@/store/profiles";
 import { useRecents } from "@/store/recents";
 import { useTheme } from "@/store/theme";
+import { useOnboarding } from "@/store/onboarding";
 import { useTabs } from "@/store/tabs";
 import { renderWithProviders } from "@/test/utils";
 
@@ -266,6 +267,7 @@ describe("AppShell", () => {
     useRecents.setState({ recent: [] });
     useTheme.setState({ mode: "dark", palette: "github" });
     useProfiles.setState({ profiles: [localProfile()], activeProfileId: LOCAL_PROFILE_ID });
+    useOnboarding.setState({ completedAt: Date.now() });
   });
 
   afterEach(() => {
@@ -426,5 +428,23 @@ describe("AppShell", () => {
     fireEvent.keyDown(window, { key: ",", metaKey: true });
     expect(useTabs.getState().tabs.filter((t) => t.id === "settings")).toHaveLength(1);
     expect(useTabs.getState().activeTabId).toBe("settings");
+  });
+
+  it("renders the onboarding overlay instead of the shell on first launch", () => {
+    useOnboarding.setState({ completedAt: null });
+    renderApp();
+
+    expect(screen.getByTestId("onboarding")).toBeInTheDocument();
+    expect(screen.queryByTestId("health-badge")).toBeNull();
+  });
+
+  it("completes onboarding and reveals the shell when Skip for now is clicked", async () => {
+    useOnboarding.setState({ completedAt: null });
+    renderApp();
+
+    fireEvent.click(screen.getByRole("button", { name: "Skip for now" }));
+
+    expect(useOnboarding.getState().completedAt).not.toBeNull();
+    expect(await screen.findByTestId("health-badge")).toBeInTheDocument();
   });
 });
