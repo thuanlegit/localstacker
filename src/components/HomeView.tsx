@@ -122,8 +122,8 @@ export function HomeView() {
       : "LocalStack is not running";
 
   return (
-    <div data-testid="home-view" className="flex h-full items-center justify-center overflow-y-auto p-6">
-      <div className="w-full max-w-3xl">
+    <div data-testid="home-view" className="flex h-full justify-center overflow-y-auto p-6">
+      <div className="my-auto w-full max-w-3xl">
         <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           {headline}
           {isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
