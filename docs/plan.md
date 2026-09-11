@@ -196,6 +196,28 @@ Notes:
   - E2E Playwright test (mock adapter): panel states, lifecycle actions with
     and without persistence warnings, wizard validation and JSON-merge
     preview, remove confirmation.
+- **v1.2 — First-Run Onboarding** (Shipped ✅):
+  - Gate: `AppShell` swaps Sidebar/MainArea/CommandPalette for
+    `src/components/onboarding/Onboarding.tsx` until the persisted
+    `useOnboarding` store (`localstacker.onboarding`) records `completedAt`;
+    ⌘, stays inert mid-onboarding. Reset app data wipes the key, so Reset
+    replays onboarding (intended semantics).
+  - Single screen, no wizard: a live lamp board of all 15 supported services
+    polls the active profile endpoint every 5s, reusing the HomeView lamp
+    logic extracted to `src/lib/services.ts` (`LampStatus`, `lampStatus`,
+    `LAMP_CLASS`); inline endpoint editing commits to the Local profile on
+    Enter/blur; `Checking…` / `Not running` / `Connected · <version>` states
+    replace each other in place.
+  - Docker one-click reuse: `createAndConnect` with
+    `localstack/localstack:4.14.0`, host port 4566, all services (`env: []`),
+    persistence volume; pull percent from `PullProgressEvent`, then the
+    hook's status text; on failure the down state returns with the error in
+    the reason line. Copy-command fallback (`LOCALSTACK_RUN_COMMAND` in
+    `src/lib/docker.ts`) plus `Skip for now` setting the same flag.
+  - E2E: `e2e/fixtures.ts` seeds the completed flag into every existing spec
+    (one import-line change each); `e2e/onboarding.spec.ts` imports
+    `@playwright/test` directly to exercise genuine unseeded first launches
+    (complete → shell → reload persistence, and the skip path).
 
 ## Risks & mitigations
 
