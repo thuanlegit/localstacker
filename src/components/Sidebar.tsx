@@ -59,6 +59,10 @@ export function openDockerTab() {
   useTabs.getState().openTab({ id: "docker", kind: "docker", title: "Docker" });
 }
 
+export function openSettingsTab() {
+  useTabs.getState().openTab({ id: "settings", kind: "settings", title: "Settings" });
+}
+
 export function Sidebar() {
   const activeTabId = useTabs((s) => s.activeTabId);
   const profiles = useProfiles((s) => s.profiles);

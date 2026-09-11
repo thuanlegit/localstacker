@@ -43,6 +43,7 @@ import { HostedZoneView } from "@/components/route53/HostedZoneView";
 import { Ec2ServiceView } from "@/components/ec2/Ec2ServiceView";
 import { SecurityGroupDetailView } from "@/components/ec2/SecurityGroupDetailView";
 import { DockerView } from "@/components/docker/DockerView";
+import { SettingsView } from "@/components/settings/SettingsView";
 
 function EmptyState() {
   return (
@@ -240,6 +241,8 @@ export function MainArea() {
             <Ec2ServiceView />
           ) : tab.kind === "securityGroup" && tab.securityGroupId ? (
             <SecurityGroupDetailView groupId={tab.securityGroupId} />
+          ) : tab.kind === "settings" ? (
+            <SettingsView />
           ) : null}
         </TabsContent>
       ))}
