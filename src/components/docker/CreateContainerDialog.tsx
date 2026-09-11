@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Loader2, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Info, Loader2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   buildCreateConfig,
   type CreateContainerInput,
@@ -499,6 +505,28 @@ export function CreateContainerDialog({
               <Label htmlFor="docker-persist" className="cursor-pointer">
                 Persist state (named volume <code>localstacker-&lt;name&gt;:/var/lib/localstack</code>)
               </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center cursor-help rounded-full p-0.5 focus:outline-none focus:ring-1 focus:ring-ring"
+                      aria-label="Persistence info"
+                    >
+                      <Info className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs text-xs space-y-1.5 p-2.5">
+                    <p className="font-semibold">LocalStack Data Persistence</p>
+                    <p>
+                      Mounts a Docker named volume to <code>/var/lib/localstack</code> so AWS resources (S3 buckets, DynamoDB tables, SQS queues, etc.) survive container stops, restarts, and recreation.
+                    </p>
+                    <p className="opacity-80">
+                      Without a volume, vanilla LocalStack loses all state on stop. Works seamlessly with both official images and <code>localstack-persist</code>.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* Network / Restart policy / Hostname */}

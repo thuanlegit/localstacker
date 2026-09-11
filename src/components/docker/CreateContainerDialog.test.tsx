@@ -254,4 +254,9 @@ describe("CreateContainerDialog", () => {
     ).toBeInTheDocument();
     expect(mockOnCreate).not.toHaveBeenCalled();
   });
+
+  it("renders the data persistence tooltip trigger", () => {
+    renderDialog();
+    expect(screen.getByLabelText("Persistence info")).toBeInTheDocument();
+  });
 });
