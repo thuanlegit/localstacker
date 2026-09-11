@@ -93,6 +93,8 @@ export interface DockerAdapter {
   stopContainerLogs(sessionId: string): Promise<void>;
 }
 
+export const LOCALSTACK_RUN_COMMAND = "docker run -d --name localstack -p 4566:4566 localstack/localstack";
+
 export function isLocalStackImage(image: string): boolean {
   const raw = image.trim();
   const slashIdx = raw.indexOf("/");

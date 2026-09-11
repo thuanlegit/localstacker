@@ -1,5 +1,6 @@
 import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, Server, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
+import type { HealthInfo } from "@/lib/health";
 
 export interface ServiceMeta {
   kind: ServiceKind;
@@ -139,4 +140,23 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   iam: "iam",
   route53: "route53",
   ec2: "ec2",
+};
+
+export type LampStatus = "running" | "available" | "disabled" | "off";
+
+export function lampStatus(health: HealthInfo | undefined, kind: ServiceKind): LampStatus {
+  if (!health || health.status !== "up") return "off";
+  const found = health.services.find((s) => s.name === LOCALSTACK_SERVICE_NAMES[kind]);
+  if (!found) return "available"; // unregistered lazy service
+  const st = found.status.toLowerCase();
+  if (st === "disabled") return "disabled";
+  if (st === "running") return "running";
+  return "available"; // available / unknown
+}
+
+export const LAMP_CLASS: Record<LampStatus, string> = {
+  running: "bg-emerald-500 shadow-[0_0_8px] shadow-emerald-500/60",
+  available: "bg-muted-foreground/30",
+  disabled: "border border-muted-foreground/40 bg-transparent",
+  off: "bg-muted-foreground/15",
 };

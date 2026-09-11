@@ -8,30 +8,10 @@ import { useActiveProfile } from "@/store/profiles";
 import { useRecents } from "@/store/recents";
 import { useTabs } from "@/store/tabs";
 import { cn } from "@/lib/utils";
-import { LOCALSTACK_SERVICE_NAMES, SERVICES, serviceMeta } from "@/lib/services";
-import type { HealthInfo } from "@/lib/health";
+import { LAMP_CLASS, SERVICES, lampStatus, serviceMeta, type LampStatus } from "@/lib/services";
+import { LOCALSTACK_RUN_COMMAND } from "@/lib/docker";
 import type { ServiceKind, TabDescriptor, TabKind } from "@/types";
 
-type LampStatus = "running" | "available" | "disabled" | "off";
-
-const START_COMMAND = "docker run -d --name localstack -p 4566:4566 localstack/localstack";
-
-function lampStatus(health: HealthInfo | undefined, kind: ServiceKind): LampStatus {
-  if (!health || health.status !== "up") return "off";
-  const found = health.services.find((s) => s.name === LOCALSTACK_SERVICE_NAMES[kind]);
-  if (!found) return "available"; // unregistered lazy service
-  const st = found.status.toLowerCase();
-  if (st === "disabled") return "disabled";
-  if (st === "running") return "running";
-  return "available"; // available / unknown
-}
-
-const LAMP_CLASS: Record<LampStatus, string> = {
-  running: "bg-emerald-500 shadow-[0_0_8px] shadow-emerald-500/60",
-  available: "bg-muted-foreground/30",
-  disabled: "border border-muted-foreground/40 bg-transparent",
-  off: "bg-muted-foreground/15",
-};
 
 function statusWord(status: LampStatus): string {
   return status === "off" ? "" : status;
@@ -162,13 +142,13 @@ export function HomeView() {
             )}
             <div className="flex items-center gap-1.5">
               <code className="flex items-center gap-2 rounded-md border bg-card px-2.5 py-1.5 font-mono text-xs">
-                {START_COMMAND}
+                {LOCALSTACK_RUN_COMMAND}
               </code>
               <Button
                 variant="ghost"
                 size="icon-xs"
                 aria-label="Copy start command"
-                onClick={() => copy("command", START_COMMAND, "Command copied")}
+                onClick={() => copy("command", LOCALSTACK_RUN_COMMAND, "Command copied")}
               >
                 {copyIcon("command")}
               </Button>
