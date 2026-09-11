@@ -13,6 +13,9 @@ vi.mock("@/components/sqs/SqsServiceView", () => ({
 vi.mock("@/components/lambda/LambdaServiceView", () => ({
   LambdaServiceView: () => <div data-testid="lambda-service-view">Lambda Service</div>,
 }));
+vi.mock("@/components/HomeView", () => ({
+  HomeView: () => <div data-testid="home-view">Home</div>,
+}));
 
 describe("MainArea tabs", () => {
   beforeEach(() => {
@@ -23,11 +26,9 @@ describe("MainArea tabs", () => {
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
   });
 
-  it("renders empty state when no tabs exist", () => {
+  it("renders the home view when no tabs exist", () => {
     renderWithProviders(<MainArea />);
-    expect(
-      screen.getByText("Pick a service from the sidebar, or press ⌘K"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("home-view")).toBeInTheDocument();
   });
 
   it("renders scrollable tab container and active tab content", () => {
@@ -104,9 +105,7 @@ describe("MainArea tabs", () => {
 
     expect(useTabs.getState().tabs).toHaveLength(0);
     expect(useTabs.getState().activeTabId).toBeNull();
-    expect(
-      screen.getByText("Pick a service from the sidebar, or press ⌘K"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("home-view")).toBeInTheDocument();
   });
 
   it("translates vertical wheel event to horizontal scroll on tab container", () => {

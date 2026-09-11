@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Boxes, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -44,15 +44,8 @@ import { Ec2ServiceView } from "@/components/ec2/Ec2ServiceView";
 import { SecurityGroupDetailView } from "@/components/ec2/SecurityGroupDetailView";
 import { DockerView } from "@/components/docker/DockerView";
 import { SettingsView } from "@/components/settings/SettingsView";
+import { HomeView } from "@/components/HomeView";
 
-function EmptyState() {
-  return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
-      <Boxes className="size-10 opacity-40" aria-hidden />
-      <p className="text-sm">Pick a service from the sidebar, or press ⌘K</p>
-    </div>
-  );
-}
 
 export function MainArea() {
   const tabs = useTabs((s) => s.tabs);
@@ -83,7 +76,7 @@ export function MainArea() {
     }
   };
 
-  if (tabs.length === 0) return <EmptyState />;
+  if (tabs.length === 0) return <HomeView />;
 
   return (
     <Tabs

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen } from "@testing-library/react";
 import App from "@/App";
 import { LOCAL_PROFILE_ID, localProfile, useProfiles } from "@/store/profiles";
+import { useRecents } from "@/store/recents";
 import { useTheme } from "@/store/theme";
 import { useTabs } from "@/store/tabs";
 import { renderWithProviders } from "@/test/utils";
@@ -262,6 +263,7 @@ describe("AppShell", () => {
     document.documentElement.className = "";
     delete document.documentElement.dataset.palette;
     useTabs.setState({ tabs: [], activeTabId: null });
+    useRecents.setState({ recent: [] });
     useTheme.setState({ mode: "dark", palette: "github" });
     useProfiles.setState({ profiles: [localProfile()], activeProfileId: LOCAL_PROFILE_ID });
   });

@@ -199,3 +199,18 @@
     overflow: hidden;
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .lamp {
+    opacity: 0;
+    animation: lamp-on 240ms ease-out forwards;
+  }
+  @keyframes lamp-on {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}

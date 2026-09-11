@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useRecents } from "@/store/recents";
 import type { TabDescriptor } from "@/types";
 
 interface TabsStore {
@@ -15,11 +16,13 @@ export const useTabs = create<TabsStore>()((set, get) => ({
   tabs: [],
   activeTabId: null,
 
-  openTab: (tab) =>
+  openTab: (tab) => {
+    if (tab.kind !== "settings") useRecents.getState().record(tab);
     set((state) => ({
       tabs: state.tabs.some((t) => t.id === tab.id) ? state.tabs : [...state.tabs, tab],
       activeTabId: tab.id,
-    })),
+    }));
+  },
 
   closeTab: (id) =>
     set((state) => {
