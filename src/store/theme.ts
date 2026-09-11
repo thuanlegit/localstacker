@@ -27,7 +27,7 @@ export const useTheme = create<ThemeStore>()(
   persist(
     (set, get) => ({
       mode: "dark",
-      palette: "default",
+      palette: "github",
       setMode: (mode) => set({ mode }),
       setPalette: (palette) => set({ palette }),
       toggle: () =>
@@ -37,16 +37,22 @@ export const useTheme = create<ThemeStore>()(
       name: "localstacker.theme",
       storage: createJSONStorage(() => localStorage),
       version: 2,
-      migrate: (persisted, version) =>
-        version < 2
-          ? {
-              mode:
-                (persisted as { theme?: string })?.theme === "light"
-                  ? "light"
-                  : "dark",
-              palette: "default" as PaletteId,
-            }
-          : (persisted as { mode: ThemeMode; palette: PaletteId }),
+      migrate: (persisted, version) => {
+        const state =
+          version < 2
+            ? {
+                mode:
+                  (persisted as { theme?: string })?.theme === "light"
+                    ? "light"
+                    : "dark",
+                palette: "default",
+              }
+            : (persisted as { mode: ThemeMode; palette: PaletteId });
+        // "default" palette was replaced by "github" — keep persisted choice meaningful.
+        return state.palette === "default"
+          ? { ...state, palette: "github" as PaletteId }
+          : state;
+      },
     },
   ),
 );

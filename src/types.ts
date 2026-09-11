@@ -16,7 +16,10 @@ export type ServiceKind =
   | "ec2";
 
 export type PaletteId =
-  | "default"
+  | "github"
+  | "dracula"
+  | "one-dark"
+  | "claude"
   | "nord"
   | "catppuccin"
   | "gruvbox"

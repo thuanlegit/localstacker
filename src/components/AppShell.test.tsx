@@ -262,7 +262,7 @@ describe("AppShell", () => {
     document.documentElement.className = "";
     delete document.documentElement.dataset.palette;
     useTabs.setState({ tabs: [], activeTabId: null });
-    useTheme.setState({ mode: "dark", palette: "default" });
+    useTheme.setState({ mode: "dark", palette: "github" });
     useProfiles.setState({ profiles: [localProfile()], activeProfileId: LOCAL_PROFILE_ID });
   });
 

@@ -3,9 +3,12 @@ import { PALETTES } from "./palettes";
 import type { PaletteId } from "@/types";
 
 describe("palettes", () => {
-  it("contains all 7 palette ids", () => {
+  it("contains all 10 palette ids, github first as default", () => {
     const expectedIds: PaletteId[] = [
-      "default",
+      "github",
+      "dracula",
+      "one-dark",
+      "claude",
       "nord",
       "catppuccin",
       "gruvbox",
@@ -14,10 +17,7 @@ describe("palettes", () => {
       "rose-pine",
     ];
     const actualIds = PALETTES.map((p) => p.id);
-    expect(actualIds).toHaveLength(7);
-    for (const expectedId of expectedIds) {
-      expect(actualIds).toContain(expectedId);
-    }
+    expect(actualIds).toEqual(expectedIds);
   });
 
   it("has unique ids", () => {

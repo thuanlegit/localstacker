@@ -9,13 +9,24 @@ export interface PaletteMeta {
 
 export const PALETTES: readonly PaletteMeta[] = [
   {
-    id: "default",
-    label: "Default",
-    swatch: {
-      bg: "oklch(0.145 0.005 285)",
-      primary: "oklch(0.68 0.16 258)",
-      accent: "oklch(0.28 0.02 260)",
-    },
+    id: "github",
+    label: "GitHub",
+    swatch: { bg: "#0D1117", primary: "#2F81F7", accent: "#3FB950" },
+  },
+  {
+    id: "dracula",
+    label: "Dracula",
+    swatch: { bg: "#282A36", primary: "#BD93F9", accent: "#FF79C6" },
+  },
+  {
+    id: "one-dark",
+    label: "One Dark",
+    swatch: { bg: "#282C34", primary: "#61AFEF", accent: "#98C379" },
+  },
+  {
+    id: "claude",
+    label: "Claude",
+    swatch: { bg: "#262624", primary: "#D97757", accent: "#E0B089" },
   },
   {
     id: "nord",

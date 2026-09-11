@@ -8,7 +8,7 @@ describe("SettingsView", () => {
     localStorage.clear();
     document.documentElement.className = "";
     delete document.documentElement.dataset.palette;
-    useTheme.setState({ mode: "dark", palette: "default" });
+    useTheme.setState({ mode: "dark", palette: "github" });
   });
 
   it("renders all four nav buttons", () => {

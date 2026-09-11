@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -39,7 +40,7 @@ export function AppearanceSection() {
 
       <div className="space-y-2">
         <Label>Color palette</Label>
-        <div className="grid w-fit grid-cols-2 gap-2">
+        <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
           {PALETTES.map((p) => {
             const isActive = palette === p.id;
             return (
@@ -50,25 +51,35 @@ export function AppearanceSection() {
                 aria-pressed={isActive}
                 onClick={() => setPalette(p.id)}
                 className={cn(
-                  "flex items-center gap-3 rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                  "flex flex-col gap-3 rounded-lg border border-border p-3 text-left transition-colors hover:bg-accent/50",
                   isActive && "ring-2 ring-ring",
                 )}
               >
-                <div className="flex items-center gap-1">
-                  <span
-                    className="size-3 rounded-full"
-                    style={{ backgroundColor: p.swatch.bg }}
-                  />
-                  <span
-                    className="size-3 rounded-full"
-                    style={{ backgroundColor: p.swatch.primary }}
-                  />
-                  <span
-                    className="size-3 rounded-full"
-                    style={{ backgroundColor: p.swatch.accent }}
-                  />
+                <div
+                  className="h-14 w-full rounded-md border border-border/50 p-2.5"
+                  style={{ backgroundColor: p.swatch.bg }}
+                >
+                  <div className="flex h-full flex-col justify-between">
+                    <span
+                      className="h-2.5 w-2/3 rounded-full"
+                      style={{ backgroundColor: p.swatch.primary }}
+                    />
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="size-2.5 rounded-full"
+                        style={{ backgroundColor: p.swatch.accent }}
+                      />
+                      <span
+                        className="h-1.5 w-8 rounded-full opacity-55"
+                        style={{ backgroundColor: p.swatch.accent }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <span>{p.label}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{p.label}</span>
+                  {isActive && <Check className="size-4 text-primary" aria-hidden />}
+                </div>
               </button>
             );
           })}

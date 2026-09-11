@@ -6,7 +6,7 @@ describe("theme store", () => {
     localStorage.clear();
     document.documentElement.className = "";
     delete document.documentElement.dataset.palette;
-    useTheme.setState({ mode: "dark", palette: "default" });
+    useTheme.setState({ mode: "dark", palette: "github" });
   });
 
   describe("resolveMode", () => {
@@ -88,13 +88,16 @@ describe("theme store", () => {
   });
 
   describe("migration", () => {
-    it("migrates v1 persisted light theme to v2 mode and default palette", () => {
+    it("migrates v1 theme and legacy default palette to github", () => {
       const persistOptions = (useTheme as unknown as { persist: { getOptions: () => { migrate?: (persisted: unknown, version: number) => unknown } } }).persist.getOptions();
       const migratedLight = persistOptions.migrate?.({ theme: "light" }, 0);
-      expect(migratedLight).toEqual({ mode: "light", palette: "default" });
+      expect(migratedLight).toEqual({ mode: "light", palette: "github" });
 
       const migratedDark = persistOptions.migrate?.({ theme: "dark" }, 1);
-      expect(migratedDark).toEqual({ mode: "dark", palette: "default" });
+      expect(migratedDark).toEqual({ mode: "dark", palette: "github" });
+
+      const legacyDefault = persistOptions.migrate?.({ mode: "dark", palette: "default" }, 2);
+      expect(legacyDefault).toEqual({ mode: "dark", palette: "github" });
 
       const v2State = { mode: "system", palette: "gruvbox" };
       const nonMigrated = persistOptions.migrate?.(v2State, 2);
