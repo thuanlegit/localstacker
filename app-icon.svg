@@ -1,0 +1,30 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="512" y1="100" x2="512" y2="924" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b1924"/>
+      <stop offset="1" stop-color="#0e0d13"/>
+    </linearGradient>
+  </defs>
+
+  <!-- macOS squircle body: 824x824 on 1024 grid, HIG corner radius -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  <rect x="101" y="101" width="822" height="822" rx="184" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="2"/>
+
+  <!-- bottom plate -->
+  <path d="M512 496 L792 636 L512 776 L232 636 Z" fill="#4038b8"/>
+  <path d="M232 636 L512 776 L512 828 L232 688 Z" fill="#2f2994"/>
+  <path d="M792 636 L512 776 L512 828 L792 688 Z" fill="#26207a"/>
+
+  <!-- middle plate -->
+  <path d="M512 346 L792 486 L512 626 L232 486 Z" fill="#5b51e6"/>
+  <path d="M232 486 L512 626 L512 678 L232 538 Z" fill="#463dc9"/>
+  <path d="M792 486 L512 626 L512 678 L792 538 Z" fill="#3830a8"/>
+
+  <!-- top plate -->
+  <path d="M512 196 L792 336 L512 476 L232 336 Z" fill="#8b93ff"/>
+  <path d="M232 336 L512 476 L512 528 L232 388 Z" fill="#6a6cf0"/>
+  <path d="M792 336 L512 476 L512 528 L792 388 Z" fill="#5450d8"/>
+
+  <!-- health LED -->
+  <circle cx="652" cy="340" r="38" fill="#16b8a3"/>
+</svg>
