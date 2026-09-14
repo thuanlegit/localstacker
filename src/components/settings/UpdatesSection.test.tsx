@@ -29,7 +29,8 @@ describe("UpdatesSection", () => {
 
     render(<UpdatesSection />);
 
-    expect(screen.getByText("LocalStacker vdev")).toBeInTheDocument();
+    expect(screen.getByText("LocalStacker")).toBeInTheDocument();
+    expect(screen.getByText("vdev")).toBeInTheDocument();
     const checkBtn = screen.getByRole("button", { name: "Check for updates" });
     expect(checkBtn).toBeDisabled();
     expect(
