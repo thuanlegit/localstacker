@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, Server, Workflow, Waves, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, Server, Workflow, Waves, Activity, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 import type { HealthInfo } from "@/lib/health";
 
@@ -130,6 +130,13 @@ export const SERVICES: readonly ServiceMeta[] = [
     icon: Waves,
     blurb: "Data streams",
   },
+ {
+ kind: "cloudwatch",
+ label: "CloudWatch",
+ shortLabel: "CloudWatch",
+ icon: Activity,
+ blurb: "Metrics & alarms",
+ },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
@@ -156,6 +163,7 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   ec2: "ec2",
   sfn: "stepfunctions",
   kinesis: "kinesis",
+  cloudwatch: "cloudwatch",
 };
 
 export type LampStatus = "running" | "available" | "disabled" | "off";

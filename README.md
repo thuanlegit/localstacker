@@ -49,6 +49,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **Step Functions** | State machine list, ASL definition viewer, execution runner with event history timeline, visual state graph (`react-flow`) |
 | **DynamoDB Streams** | Enable/disable table streams with view selection, shard explorer with **record peek (no consumption)**, decoded New/Old image JSON viewer |
 | **Kinesis** | Data streams list with create wizard, shard map, **record peek via TRIM_HORIZON iterator**, test record publisher (PutRecord), enhanced consumers (EFO) list |
+| **CloudWatch** | Custom metric browser (namespace/dimension filter) with inline statistics viewer, PutMetricData test publisher, threshold alarm create/delete with state badges & detail drawer, STS caller identity chip on Home |
 
 ### S3 Object Preview
 ![S3 Object Preview](docs/screenshots/s3-bucket.png)
@@ -116,7 +117,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **v1.2** | **First-Run Onboarding** — live service lamp board on first launch, inline endpoint connect, one-click Docker create & auto-connect (`localstack/localstack:4.14.0`, persistence volume) | ✅ Done |
 | **M11** | **Step Functions** — state machine list, ASL definition viewer, execution runner + event history, visual state graph (`react-flow`) | ✅ Done |
 | **M12** | **DynamoDB Streams & Kinesis** — table stream enable + shard record peek; Kinesis streams, shard map, record peek, test publisher | ✅ Done |
-| **M13** | **CloudWatch Metrics & STS** — metric browser + alarm CRUD feeding the Home status board; caller-identity card | 🚧 Planned |
+| **M13** | **CloudWatch Metrics & STS** — metric browser + alarm CRUD feeding the Home status board; caller-identity card | ✅ Done |
 | **M14** | **KMS & ACM** — key/alias management, encrypt-decrypt playground; certificate inventory with import/request | 🚧 Planned |
 | **M15** | **CloudFormation & Route53 Resolver** — stack inspector (template, events, resources); resolver rules & endpoints | 🚧 Planned |
 

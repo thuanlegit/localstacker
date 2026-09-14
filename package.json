@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-api-gateway": "^3.1128.0",
+    "@aws-sdk/client-cloudwatch": "^3.1131.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.1127.0",
     "@aws-sdk/client-dynamodb": "^3.1127.0",
     "@aws-sdk/client-dynamodb-streams": "3.1128.0",
@@ -35,6 +36,7 @@
     "@aws-sdk/client-sns": "^3.1127.0",
     "@aws-sdk/client-sqs": "^3.1127.0",
     "@aws-sdk/client-ssm": "^3.1127.0",
+    "@aws-sdk/client-sts": "^3.1131.0",
     "@aws-sdk/lib-dynamodb": "^3.1127.0",
     "@aws-sdk/s3-request-presigner": "^3.1127.0",
     "@aws-sdk/util-dynamodb": "3.996.9",

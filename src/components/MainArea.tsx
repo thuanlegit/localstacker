@@ -46,6 +46,7 @@ import { SfnServiceView } from "@/components/sfn/SfnServiceView";
 import { StateMachineView } from "@/components/sfn/StateMachineView";
 import { KinesisServiceView } from "@/components/kinesis/KinesisServiceView";
 import { StreamView } from "@/components/kinesis/StreamView";
+import { CloudWatchServiceView } from "@/components/cloudwatch/CloudWatchServiceView";
 import { DockerView } from "@/components/docker/DockerView";
 import { SettingsView } from "@/components/settings/SettingsView";
 import { HomeView } from "@/components/HomeView";
@@ -246,6 +247,8 @@ export function MainArea() {
             <KinesisServiceView />
           ) : tab.kind === "stream" && tab.streamName ? (
             <StreamView streamName={tab.streamName} />
+          ) : tab.kind === "service" && tab.service === "cloudwatch" ? (
+            <CloudWatchServiceView />
           ) : tab.kind === "settings" ? (
             <SettingsView />
           ) : null}

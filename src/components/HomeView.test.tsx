@@ -18,6 +18,13 @@ vi.mock("@/hooks/use-health", () => ({
   useHealth: () => healthState,
 }));
 
+const identityState: { data: { account: string; arn: string; userId: string } | undefined } =
+  { data: undefined };
+
+vi.mock("@/hooks/use-sts", () => ({
+  useCallerIdentity: () => identityState,
+}));
+
 vi.mock("@/lib/support", () => ({
   openDonate: vi.fn(),
 }));
@@ -41,12 +48,13 @@ describe("HomeView", () => {
     useProfiles.setState({ profiles: [localProfile()], activeProfileId: LOCAL_PROFILE_ID });
     healthState.data = undefined;
     healthState.isPending = false;
+    identityState.data = undefined;
     Object.assign(navigator, {
       clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
     });
   });
 
-  it("renders up state with facts, 17 tiles, and status summary", () => {
+  it("renders up state with facts, 18 tiles, and status summary", () => {
     healthState.data = upHealth;
     renderWithProviders(<HomeView />);
 
@@ -55,8 +63,23 @@ describe("HomeView", () => {
     expect(
       screen.getByRole("button", { name: /http:\/\/localhost:4566/ }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /^Open / })).toHaveLength(17);
-    expect(screen.getByText("1 running, 15 available, 1 disabled")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /^Open / })).toHaveLength(18);
+    expect(screen.getByText("1 running, 16 available, 1 disabled")).toBeInTheDocument();
+  });
+
+  it("renders the STS identity chip with account and arn tooltip", () => {
+    healthState.data = upHealth;
+    identityState.data = {
+      account: "000000000000",
+      arn: "arn:aws:iam::000000000000:root",
+      userId: "AKIAEXAMPLE",
+    };
+    renderWithProviders(<HomeView />);
+
+    const chip = screen.getByRole("button", { name: /acct 000000000000/ });
+    expect(chip).toHaveAttribute("title", "arn:aws:iam::000000000000:root");
+    fireEvent.click(chip);
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith("000000000000");
   });
 
   it("opens the service tab when a tile is clicked", () => {
@@ -133,7 +156,7 @@ describe("HomeView", () => {
     renderWithProviders(<HomeView />);
 
     expect(screen.getByText("Checking LocalStack")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /^Open / })).toHaveLength(17);
+    expect(screen.getAllByRole("button", { name: /^Open / })).toHaveLength(18);
     expect(screen.queryByText(/\d+ running/)).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Copy start command" }),

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { openServiceTab } from "@/components/Sidebar";
 import { useHealth } from "@/hooks/use-health";
+import { useCallerIdentity } from "@/hooks/use-sts";
 import { useActiveProfile } from "@/store/profiles";
 import { useRecents } from "@/store/recents";
 import { useTabs } from "@/store/tabs";
@@ -59,10 +60,10 @@ export function HomeView() {
   const profile = useActiveProfile();
   const recent = useRecents((s) => s.recent);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
   const up = data?.status === "up" ? data : undefined;
   const down = data?.status === "down" ? data : undefined;
   const resolved = !isPending && data !== undefined;
+  const identityQuery = useCallerIdentity(profile.id, { enabled: Boolean(up) });
 
   const statuses = SERVICES.map((meta) => lampStatus(data, meta.kind));
   const runningCount = statuses.filter((s) => s === "running").length;
@@ -129,6 +130,19 @@ export function HomeView() {
             >
               {copyIcon("region")}
               {profile.region}
+            </button>
+          )}
+          {up && identityQuery.data && (
+            <button
+              type="button"
+              className={chipClass}
+              title={identityQuery.data.arn}
+              onClick={() =>
+                copy("identity", identityQuery.data!.account, "Account id copied")
+              }
+            >
+              {copyIcon("identity")}
+              acct {identityQuery.data.account}
             </button>
           )}
           {(up?.version || up?.edition) && (

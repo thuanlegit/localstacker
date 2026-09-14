@@ -15,7 +15,8 @@ export type ServiceKind =
   | "route53"
   | "ec2"
   | "sfn"
-  | "kinesis";
+ | "kinesis"
+ | "cloudwatch";
 
 export type PaletteId =
   | "github"

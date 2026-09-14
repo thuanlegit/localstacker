@@ -15,6 +15,8 @@ import { APIGatewayClient } from "@aws-sdk/client-api-gateway";
 import { SESClient } from "@aws-sdk/client-ses";
 import { IAMClient } from "@aws-sdk/client-iam";
 import { Route53Client } from "@aws-sdk/client-route-53";
+import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
+import { STSClient } from "@aws-sdk/client-sts";
 import { EC2Client } from "@aws-sdk/client-ec2";
 import { SFNClient } from "@aws-sdk/client-sfn";
 import { KinesisClient } from "@aws-sdk/client-kinesis";
@@ -70,6 +72,8 @@ export interface ServiceClients {
   sfn: SFNClient;
   kinesis: KinesisClient;
   dynamodbStreams: DynamoDBStreamsClient;
+  cloudwatch: CloudWatchClient;
+  sts: STSClient;
 }
 
 export function makeClients(profile: ConnectionProfile): ServiceClients {
@@ -102,5 +106,7 @@ export function makeClients(profile: ConnectionProfile): ServiceClients {
       }),
     }),
     dynamodbStreams: new DynamoDBStreamsClient(config),
+    cloudwatch: new CloudWatchClient(config),
+    sts: new STSClient(config),
   };
 }

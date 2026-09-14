@@ -227,10 +227,11 @@ Notes:
   - Kinesis: `@aws-sdk/client-kinesis`, streams list with shard map, PutRecord/PutRecords test publisher, record peek via shard iterator, consumer (EFO) list/registration.
   - E2E Playwright test: enable a stream on a table, write an item, assert the record appears in shard peek; create a Kinesis stream, publish a record, assert it in the peek viewer.
   - Notes: LocalStack drops records written before a stream reports ENABLED — e2e polls `DescribeStream` before the SDK `PutItem`; peek uses fresh `TRIM_HORIZON`/`LATEST` iterators so records are never consumed. Creating a Kinesis stream from the UI auto-opens its stream tab (spec asserts the heading directly, not the list row).
-- **M13 — CloudWatch Metrics & STS Identity** (Planned 🚧 · v1.2):
+- **M13 — CloudWatch Metrics & STS Identity** (Shipped ✅ · v1.2):
   - CloudWatch: `@aws-sdk/client-cloudwatch`, namespace/metric browser with dimension search, PutMetricData test publisher, alarm list with state/detail drawer, alarm create/edit (threshold, comparison, evaluation periods) — the monitoring pillar for the Home status board.
   - STS: `@aws-sdk/client-sts`, GetCallerIdentity card (account, user ARN) alongside Home endpoint facts.
   - E2E Playwright test: put a custom metric, assert it in the browser; create a threshold alarm, assert its state renders; assert the identity card shows the LocalStack account id.
+  - Notes: `Statistics`/`ComparisonOperator` are closed SDK enums — lib casts at the wire boundary. Alarm rows expand inline for detail (no per-alarm tabs); new alarms render as INSUFFICIENT_DATA until data arrives.
 - **M14 — KMS & ACM (Encryption & Certificates)** (Planned 🚧 · v1.2):
   - KMS: `@aws-sdk/client-kms`, key list with state and rotation, alias management, encrypt/decrypt playground (plaintext/base64 toggle), key policy viewer.
   - ACM: `@aws-sdk/client-acm`, certificate inventory, ImportCertificate (cert/key paste), RequestCertificate with DNS validation tokens, detail drawer.
