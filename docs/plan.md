@@ -218,7 +218,7 @@ Notes:
     (one import-line change each); `e2e/onboarding.spec.ts` imports
     `@playwright/test` directly to exercise genuine unseeded first launches
     (complete → shell → reload persistence, and the skip path).
-- **M11 — Step Functions (State Machine Studio)** (Planned 🚧 · v1.2):
+- **M11 — Step Functions (State Machine Studio)** (Shipped ✅ · v1.2):
   - `@aws-sdk/client-sfn`, state machines list, ASL definition viewer (syntax-highlighted JSON), StartExecution test runner with JSON input editor, executions list per state machine, execution event-history timeline, StopExecution.
   - Visual state graph: `react-flow` renders ASL Task/Choice/Parallel/Map/Pass/Fail/Succeed/Wait states with transition edges; read-only, node click scrolls the definition viewer to the matching state.
   - E2E Playwright test: deploy a standard state machine, run an execution from the test runner, assert execution succeeds and event history renders; assert graph nodes match the ASL states.

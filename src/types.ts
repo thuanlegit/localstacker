@@ -13,7 +13,8 @@ export type ServiceKind =
   | "ses"
   | "iam"
   | "route53"
-  | "ec2";
+  | "ec2"
+  | "sfn";
 
 export type PaletteId =
   | "github"
@@ -58,10 +59,11 @@ export type TabKind =
   | "restApi"
   | "sesIdentity"
   | "sesMailbox"
-  | "iamRole"
   | "iamUser"
+  | "iamRole"
   | "hostedZone"
-  | "securityGroup";
+  | "securityGroup"
+  | "stateMachine";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -83,5 +85,6 @@ export interface TabDescriptor {
   zoneId?: string;
   securityGroupId?: string;
   userName?: string;
+  stateMachineArn?: string;
   title: string;
 }

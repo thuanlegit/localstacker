@@ -42,6 +42,8 @@ import { Route53ServiceView } from "@/components/route53/Route53ServiceView";
 import { HostedZoneView } from "@/components/route53/HostedZoneView";
 import { Ec2ServiceView } from "@/components/ec2/Ec2ServiceView";
 import { SecurityGroupDetailView } from "@/components/ec2/SecurityGroupDetailView";
+import { SfnServiceView } from "@/components/sfn/SfnServiceView";
+import { StateMachineView } from "@/components/sfn/StateMachineView";
 import { DockerView } from "@/components/docker/DockerView";
 import { SettingsView } from "@/components/settings/SettingsView";
 import { HomeView } from "@/components/HomeView";
@@ -234,6 +236,10 @@ export function MainArea() {
             <Ec2ServiceView />
           ) : tab.kind === "securityGroup" && tab.securityGroupId ? (
             <SecurityGroupDetailView groupId={tab.securityGroupId} />
+          ) : tab.kind === "service" && tab.service === "sfn" ? (
+            <SfnServiceView />
+          ) : tab.kind === "stateMachine" && tab.stateMachineArn ? (
+            <StateMachineView stateMachineArn={tab.stateMachineArn} />
           ) : tab.kind === "settings" ? (
             <SettingsView />
           ) : null}
