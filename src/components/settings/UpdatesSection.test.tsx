@@ -1,14 +1,19 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { UpdatesSection } from "./UpdatesSection";
+import { openDonate } from "@/lib/support";
 import { usePreferences } from "@/store/preferences";
+
+vi.mock("@/lib/support", () => ({
+  openDonate: vi.fn(),
+}));
 
 describe("UpdatesSection", () => {
   const originalTauri = (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     localStorage.clear();
-    usePreferences.setState({ autoCheckUpdates: true });
   });
 
   afterEach(() => {
@@ -64,5 +69,13 @@ describe("UpdatesSection", () => {
     fireEvent.click(onOption);
 
     expect(usePreferences.getState().autoCheckUpdates).toBe(true);
+  });
+
+  it("opens the donation page when the About chip is clicked", () => {
+    render(<UpdatesSection />);
+
+    fireEvent.click(screen.getByRole("button", { name: /buy me a coffee/i }));
+
+    expect(vi.mocked(openDonate)).toHaveBeenCalledTimes(1);
   });
 });

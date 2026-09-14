@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -8,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { openDonate } from "@/lib/support";
 import { checkForUpdates, isTauri } from "@/lib/updater";
 import { usePreferences } from "@/store/preferences";
 
@@ -37,6 +39,14 @@ export function UpdatesSection() {
           <div className="text-base font-medium">LocalStacker v{version}</div>
           <p className="text-sm text-muted-foreground">Desktop client for LocalStack.</p>
         </div>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2 py-1 text-xs text-foreground transition-colors hover:bg-accent"
+          onClick={() => void openDonate()}
+        >
+          <Heart className="size-3.5 text-muted-foreground" aria-hidden />
+          Buy me a coffee
+        </button>
 
         <div className="space-y-1">
           <Button
