@@ -22,14 +22,9 @@ Download the latest prebuilt installer from [GitHub Releases](https://github.com
 |---|---|---|
 | **macOS** | `.dmg` | Apple silicon (`aarch64-apple-darwin`) |
 | **Windows** | `.exe` | NSIS installer (auto-updates enabled) |
-| **Linux** | `.AppImage` | Universal binary (auto-updates enabled) |
+| **Linux** | `.AppImage` | x86_64 binary (auto-updates enabled) |
 
 LocalStacker includes a built-in auto-updater that notifies you when a new release is available and handles update installation and relaunch in one click.
-
-> **Note for macOS users**: Initial release builds are not notarized through Apple. If macOS displays a Gatekeeper notice, right-click `LocalStacker.app` and choose **Open**, or run:
-> ```sh
-> xattr -d com.apple.quarantine /Applications/LocalStacker.app
-> ```
 
 ## Features
 
@@ -99,7 +94,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 
 ## Status & Roadmap
 
-**v1.0.0 shipped** ✅. Core milestones implemented and verified with end-to-end coverage:
+**v1.1.0 shipped** ✅. Core milestones implemented and verified with end-to-end coverage:
 
 | Milestone | Scope | Status |
 |---|---|---|
@@ -163,7 +158,7 @@ docker run --rm -p 4566:4566 -v /var/run/docker.sock:/var/run/docker.sock locals
 #### Required Repository Secrets
 - `TAURI_SIGNING_PRIVATE_KEY`: Private minisign key generated via `pnpm tauri signer generate`.
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: Passphrase protecting the private signing key.
-- `APPLE_*` (optional): Set `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM` when an Apple Developer account is configured for notarization. If omitted, the workflow cleanly skips notarization and produces unsigned DMGs.
+- `APPLE_*` (optional): Set `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` when an Apple Developer account is configured for notarization. If omitted, the workflow cleanly skips notarization and produces unsigned DMGs.
 
 ## Stack
 
