@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, Container, Database, Globe, HardDrive, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, Settings, Shield, ShieldCheck, Sun, User, Webhook, Zap } from "lucide-react";
+import { CalendarClock, Container, Database, Globe, HardDrive, Heart, Inbox, KeyRound, ListOrdered, ListTree, Mail, Moon, Network, Radio, ScrollText, Settings, Shield, ShieldCheck, Sun, User, Webhook, Zap } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/command";
 import { openDockerTab, openServiceTab, openSettingsTab } from "@/components/Sidebar";
 import { SERVICES } from "@/lib/services";
+import { openDonate } from "@/lib/support";
 import { resolveMode, useTheme } from "@/store/theme";
 import { useActiveProfile } from "@/store/profiles";
 import { useTabs } from "@/store/tabs";
@@ -487,6 +488,15 @@ export function CommandPalette() {
           >
             {resolveMode(mode) === "dark" ? <Sun /> : <Moon />}
             Toggle theme
+          </CommandItem>
+        </CommandGroup>
+        <CommandGroup heading="Support">
+          <CommandItem
+            value="Buy me a coffee Support LocalStacker donate"
+            onSelect={() => run(() => void openDonate())}
+          >
+            <Heart />
+            Buy me a coffee
           </CommandItem>
         </CommandGroup>
       </CommandList>

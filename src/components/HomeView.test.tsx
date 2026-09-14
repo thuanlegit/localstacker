@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { HomeView } from "./HomeView";
+import { openDonate } from "@/lib/support";
 import { renderWithProviders } from "@/test/utils";
 import { useTabs } from "@/store/tabs";
 import { useRecents } from "@/store/recents";
@@ -15,6 +16,10 @@ const healthState: { data: HealthInfo | undefined; isPending: boolean } = {
 
 vi.mock("@/hooks/use-health", () => ({
   useHealth: () => healthState,
+}));
+
+vi.mock("@/lib/support", () => ({
+  openDonate: vi.fn(),
 }));
 
 const upHealth: HealthInfo = {
@@ -133,5 +138,11 @@ describe("HomeView", () => {
     expect(
       screen.queryByRole("button", { name: "Copy start command" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("opens the donation page when the footer chip is clicked", () => {
+    renderWithProviders(<HomeView />);
+    fireEvent.click(screen.getByRole("button", { name: /buy me a coffee/i }));
+    expect(vi.mocked(openDonate)).toHaveBeenCalledTimes(1);
   });
 });

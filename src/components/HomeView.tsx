@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Container, Copy, Loader2, Settings, type LucideIcon } from "lucide-react";
+import { Check, Container, Copy, Heart, Loader2, Settings, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { openServiceTab } from "@/components/Sidebar";
@@ -10,6 +10,7 @@ import { useTabs } from "@/store/tabs";
 import { cn } from "@/lib/utils";
 import { LAMP_CLASS, SERVICES, lampStatus, serviceMeta, type LampStatus } from "@/lib/services";
 import { LOCALSTACK_RUN_COMMAND } from "@/lib/docker";
+import { openDonate } from "@/lib/support";
 import type { ServiceKind, TabDescriptor, TabKind } from "@/types";
 
 
@@ -228,6 +229,14 @@ export function HomeView() {
             </kbd>
             <span className="text-xs text-muted-foreground">Settings</span>
           </div>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2 py-1 text-xs text-foreground transition-colors hover:bg-accent"
+            onClick={() => void openDonate()}
+          >
+            <Heart className="size-3.5 text-muted-foreground" aria-hidden />
+            Buy me a coffee
+          </button>
         </div>
       </div>
     </div>
