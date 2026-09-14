@@ -94,7 +94,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 
 ## Status & Roadmap
 
-**v1.1.0 shipped** ✅. Core milestones implemented and verified with end-to-end coverage:
+**v1.1.0 shipped** ✅ · **v1.2 in development** 🚧. Core milestones implemented and verified with end-to-end coverage:
 
 | Milestone | Scope | Status |
 |---|---|---|
@@ -110,6 +110,12 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **M9** | **IAM & Route53** — role/policy inspector, access keys, hosted zones & DNS records grid | ✅ Done |
 | **M10** | **EC2 Mock** — instance states, security groups rule matrix, key pairs | ✅ Done |
 | **v1.1** | **Docker Lifecycle** — dedicated container panel: detect/inspect LocalStack containers (incl. `localstack-persist` images), snapshot+follow logs, start/stop/restart/remove with persistence-aware warnings, create wizard with service picker, image pull & auto-connect — via Docker socket (`bollard` in the Rust backend, no CLI sidecar) | ✅ Done |
+| **v1.2** | **First-Run Onboarding** — live service lamp board on first launch, inline endpoint connect, one-click Docker create & auto-connect (`localstack/localstack:4.14.0`, persistence volume) | ✅ Done |
+| **M11** | **Step Functions** — state machine list, ASL definition viewer, execution runner + event history, visual state graph (`react-flow`) | 🚧 Planned |
+| **M12** | **DynamoDB Streams & Kinesis** — table stream enable + shard record peek; Kinesis streams, shard map, record peek, test publisher | 🚧 Planned |
+| **M13** | **CloudWatch Metrics & STS** — metric browser + alarm CRUD feeding the Home status board; caller-identity card | 🚧 Planned |
+| **M14** | **KMS & ACM** — key/alias management, encrypt-decrypt playground; certificate inventory with import/request | 🚧 Planned |
+| **M15** | **CloudFormation & Route53 Resolver** — stack inspector (template, events, resources); resolver rules & endpoints | 🚧 Planned |
 
 See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.
 

@@ -218,6 +218,26 @@ Notes:
     (one import-line change each); `e2e/onboarding.spec.ts` imports
     `@playwright/test` directly to exercise genuine unseeded first launches
     (complete → shell → reload persistence, and the skip path).
+- **M11 — Step Functions (State Machine Studio)** (Planned 🚧 · v1.2):
+  - `@aws-sdk/client-sfn`, state machines list, ASL definition viewer (syntax-highlighted JSON), StartExecution test runner with JSON input editor, executions list per state machine, execution event-history timeline, StopExecution.
+  - Visual state graph: `react-flow` renders ASL Task/Choice/Parallel/Map/Pass/Fail/Succeed/Wait states with transition edges; read-only, node click scrolls the definition viewer to the matching state.
+  - E2E Playwright test: deploy a standard state machine, run an execution from the test runner, assert execution succeeds and event history renders; assert graph nodes match the ASL states.
+- **M12 — DynamoDB Streams & Kinesis Data Streams** (Planned 🚧 · v1.2):
+  - DynamoDB Streams: `@aws-sdk/client-dynamodb` + `@aws-sdk/client-dynamodbstreams`, enable/disable streams on existing tables (view-type selector, `NEW_AND_OLD_IMAGES` default), stream ARN + shard list, shard-iterator record peek.
+  - Kinesis: `@aws-sdk/client-kinesis`, streams list with shard map, PutRecord/PutRecords test publisher, record peek via shard iterator, consumer (EFO) list/registration.
+  - E2E Playwright test: enable a stream on a table, write an item, assert the record appears in shard peek; create a Kinesis stream, publish a record, assert it in the peek viewer.
+- **M13 — CloudWatch Metrics & STS Identity** (Planned 🚧 · v1.2):
+  - CloudWatch: `@aws-sdk/client-cloudwatch`, namespace/metric browser with dimension search, PutMetricData test publisher, alarm list with state/detail drawer, alarm create/edit (threshold, comparison, evaluation periods) — the monitoring pillar for the Home status board.
+  - STS: `@aws-sdk/client-sts`, GetCallerIdentity card (account, user ARN) alongside Home endpoint facts.
+  - E2E Playwright test: put a custom metric, assert it in the browser; create a threshold alarm, assert its state renders; assert the identity card shows the LocalStack account id.
+- **M14 — KMS & ACM (Encryption & Certificates)** (Planned 🚧 · v1.2):
+  - KMS: `@aws-sdk/client-kms`, key list with state and rotation, alias management, encrypt/decrypt playground (plaintext/base64 toggle), key policy viewer.
+  - ACM: `@aws-sdk/client-acm`, certificate inventory, ImportCertificate (cert/key paste), RequestCertificate with DNS validation tokens, detail drawer.
+  - E2E Playwright test: create a symmetric key, alias it, round-trip encrypt→decrypt; import a self-signed certificate, assert fingerprint and detail drawer.
+- **M15 — CloudFormation & Route53 Resolver (Stacks & Hybrid DNS)** (Planned 🚧 · v1.2):
+  - CloudFormation: `@aws-sdk/client-cloudformation`, stack list with status, template body viewer, events timeline, resource list with drift status; deploy-from-template-file deferred to a follow-up.
+  - Route53 Resolver: `@aws-sdk/client-route-53-resolver`, resolver rules and inbound/outbound endpoints with detail drawer.
+  - E2E Playwright test: deploy a two-resource stack (S3 bucket + SQS queue), assert resources/events render, delete the stack; create a resolver rule, assert it in the list.
 
 ## Risks & mitigations
 
