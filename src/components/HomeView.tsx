@@ -44,6 +44,7 @@ const KIND_TO_SERVICE: Partial<Record<TabKind, ServiceKind>> = {
   hostedZone: "route53",
   securityGroup: "ec2",
   stateMachine: "sfn",
+  stream: "kinesis",
 };
 
 function recentIcon(tab: TabDescriptor): LucideIcon {

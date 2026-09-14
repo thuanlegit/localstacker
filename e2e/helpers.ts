@@ -16,6 +16,9 @@ import { IAMClient } from "@aws-sdk/client-iam";
 import { Route53Client } from "@aws-sdk/client-route-53";
 import { EC2Client } from "@aws-sdk/client-ec2";
 import { SFNClient } from "@aws-sdk/client-sfn";
+import { KinesisClient } from "@aws-sdk/client-kinesis";
+import { DynamoDBStreamsClient } from "@aws-sdk/client-dynamodb-streams";
+import { FetchHttpHandler } from "@smithy/fetch-http-handler";
 export const ENDPOINT = process.env.LOCALSTACK_ENDPOINT || "http://127.0.0.1:4566";
 
 export async function requireLocalStack(): Promise<void> {
@@ -69,6 +72,11 @@ export function makeClients() {
     route53: new Route53Client(config),
     ec2: new EC2Client(config),
     sfn: new SFNClient(config),
+    kinesis: new KinesisClient({
+      ...config,
+      requestHandler: new FetchHttpHandler(),
+    }),
+    dynamodbStreams: new DynamoDBStreamsClient(config),
   };
 }
 

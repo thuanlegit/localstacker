@@ -14,7 +14,8 @@ export type ServiceKind =
   | "iam"
   | "route53"
   | "ec2"
-  | "sfn";
+  | "sfn"
+  | "kinesis";
 
 export type PaletteId =
   | "github"
@@ -63,7 +64,8 @@ export type TabKind =
   | "iamRole"
   | "hostedZone"
   | "securityGroup"
-  | "stateMachine";
+  | "stateMachine"
+  | "stream";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -83,8 +85,9 @@ export interface TabDescriptor {
   identityName?: string;
   roleName?: string;
   zoneId?: string;
-  securityGroupId?: string;
-  userName?: string;
   stateMachineArn?: string;
+  securityGroupId?: string;
+  streamName?: string;
+  userName?: string;
   title: string;
 }

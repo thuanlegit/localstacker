@@ -44,6 +44,8 @@ import { Ec2ServiceView } from "@/components/ec2/Ec2ServiceView";
 import { SecurityGroupDetailView } from "@/components/ec2/SecurityGroupDetailView";
 import { SfnServiceView } from "@/components/sfn/SfnServiceView";
 import { StateMachineView } from "@/components/sfn/StateMachineView";
+import { KinesisServiceView } from "@/components/kinesis/KinesisServiceView";
+import { StreamView } from "@/components/kinesis/StreamView";
 import { DockerView } from "@/components/docker/DockerView";
 import { SettingsView } from "@/components/settings/SettingsView";
 import { HomeView } from "@/components/HomeView";
@@ -240,6 +242,10 @@ export function MainArea() {
             <SfnServiceView />
           ) : tab.kind === "stateMachine" && tab.stateMachineArn ? (
             <StateMachineView stateMachineArn={tab.stateMachineArn} />
+          ) : tab.kind === "service" && tab.service === "kinesis" ? (
+            <KinesisServiceView />
+          ) : tab.kind === "stream" && tab.streamName ? (
+            <StreamView streamName={tab.streamName} />
           ) : tab.kind === "settings" ? (
             <SettingsView />
           ) : null}

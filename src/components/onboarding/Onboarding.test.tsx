@@ -47,10 +47,10 @@ describe("Onboarding", () => {
     dockerMock.createAndConnect = vi.fn(() => new Promise(() => {}));
   });
 
-  it("renders checking state with 16 lamp rows while health is pending", () => {
+  it("renders checking state with 17 lamp rows while health is pending", () => {
     renderWithProviders(<Onboarding />);
     expect(screen.getByText("Checking…")).toBeInTheDocument();
-    expect(screen.getAllByTestId(/^onboarding-lamp-/)).toHaveLength(16);
+    expect(screen.getAllByTestId(/^onboarding-lamp-/)).toHaveLength(17);
   });
 
   it("renders down state with reason, copy fallback, and no Start button", async () => {

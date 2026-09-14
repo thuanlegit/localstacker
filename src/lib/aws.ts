@@ -17,6 +17,8 @@ import { IAMClient } from "@aws-sdk/client-iam";
 import { Route53Client } from "@aws-sdk/client-route-53";
 import { EC2Client } from "@aws-sdk/client-ec2";
 import { SFNClient } from "@aws-sdk/client-sfn";
+import { KinesisClient } from "@aws-sdk/client-kinesis";
+import { DynamoDBStreamsClient } from "@aws-sdk/client-dynamodb-streams";
 import type { ConnectionProfile } from "@/types";
 
 /** LocalStack ignores SigV4 identity, but SDKs require credentials to sign. */
@@ -66,6 +68,8 @@ export interface ServiceClients {
   route53: Route53Client;
   ec2: EC2Client;
   sfn: SFNClient;
+  kinesis: KinesisClient;
+  dynamodbStreams: DynamoDBStreamsClient;
 }
 
 export function makeClients(profile: ConnectionProfile): ServiceClients {
@@ -89,5 +93,14 @@ export function makeClients(profile: ConnectionProfile): ServiceClients {
     route53: new Route53Client(config),
     ec2: new EC2Client(config),
     sfn: new SFNClient(config),
+    kinesis: new KinesisClient({
+      ...config,
+      requestHandler: new FetchHttpHandler({
+        customFetch: profile.authToken
+          ? withAuthHeader(profile.authToken)
+          : platformFetch,
+      }),
+    }),
+    dynamodbStreams: new DynamoDBStreamsClient(config),
   };
 }

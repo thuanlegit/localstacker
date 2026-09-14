@@ -3,6 +3,7 @@ import {
   DescribeTableCommand,
   CreateTableCommand,
   DeleteTableCommand,
+  UpdateTableCommand,
   type DynamoDBClient,
   type ListTablesCommandOutput,
 } from "@aws-sdk/client-dynamodb";
@@ -40,6 +41,16 @@ export interface TableDescription {
   keySchema: KeyAttribute[];
   indexes: IndexSummary[];
   attributeTypes: Record<string, "S" | "N" | "B">;
+  stream?: TableStreamInfo;
+}
+
+export type StreamViewType = "NEW_AND_OLD_IMAGES" | "KEYS_ONLY" | "NEW_IMAGE" | "OLD_IMAGE";
+
+export interface TableStreamInfo {
+  enabled: boolean;
+  viewType?: StreamViewType;
+  arn?: string;
+  label?: string;
 }
 
 export async function listTables(client: DynamoDBClient): Promise<string[]> {
@@ -126,7 +137,41 @@ export async function describeTable(
     keySchema: mapKeySchema(t.KeySchema),
     indexes,
     attributeTypes,
+    stream: mapStreamInfo(t),
   };
+}
+
+interface RawTableStreamFields {
+  StreamSpecification?: { StreamEnabled?: boolean; StreamViewType?: StreamViewType };
+  LatestStreamArn?: string;
+  LatestStreamLabel?: string;
+}
+
+function mapStreamInfo(t: RawTableStreamFields): TableStreamInfo | undefined {
+  if (!t.StreamSpecification && !t.LatestStreamArn) return undefined;
+  return {
+    enabled: t.StreamSpecification?.StreamEnabled ?? false,
+    viewType: t.StreamSpecification?.StreamViewType,
+    arn: t.LatestStreamArn,
+    label: t.LatestStreamLabel,
+  };
+}
+
+export async function setTableStream(
+  client: DynamoDBClient,
+  tableName: string,
+  enabled: boolean,
+  viewType: StreamViewType = "NEW_AND_OLD_IMAGES",
+): Promise<void> {
+  await client.send(
+    new UpdateTableCommand({
+      TableName: tableName,
+      StreamSpecification: {
+        StreamEnabled: enabled,
+        StreamViewType: enabled ? viewType : undefined,
+      },
+    }),
+  );
 }
 
 export interface CreateTableInput {

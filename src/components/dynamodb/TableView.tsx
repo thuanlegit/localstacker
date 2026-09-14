@@ -39,6 +39,7 @@ import {
   useItemActions,
 } from "@/hooks/use-dynamodb";
 import { formatBytes } from "@/lib/format";
+import { StreamSection } from "@/components/dynamodb/StreamSection";
 import type { KeyConditionInput } from "@/lib/dynamodb";
 
 interface TableViewProps {
@@ -562,6 +563,9 @@ export function TableView({ tableName }: TableViewProps) {
           </form>
         )}
       </div>
+
+      {/* Stream capture (enable/disable + shard peek) */}
+      <StreamSection tableName={tableName} stream={table.stream} />
 
       {/* Main content: Grid + Inspector */}
       <div className="flex flex-1 overflow-hidden">

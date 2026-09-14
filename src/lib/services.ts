@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, Server, Workflow, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, Server, Workflow, Waves, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 import type { HealthInfo } from "@/lib/health";
 
@@ -123,6 +123,13 @@ export const SERVICES: readonly ServiceMeta[] = [
     icon: Workflow,
     blurb: "State machines & executions",
   },
+  {
+    kind: "kinesis",
+    label: "Kinesis",
+    shortLabel: "Kinesis",
+    icon: Waves,
+    blurb: "Data streams",
+  },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
@@ -148,6 +155,7 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   route53: "route53",
   ec2: "ec2",
   sfn: "stepfunctions",
+  kinesis: "kinesis",
 };
 
 export type LampStatus = "running" | "available" | "disabled" | "off";

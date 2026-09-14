@@ -222,10 +222,11 @@ Notes:
   - `@aws-sdk/client-sfn`, state machines list, ASL definition viewer (syntax-highlighted JSON), StartExecution test runner with JSON input editor, executions list per state machine, execution event-history timeline, StopExecution.
   - Visual state graph: `react-flow` renders ASL Task/Choice/Parallel/Map/Pass/Fail/Succeed/Wait states with transition edges; read-only, node click scrolls the definition viewer to the matching state.
   - E2E Playwright test: deploy a standard state machine, run an execution from the test runner, assert execution succeeds and event history renders; assert graph nodes match the ASL states.
-- **M12 — DynamoDB Streams & Kinesis Data Streams** (Planned 🚧 · v1.2):
+- **M12 — DynamoDB Streams & Kinesis Data Streams** (Shipped ✅ · v1.2):
   - DynamoDB Streams: `@aws-sdk/client-dynamodb` + `@aws-sdk/client-dynamodbstreams`, enable/disable streams on existing tables (view-type selector, `NEW_AND_OLD_IMAGES` default), stream ARN + shard list, shard-iterator record peek.
   - Kinesis: `@aws-sdk/client-kinesis`, streams list with shard map, PutRecord/PutRecords test publisher, record peek via shard iterator, consumer (EFO) list/registration.
   - E2E Playwright test: enable a stream on a table, write an item, assert the record appears in shard peek; create a Kinesis stream, publish a record, assert it in the peek viewer.
+  - Notes: LocalStack drops records written before a stream reports ENABLED — e2e polls `DescribeStream` before the SDK `PutItem`; peek uses fresh `TRIM_HORIZON`/`LATEST` iterators so records are never consumed. Creating a Kinesis stream from the UI auto-opens its stream tab (spec asserts the heading directly, not the list row).
 - **M13 — CloudWatch Metrics & STS Identity** (Planned 🚧 · v1.2):
   - CloudWatch: `@aws-sdk/client-cloudwatch`, namespace/metric browser with dimension search, PutMetricData test publisher, alarm list with state/detail drawer, alarm create/edit (threshold, comparison, evaluation periods) — the monitoring pillar for the Home status board.
   - STS: `@aws-sdk/client-sts`, GetCallerIdentity card (account, user ARN) alongside Home endpoint facts.
