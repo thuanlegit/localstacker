@@ -70,7 +70,7 @@ fn build_tray(app: &tauri::AppHandle, state: &TrayState) -> Result<(), String> {
     let menu = build_menu(app, state).map_err(|e| e.to_string())?;
     TrayIconBuilder::with_id(TRAY_ID)
         .icon(img)
-        .icon_as_template(true)
+        .icon_as_template(false)
         .tooltip(format!("LocalStacker — {}", state.label))
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
