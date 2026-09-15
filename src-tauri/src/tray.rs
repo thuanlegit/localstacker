@@ -71,7 +71,7 @@ fn build_tray(app: &tauri::AppHandle, state: &TrayState) -> Result<(), String> {
     TrayIconBuilder::with_id(TRAY_ID)
         .icon(img)
         .icon_as_template(true)
-        .tooltip("LocalStacker")
+        .tooltip(format!("LocalStacker — {}", state.label))
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {
@@ -137,7 +137,9 @@ pub fn tray_set_status(
     tray.set_icon(Some(img)).map_err(|e| e.to_string())?;
     let snapshot = state.lock().clone();
     let menu = build_menu(&app, &snapshot).map_err(|e| e.to_string())?;
-    tray.set_menu(Some(menu)).map_err(|e| e.to_string())
+    tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
+    tray.set_tooltip(Some(format!("LocalStacker — {}", snapshot.label)))
+        .map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
