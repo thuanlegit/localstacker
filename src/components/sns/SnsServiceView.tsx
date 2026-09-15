@@ -260,7 +260,7 @@ export function SnsServiceView() {
             onClick={() => setIsCreateOpen(true)}
           >
             <Plus className="h-4 w-4" />
-            Create topic
+            Create your first topic
           </Button>
         </div>
       ) : (
