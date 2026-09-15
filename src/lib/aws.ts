@@ -23,6 +23,8 @@ import { KinesisClient } from "@aws-sdk/client-kinesis";
 import { DynamoDBStreamsClient } from "@aws-sdk/client-dynamodb-streams";
 import { KMSClient } from "@aws-sdk/client-kms";
 import { ACMClient } from "@aws-sdk/client-acm";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { Route53ResolverClient } from "@aws-sdk/client-route53resolver";
 import type { ConnectionProfile } from "@/types";
 
 /** LocalStack ignores SigV4 identity, but SDKs require credentials to sign. */
@@ -78,6 +80,8 @@ export interface ServiceClients {
   sts: STSClient;
   kms: KMSClient;
   acm: ACMClient;
+  cloudformation: CloudFormationClient;
+  route53resolver: Route53ResolverClient;
 }
 
 
@@ -115,5 +119,7 @@ export function makeClients(profile: ConnectionProfile): ServiceClients {
     sts: new STSClient(config),
     kms: new KMSClient(config),
     acm: new ACMClient(config),
+    cloudformation: new CloudFormationClient(config),
+    route53resolver: new Route53ResolverClient(config),
   };
 }

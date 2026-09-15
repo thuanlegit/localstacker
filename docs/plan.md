@@ -237,10 +237,11 @@ Notes:
   - ACM: `@aws-sdk/client-acm`, certificate inventory, ImportCertificate (cert/key paste), RequestCertificate with DNS validation tokens, detail drawer.
   - E2E Playwright test: create a symmetric key, alias it, round-trip encrypt→decrypt; import a self-signed certificate (openssl-generated fixture), assert detail drawer.
   - Notes: ACM exposes no certificate fingerprint via the API — the spec asserts the detail drawer (subject/issuer/CNAME token) instead. New KMS keys are ENABLED with rotation reported by `GetKeyRotationStatus`; deletion uses `ScheduleKeyDeletion` with a 7 day window.
-- **M15 — CloudFormation & Route53 Resolver (Stacks & Hybrid DNS)** (Planned 🚧 · v1.2):
+- **M15 — CloudFormation & Route53 Resolver (Stacks & Hybrid DNS)** (Shipped ✅ · v1.2):
   - CloudFormation: `@aws-sdk/client-cloudformation`, stack list with status, template body viewer, events timeline, resource list with drift status; deploy-from-template-file deferred to a follow-up.
-  - Route53 Resolver: `@aws-sdk/client-route-53-resolver`, resolver rules and inbound/outbound endpoints with detail drawer.
-  - E2E Playwright test: deploy a two-resource stack (S3 bucket + SQS queue), assert resources/events render, delete the stack; create a resolver rule, assert it in the list.
+  - Route53 Resolver: `@aws-sdk/client-route53resolver`, resolver rules and inbound/outbound endpoints with detail drawer.
+  - E2E Playwright test: SDK-create a stack, assert the UI list; open the stack view (template, events, resources); delete via UI; assert Resolver sections render.
+  - Notes: the SDK package is `client-route53resolver` (no extra dash). Community LocalStack returns empty Resolver lists — sections render empty states. Stack tabs use the `CFN` shortLabel in the tab bar.
 
 ## Risks & mitigations
 

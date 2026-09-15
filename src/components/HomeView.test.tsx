@@ -54,7 +54,7 @@ describe("HomeView", () => {
     });
   });
 
-  it("renders up state with facts, 20 tiles, and status summary", () => {
+  it("renders up state with facts, 21 tiles, and status summary", () => {
     healthState.data = upHealth;
     renderWithProviders(<HomeView />);
 
@@ -63,8 +63,8 @@ describe("HomeView", () => {
     expect(
       screen.getByRole("button", { name: /http:\/\/localhost:4566/ }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /^Open / })).toHaveLength(20);
-    expect(screen.getByText("1 running, 18 available, 1 disabled")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /^Open / })).toHaveLength(21);
+    expect(screen.getByText("1 running, 19 available, 1 disabled")).toBeInTheDocument();
   });
 
   it("renders the STS identity chip with account and arn tooltip", () => {
@@ -156,7 +156,7 @@ describe("HomeView", () => {
     renderWithProviders(<HomeView />);
 
     expect(screen.getByText("Checking LocalStack")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /^Open / })).toHaveLength(20);
+    expect(screen.getAllByRole("button", { name: /^Open / })).toHaveLength(21);
     expect(screen.queryByText(/\d+ running/)).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Copy start command" }),

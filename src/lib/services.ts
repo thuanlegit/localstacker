@@ -1,4 +1,4 @@
-import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, Server, Workflow, Waves, Activity, FileKey, BadgeCheck, type LucideIcon } from "lucide-react";
+import { HardDrive, ListOrdered, KeyRound, Zap, Database, Radio, ScrollText, ListTree, Webhook, CalendarClock, Network, Mail, ShieldCheck, Globe, Server, Workflow, Waves, Activity, FileKey, BadgeCheck, Layers, type LucideIcon } from "lucide-react";
 import type { ServiceKind } from "@/types";
 import type { HealthInfo } from "@/lib/health";
 
@@ -151,6 +151,13 @@ export const SERVICES: readonly ServiceMeta[] = [
  icon: BadgeCheck,
  blurb: "Certificates",
  },
+ {
+ kind: "cloudformation",
+ label: "CloudFormation",
+ shortLabel: "CFN",
+ icon: Layers,
+ blurb: "Stacks & resources",
+ },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {
@@ -180,6 +187,7 @@ export const LOCALSTACK_SERVICE_NAMES: Record<ServiceKind, string> = {
   cloudwatch: "cloudwatch",
   kms: "kms",
   acm: "acm",
+  cloudformation: "cloudformation",
 };
 
 export type LampStatus = "running" | "available" | "disabled" | "off";

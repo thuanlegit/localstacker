@@ -19,6 +19,23 @@ vi.mock("@/hooks/use-health", () => ({
     err instanceof Error && err.message.includes("is not enabled"),
 }));
 
+vi.mock("@/hooks/use-route53resolver", () => ({
+  useResolverEndpoints: () => ({
+    data: [],
+    isPending: false,
+    isFetching: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+  useResolverRules: () => ({
+    data: [],
+    isPending: false,
+    isFetching: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+}));
+
 vi.mock("@/hooks/use-route53", () => ({
   useHostedZones: () => ({
     data: [

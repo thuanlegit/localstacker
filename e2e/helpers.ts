@@ -20,6 +20,8 @@ import { KinesisClient } from "@aws-sdk/client-kinesis";
 import { DynamoDBStreamsClient } from "@aws-sdk/client-dynamodb-streams";
 import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
 import { KMSClient } from "@aws-sdk/client-kms";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { Route53ResolverClient } from "@aws-sdk/client-route53resolver";
 import { ACMClient } from "@aws-sdk/client-acm";
 import { STSClient } from "@aws-sdk/client-sts";
 import { FetchHttpHandler } from "@smithy/fetch-http-handler";
@@ -85,6 +87,8 @@ export function makeClients() {
     sts: new STSClient(config),
     kms: new KMSClient(config),
     acm: new ACMClient(config),
+    cloudformation: new CloudFormationClient(config),
+    route53resolver: new Route53ResolverClient(config),
   };
 }
 

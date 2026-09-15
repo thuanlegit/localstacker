@@ -50,7 +50,7 @@ describe("Onboarding", () => {
   it("renders checking state with 17 lamp rows while health is pending", () => {
     renderWithProviders(<Onboarding />);
     expect(screen.getByText("Checking…")).toBeInTheDocument();
-    expect(screen.getAllByTestId(/^onboarding-lamp-/)).toHaveLength(20);
+    expect(screen.getAllByTestId(/^onboarding-lamp-/)).toHaveLength(21);
   });
 
   it("renders down state with reason, copy fallback, and no Start button", async () => {

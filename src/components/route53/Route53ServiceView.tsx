@@ -24,6 +24,11 @@ import {
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { ServiceDisabledView } from "@/components/ServiceDisabledView";
 import { isServiceDisabledError, useServiceStatus } from "@/hooks/use-health";
+import { useActiveProfile } from "@/store/profiles";
+import {
+  useResolverEndpoints,
+  useResolverRules,
+} from "@/hooks/use-route53resolver";
 import { CreateHostedZoneDialog } from "./CreateHostedZoneDialog";
 import {
   useHostedZones,
@@ -99,6 +104,12 @@ export function Route53ServiceView() {
       (z.comment && z.comment.toLowerCase().includes(search.toLowerCase())) ||
       z.id.toLowerCase().includes(search.toLowerCase()),
   );
+
+  const profile = useActiveProfile();
+  const resolverEndpointsQuery = useResolverEndpoints(profile.id);
+  const resolverRulesQuery = useResolverRules(profile.id);
+  const resolverEndpoints = resolverEndpointsQuery.data ?? [];
+  const resolverRules = resolverRulesQuery.data ?? [];
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
@@ -253,6 +264,69 @@ export function Route53ServiceView() {
             </table>
           </div>
         )}
+
+        {/* Route53 Resolver sections */}
+        <div className="grid gap-4 pt-2">
+          <h2 className="text-sm font-semibold">Resolver endpoints ({resolverEndpoints.length})</h2>
+          {resolverEndpoints.length === 0 ? (
+            <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+              No Resolver endpoints (inbound/outbound) registered.
+            </div>
+          ) : (
+            <div className="rounded-md border overflow-hidden">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-muted/50 border-b text-muted-foreground font-medium">
+                  <tr>
+                    <th className="py-2.5 px-4">Name</th>
+                    <th className="py-2.5 px-4">Direction</th>
+                    <th className="py-2.5 px-4">Status</th>
+                    <th className="py-2.5 px-4">VPC</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {resolverEndpoints.map((e) => (
+                    <tr key={e.id}>
+                      <td className="py-2.5 px-4 font-mono">{e.name}</td>
+                      <td className="py-2.5 px-4">{e.direction}</td>
+                      <td className="py-2.5 px-4">{e.status}</td>
+                      <td className="py-2.5 px-4 font-mono text-muted-foreground">{e.vpcId}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <h2 className="text-sm font-semibold">Resolver rules ({resolverRules.length})</h2>
+          {resolverRules.length === 0 ? (
+            <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+              No Resolver rules registered.
+            </div>
+          ) : (
+            <div className="rounded-md border overflow-hidden">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-muted/50 border-b text-muted-foreground font-medium">
+                  <tr>
+                    <th className="py-2.5 px-4">Name</th>
+                    <th className="py-2.5 px-4">Type</th>
+                    <th className="py-2.5 px-4">Domain</th>
+                    <th className="py-2.5 px-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {resolverRules.map((r) => (
+                    <tr key={r.id}>
+                      <td className="py-2.5 px-4 font-mono">{r.name}</td>
+                      <td className="py-2.5 px-4">{r.ruleType}</td>
+                      <td className="py-2.5 px-4 font-mono text-muted-foreground">{r.domainName}</td>
+                      <td className="py-2.5 px-4">{r.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Delete Hosted Zone Dialog */}

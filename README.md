@@ -52,6 +52,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **CloudWatch** | Custom metric browser (namespace/dimension filter) with inline statistics viewer, PutMetricData test publisher, threshold alarm create/delete with state badges & detail drawer, STS caller identity chip on Home |
 | **KMS** | Symmetric key list with create & scheduled deletion, key detail view with aliases management, **encrypt/decrypt playground** (plaintext ↔ base64), key policy viewer, rotation status |
 | **ACM** | Certificate inventory with status badges, DNS-validated certificate requests with **CNAME validation token display**, PEM certificate import, inline detail drawer (subject, issuer, validity, SANs) |
+| **CloudFormation** | Stack inventory with status badges, stack inspector (outputs, resources, **event timeline**, template viewer), delete stack; Route 53 Resolver endpoints & rules sections |
 
 ### S3 Object Preview
 ![S3 Object Preview](docs/screenshots/s3-bucket.png)
@@ -121,7 +122,7 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **M12** | **DynamoDB Streams & Kinesis** — table stream enable + shard record peek; Kinesis streams, shard map, record peek, test publisher | ✅ Done |
 | **M13** | **CloudWatch Metrics & STS** — metric browser + alarm CRUD feeding the Home status board; caller-identity card | ✅ Done |
 | **M14** | **KMS & ACM** — key/alias management, encrypt-decrypt playground; certificate inventory with import/request | ✅ Done |
-| **M15** | **CloudFormation & Route53 Resolver** — stack inspector (template, events, resources); resolver rules & endpoints | 🚧 Planned |
+| **M15** | **CloudFormation & Route53 Resolver** — stack inspector (template, events, resources); resolver rules & endpoints | ✅ Done |
 
 See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.
 

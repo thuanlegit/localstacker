@@ -115,6 +115,9 @@ importers:
       '@aws-sdk/client-api-gateway':
         specifier: ^3.1128.0
         version: 3.1128.0
+      '@aws-sdk/client-cloudformation':
+        specifier: ^3.1131.0
+        version: 3.1131.0
       '@aws-sdk/client-cloudwatch':
         specifier: ^3.1131.0
         version: 3.1131.0
@@ -148,6 +151,9 @@ importers:
       '@aws-sdk/client-route-53':
         specifier: ^3.1128.0
         version: 3.1128.0
+      '@aws-sdk/client-route53resolver':
+        specifier: ^3.1131.0
+        version: 3.1131.0
       '@aws-sdk/client-s3':
         specifier: ^3.1127.0
         version: 3.1127.0
@@ -322,6 +328,10 @@ packages:
     resolution: {integrity: sha512-KRWaki0zACtBL8s3xXoRscLmN5MDTu4+9If1yboKBbOPQJVo7LmiLlgh0o55hJQQb5XTIcU/5JpNCeEITL8Etw==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-cloudformation@3.1131.0':
+    resolution: {integrity: sha512-SBaRpIG+AGKJlVucZLlPY/0HWP4cCCRU8/BYi5SnAxPcHlFiTBtuasCXP6Sa75mkxuSSeLW819w/Aj9xt/Okpw==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-cloudwatch-logs@3.1127.0':
     resolution: {integrity: sha512-BhRRVPLSEAQ3Yep8izRyVaMfHk1inNHm1C4txBWoJQYDVE/EX/SAIxtnpaF9KZYZzgBn8l7CBXC616435E2vlw==}
     engines: {node: '>=20.0.0'}
@@ -364,6 +374,10 @@ packages:
 
   '@aws-sdk/client-route-53@3.1128.0':
     resolution: {integrity: sha512-w8DZ8jDWGOU+oZYJlpXHXMea+hH0XIN8V6d4b+CxNPrJ3ioZszoFp98RHcMkSDqOTSy/eW7pEt+eHjerEZ7XCA==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-route53resolver@3.1131.0':
+    resolution: {integrity: sha512-ZEA7utdJiXOD1I51xmFMo5L9MClkAanZC4y3u00MHByCXTjAgndW7kFtAZ90zDO2ZnxVvJEo7vnz1Syx8LQd3w==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-s3@3.1127.0':
@@ -2595,6 +2609,17 @@ snapshots:
       '@smithy/types': 4.18.0
       tslib: 2.8.1
 
+  '@aws-sdk/client-cloudformation@3.1131.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.0
+      '@aws-sdk/credential-provider-node': 3.972.83
+      '@aws-sdk/types': 3.974.5
+      '@smithy/core': 3.33.3
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.18.0
+      tslib: 2.8.1
+
   '@aws-sdk/client-cloudwatch-logs@3.1127.0':
     dependencies:
       '@aws-sdk/core': 3.977.9
@@ -2715,6 +2740,17 @@ snapshots:
       '@aws-sdk/core': 3.977.9
       '@aws-sdk/credential-provider-node': 3.972.82
       '@aws-sdk/middleware-sdk-route53': 3.972.26
+      '@aws-sdk/types': 3.974.5
+      '@smithy/core': 3.33.3
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.18.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-route53resolver@3.1131.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.0
+      '@aws-sdk/credential-provider-node': 3.972.83
       '@aws-sdk/types': 3.974.5
       '@smithy/core': 3.33.3
       '@smithy/fetch-http-handler': 5.8.0

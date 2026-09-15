@@ -18,7 +18,8 @@ export type ServiceKind =
  | "kinesis"
  | "cloudwatch"
  | "kms"
- | "acm";
+ | "acm"
+ | "cloudformation";
 
 
 export type PaletteId =
@@ -70,7 +71,8 @@ export type TabKind =
   | "securityGroup"
   | "stateMachine"
   | "stream"
-  | "kmsKey";
+  | "kmsKey"
+  | "stack";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -94,6 +96,7 @@ export interface TabDescriptor {
   stateMachineArn?: string;
   streamName?: string;
   keyId?: string;
+  stackName?: string;
   userName?: string;
   title: string;
 }
