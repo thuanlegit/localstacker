@@ -145,7 +145,7 @@ test.describe("EventBridge Scheduler e2e", () => {
     await expect(deleteSchedConfirm).toBeVisible();
     await deleteSchedConfirm.getByRole("button", { name: "Delete" }).click();
     await expect(deleteSchedConfirm).not.toBeVisible();
-    await expect(page.getByText(schedName)).not.toBeVisible();
+    await expect(schedRow).not.toBeVisible();
 
     // 9. Delete schedule group
     await page.getByRole("button", { name: "Delete", exact: true }).click();
