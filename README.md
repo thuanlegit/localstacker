@@ -7,7 +7,7 @@ browse and operate your local AWS resources without reaching for the CLI.
 
 [![CI](https://github.com/thuanlegit/localstacker/actions/workflows/ci.yml/badge.svg)](https://github.com/thuanlegit/localstacker/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/thuanlegit/localstacker)](https://github.com/thuanlegit/localstacker/releases)
-[![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm--Noncommercial--1.0.0-blue)](./LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](./LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ryleth-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/ryleth)
 
 ![LocalStacker Queue Peek](docs/screenshots/sqs-peek.png)
@@ -184,12 +184,12 @@ Tauri 2 · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui · TanStack Qu
 
 ## Support
 
-LocalStacker is free for personal, educational, and other noncommercial use. If it saves you time, consider:
+LocalStacker is free and open source (AGPL-3.0) — free for everyone, including commercial use. If it saves you time, consider:
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ryleth-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/ryleth)
 
 ## License
 
-Licensed under the [PolyForm Noncommercial License 1.0.0](./LICENSE) — free to use, modify, and redistribute for **noncommercial purposes only** (personal projects, study, research, nonprofits, education, government). Commercial use, including use within a for-profit company's workflow or offering a paid product based on LocalStacker, requires a separate commercial license — reach out via [Buy Me a Coffee](https://buymeacoffee.com/ryleth) or [open an issue](https://github.com/thuanlegit/localstacker/issues).
+Licensed under the [GNU Affero General Public License v3.0](./LICENSE) (AGPL-3.0-only) — free to use, study, modify, and redistribute, **including for commercial purposes**, under copyleft terms: derivatives and network-offered services must ship their source under AGPL-3.0. Projects that cannot accept copyleft terms can arrange an alternative commercial license — reach out via [Buy Me a Coffee](https://buymeacoffee.com/ryleth) or [open an issue](https://github.com/thuanlegit/localstacker/issues).
 
-This is not an OSI-approved open-source license; it is a source-available license. Third-party dependencies keep their own licenses (MIT, Apache-2.0, etc.) — see each dependency's repository.
+Third-party dependencies keep their own licenses (MIT, Apache-2.0, etc.) — see each dependency's repository. Contributions are accepted under AGPL-3.0-only (inbound = outbound), keeping dual licensing available as sole copyright holder.

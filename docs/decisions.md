@@ -180,3 +180,14 @@ Compact record of the foundational decisions. Each entry: context → decision �
 - The Send Test Email dialog automatically restricts the sender address (`From`) to verified email identities, preventing `MessageRejected` errors.
 
 **Consequences**: The Method Test Runner and Captured Mailbox provide interactive local feedback loops without needing external curl commands or deployed infrastructure. The integration creation wizard eliminates low-level AWS API Gateway wiring boilerplate.
+
+## D19. Relicense PolyForm-Noncommercial 1.0.0 → AGPL-3.0-only
+
+**Context**: PolyForm-NC permitted noncommercial use only, which excluded the core audience (developers running LocalStacker at work) and capped adoption. MIT/Apache would remove all fork protection. At switch time the project has a single copyright holder (all commits, one author) and every dependency is Apache-2.0/MIT/ISC, so AGPL aggregation is conflict-free.
+
+**Decision**:
+- Relicense to GNU AGPL-3.0-only: verbatim `LICENSE`, `package.json` `license` field, README badge and License section.
+- Released versions ≤ v1.1.0 remain PolyForm-Noncommercial 1.0.0; the switch applies from the next release onward.
+- Inbound contributions are accepted under AGPL-3.0-only (inbound = outbound). As sole copyright holder, dual licensing (AGPL-3.0 or paid exception via buymeacoffee.com/ryleth) remains available; the first external contribution without a copyright grant locks that code to AGPL-3.0.
+
+**Consequences**: Commercial use is permitted under copyleft — derivatives and network-offered services (including a potential web-hosted fork of the React frontend) must ship source under AGPL-3.0. Corporate policies that blanket-ban AGPL will flag the project; accepted as a tradeoff against the NC use-ban on the primary audience.
