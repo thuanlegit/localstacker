@@ -205,7 +205,7 @@ describe("CreateContainerDialog", () => {
     await user.type(screen.getByLabelText("Additional services"), "kms,s3,sts");
 
     expect(screen.getByTestId("services-env-hint")).toHaveTextContent(
-      "SERVICES=s3,lambda,kms,sts",
+      "SERVICES=lambda,s3,kms,sts",
     );
 
     await user.click(screen.getByRole("button", { name: "Launch" }));
@@ -213,7 +213,7 @@ describe("CreateContainerDialog", () => {
     await waitFor(() => {
       expect(mockOnCreate).toHaveBeenCalledTimes(1);
     });
-    expect(mockOnCreate.mock.calls[0][0].env).toEqual(["SERVICES=s3,lambda,kms,sts"]);
+    expect(mockOnCreate.mock.calls[0][0].env).toEqual(["SERVICES=lambda,s3,kms,sts"]);
   });
 
   it("defaults to no SERVICES var and shows the all-services hint", async () => {

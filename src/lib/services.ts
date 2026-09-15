@@ -11,27 +11,7 @@ export interface ServiceMeta {
 }
 
 export const SERVICES: readonly ServiceMeta[] = [
-  {
-    kind: "s3",
-    label: "S3",
-    shortLabel: "S3",
-    icon: HardDrive,
-    blurb: "Buckets & objects",
-  },
-  {
-    kind: "sqs",
-    label: "SQS",
-    shortLabel: "SQS",
-    icon: ListOrdered,
-    blurb: "Queues",
-  },
-  {
-    kind: "secrets",
-    label: "Secrets Manager",
-    shortLabel: "Secrets",
-    icon: KeyRound,
-    blurb: "Secrets",
-  },
+  // Compute & Edge
   {
     kind: "lambda",
     label: "Lambda",
@@ -40,11 +20,41 @@ export const SERVICES: readonly ServiceMeta[] = [
     blurb: "Functions",
   },
   {
+    kind: "apigateway",
+    label: "API Gateway",
+    shortLabel: "API Gateway",
+    icon: Network,
+    blurb: "REST APIs & stages",
+  },
+  {
+    kind: "ec2",
+    label: "EC2",
+    shortLabel: "EC2",
+    icon: Server,
+    blurb: "Instances, key pairs & security groups",
+  },
+  // Storage & Database
+  {
+    kind: "s3",
+    label: "S3",
+    shortLabel: "S3",
+    icon: HardDrive,
+    blurb: "Buckets & objects",
+  },
+  {
     kind: "dynamodb",
     label: "DynamoDB",
     shortLabel: "DynamoDB",
     icon: Database,
     blurb: "Tables & items",
+  },
+  // Messaging & Integration
+  {
+    kind: "sqs",
+    label: "SQS",
+    shortLabel: "SQS",
+    icon: ListOrdered,
+    blurb: "Queues",
   },
   {
     kind: "sns",
@@ -52,20 +62,6 @@ export const SERVICES: readonly ServiceMeta[] = [
     shortLabel: "SNS",
     icon: Radio,
     blurb: "Topics & subscriptions",
-  },
-  {
-    kind: "logs",
-    label: "CloudWatch Logs",
-    shortLabel: "Logs",
-    icon: ScrollText,
-    blurb: "Log groups & streams",
-  },
-  {
-    kind: "ssm",
-    label: "Parameter Store",
-    shortLabel: "SSM",
-    icon: ListTree,
-    blurb: "Parameters",
   },
   {
     kind: "eventbridge",
@@ -82,41 +78,6 @@ export const SERVICES: readonly ServiceMeta[] = [
     blurb: "Schedules",
   },
   {
-    kind: "apigateway",
-    label: "API Gateway",
-    shortLabel: "API Gateway",
-    icon: Network,
-    blurb: "REST APIs & stages",
-  },
-  {
-    kind: "ses",
-    label: "SES",
-    shortLabel: "SES",
-    icon: Mail,
-    blurb: "Email identities & mailbox",
-  },
-  {
-    kind: "iam",
-    label: "IAM",
-    shortLabel: "IAM",
-    icon: ShieldCheck,
-    blurb: "Roles, users & policies",
-  },
-  {
-    kind: "route53",
-    label: "Route 53",
-    shortLabel: "Route 53",
-    icon: Globe,
-    blurb: "Hosted zones & DNS records",
-  },
-  {
-    kind: "ec2",
-    label: "EC2",
-    shortLabel: "EC2",
-    icon: Server,
-    blurb: "Instances, key pairs & security groups",
-  },
-  {
     kind: "sfn",
     label: "Step Functions",
     shortLabel: "SFN",
@@ -130,34 +91,79 @@ export const SERVICES: readonly ServiceMeta[] = [
     icon: Waves,
     blurb: "Data streams",
   },
- {
- kind: "cloudwatch",
- label: "CloudWatch",
- shortLabel: "CloudWatch",
- icon: Activity,
- blurb: "Metrics & alarms",
- },
- {
- kind: "kms",
- label: "KMS",
- shortLabel: "KMS",
- icon: FileKey,
- blurb: "Keys & encryption",
- },
- {
- kind: "acm",
- label: "ACM",
- shortLabel: "ACM",
- icon: BadgeCheck,
- blurb: "Certificates",
- },
- {
- kind: "cloudformation",
- label: "CloudFormation",
- shortLabel: "CFN",
- icon: Layers,
- blurb: "Stacks & resources",
- },
+  {
+    kind: "ses",
+    label: "SES",
+    shortLabel: "SES",
+    icon: Mail,
+    blurb: "Email identities & mailbox",
+  },
+  // Security & Configuration
+  {
+    kind: "iam",
+    label: "IAM",
+    shortLabel: "IAM",
+    icon: ShieldCheck,
+    blurb: "Roles, users & policies",
+  },
+  {
+    kind: "secrets",
+    label: "Secrets Manager",
+    shortLabel: "Secrets",
+    icon: KeyRound,
+    blurb: "Secrets",
+  },
+  {
+    kind: "ssm",
+    label: "Parameter Store",
+    shortLabel: "SSM",
+    icon: ListTree,
+    blurb: "Parameters",
+  },
+  {
+    kind: "kms",
+    label: "KMS",
+    shortLabel: "KMS",
+    icon: FileKey,
+    blurb: "Keys & encryption",
+  },
+  {
+    kind: "acm",
+    label: "ACM",
+    shortLabel: "ACM",
+    icon: BadgeCheck,
+    blurb: "Certificates",
+  },
+  // Observability & DNS
+  {
+    kind: "logs",
+    label: "CloudWatch Logs",
+    shortLabel: "Logs",
+    icon: ScrollText,
+    blurb: "Log groups & streams",
+  },
+  {
+    kind: "cloudwatch",
+    label: "CloudWatch",
+    shortLabel: "CloudWatch",
+    icon: Activity,
+    blurb: "Metrics & alarms",
+  },
+  {
+    kind: "route53",
+    label: "Route 53",
+    shortLabel: "Route 53",
+    icon: Globe,
+    blurb: "Hosted zones & DNS records",
+  },
+  // Management
+  {
+    kind: "cloudformation",
+    label: "CloudFormation",
+    shortLabel: "CFN",
+    icon: Layers,
+    blurb: "Stacks & resources",
+  },
 ] as const;
 
 export const serviceMeta = (kind: ServiceKind): ServiceMeta => {

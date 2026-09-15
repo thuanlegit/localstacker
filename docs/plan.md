@@ -91,9 +91,10 @@ Notes:
 - Left sidebar: connection selector + services organized into collapsible categories:
   - **Compute & Edge**: Lambda, API Gateway, EC2
   - **Storage & Database**: S3, DynamoDB
-  - **Messaging & Integration**: SQS, SNS, EventBridge, EventBridge Scheduler, SES
-  - **Security & Configuration**: IAM, Secrets Manager, SSM Parameter Store
-  - **Observability & DNS**: CloudWatch Logs, Route53
+  - **Messaging & Integration**: SQS, SNS, EventBridge, EventBridge Scheduler, Step Functions, Kinesis, SES
+  - **Security & Configuration**: IAM, Secrets Manager, SSM Parameter Store, KMS, ACM
+  - **Observability & DNS**: CloudWatch Logs, CloudWatch, Route53
+  - **Management**: CloudFormation
 - Resources open as **tabs** in the main area:
   - Shipped: `bucket`, `queue`, `secret`, `function`, `table`, `topic`, `logGroup`, `parameter`, `eventBus`, `scheduleGroup`.
   - M8–M10: `restApi`, `sesIdentity`, `sesMailbox`, `iamRole`, `iamPolicy`, `iamUser`, `hostedZone`, `securityGroup`, `ec2Instance`.
