@@ -19,6 +19,7 @@ export function useHealth() {
         authToken: profile.authToken,
       }),
     refetchInterval: 5000,
+    refetchIntervalInBackground: true,
     retry: false,
     staleTime: 4000,
   });

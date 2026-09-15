@@ -11,8 +11,9 @@ describe("SettingsView", () => {
     useTheme.setState({ mode: "dark", palette: "github" });
   });
 
-  it("renders all four nav buttons", () => {
+  it("renders all five nav buttons", () => {
     render(<SettingsView />);
+    expect(screen.getByRole("button", { name: "General" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Appearance" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Connections" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Updates & About" })).toBeInTheDocument();

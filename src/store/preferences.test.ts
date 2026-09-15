@@ -4,7 +4,7 @@ import { usePreferences } from "./preferences";
 describe("preferences store", () => {
   beforeEach(() => {
     localStorage.clear();
-    usePreferences.setState({ autoCheckUpdates: true });
+    usePreferences.setState({ autoCheckUpdates: true, keepInMenuBar: false });
   });
 
   it("defaults autoCheckUpdates to true", () => {
@@ -17,5 +17,17 @@ describe("preferences store", () => {
 
     usePreferences.getState().setAutoCheckUpdates(true);
     expect(usePreferences.getState().autoCheckUpdates).toBe(true);
+  });
+
+  it("defaults keepInMenuBar to false", () => {
+    expect(usePreferences.getState().keepInMenuBar).toBe(false);
+  });
+
+  it("updates keepInMenuBar via setKeepInMenuBar", () => {
+    usePreferences.getState().setKeepInMenuBar(true);
+    expect(usePreferences.getState().keepInMenuBar).toBe(true);
+
+    usePreferences.getState().setKeepInMenuBar(false);
+    expect(usePreferences.getState().keepInMenuBar).toBe(false);
   });
 });

@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { AppShell } from "@/components/AppShell";
+import { useTraySync } from "@/hooks/use-tray-sync";
 import { applyThemeToDocument, useTheme } from "@/store/theme";
 
 function App() {
+  useTraySync();
   const mode = useTheme((s) => s.mode);
   const palette = useTheme((s) => s.palette);
 
