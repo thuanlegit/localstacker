@@ -1,6 +1,9 @@
 pub mod docker;
+pub mod tray;
 
 use std::collections::HashMap;
+
+use tauri::Manager;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -73,6 +76,24 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .manage(docker::DockerSessions::default())
+        .manage(parking_lot::Mutex::new(tray::TrayState::default()))
+        .setup(|app| {
+            if cfg!(target_os = "macos") {
+                app.set_menu(tauri::menu::Menu::default(app.handle())?)?;
+            }
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                let state = window
+                    .app_handle()
+                    .state::<parking_lot::Mutex<tray::TrayState>>();
+                if state.lock().enabled {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             forward_request,
@@ -87,7 +108,19 @@ pub fn run() {
             docker::docker_cancel,
             docker::docker_container_logs,
             docker::docker_stop_logs,
+            tray::tray_set_enabled,
+            tray::tray_set_status,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            if let tauri::RunEvent::Reopen { has_visible_windows, .. } = event {
+                if !has_visible_windows {
+                    if let Some(w) = app.get_webview_window("main") {
+                        let _ = w.show();
+                        let _ = w.set_focus();
+                    }
+                }
+            }
+        });
 }
