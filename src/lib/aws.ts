@@ -21,6 +21,8 @@ import { EC2Client } from "@aws-sdk/client-ec2";
 import { SFNClient } from "@aws-sdk/client-sfn";
 import { KinesisClient } from "@aws-sdk/client-kinesis";
 import { DynamoDBStreamsClient } from "@aws-sdk/client-dynamodb-streams";
+import { KMSClient } from "@aws-sdk/client-kms";
+import { ACMClient } from "@aws-sdk/client-acm";
 import type { ConnectionProfile } from "@/types";
 
 /** LocalStack ignores SigV4 identity, but SDKs require credentials to sign. */
@@ -74,7 +76,10 @@ export interface ServiceClients {
   dynamodbStreams: DynamoDBStreamsClient;
   cloudwatch: CloudWatchClient;
   sts: STSClient;
+  kms: KMSClient;
+  acm: ACMClient;
 }
+
 
 export function makeClients(profile: ConnectionProfile): ServiceClients {
   const config = baseClientConfig(profile);
@@ -108,5 +113,7 @@ export function makeClients(profile: ConnectionProfile): ServiceClients {
     dynamodbStreams: new DynamoDBStreamsClient(config),
     cloudwatch: new CloudWatchClient(config),
     sts: new STSClient(config),
+    kms: new KMSClient(config),
+    acm: new ACMClient(config),
   };
 }

@@ -16,7 +16,10 @@ export type ServiceKind =
   | "ec2"
   | "sfn"
  | "kinesis"
- | "cloudwatch";
+ | "cloudwatch"
+ | "kms"
+ | "acm";
+
 
 export type PaletteId =
   | "github"
@@ -66,7 +69,8 @@ export type TabKind =
   | "hostedZone"
   | "securityGroup"
   | "stateMachine"
-  | "stream";
+  | "stream"
+  | "kmsKey";
 export interface TabDescriptor {
   /** Stable tab identity, e.g. "service:s3" or "bucket:my-bucket" or "queue:my-queue" or "secret:my-secret" or "function:my-function". */
   id: string;
@@ -86,9 +90,10 @@ export interface TabDescriptor {
   identityName?: string;
   roleName?: string;
   zoneId?: string;
-  stateMachineArn?: string;
   securityGroupId?: string;
+  stateMachineArn?: string;
   streamName?: string;
+  keyId?: string;
   userName?: string;
   title: string;
 }

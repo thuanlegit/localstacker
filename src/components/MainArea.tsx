@@ -47,6 +47,9 @@ import { StateMachineView } from "@/components/sfn/StateMachineView";
 import { KinesisServiceView } from "@/components/kinesis/KinesisServiceView";
 import { StreamView } from "@/components/kinesis/StreamView";
 import { CloudWatchServiceView } from "@/components/cloudwatch/CloudWatchServiceView";
+import { KmsServiceView } from "@/components/kms/KmsServiceView";
+import { KeyView } from "@/components/kms/KeyView";
+import { AcmServiceView } from "@/components/acm/AcmServiceView";
 import { DockerView } from "@/components/docker/DockerView";
 import { SettingsView } from "@/components/settings/SettingsView";
 import { HomeView } from "@/components/HomeView";
@@ -249,6 +252,12 @@ export function MainArea() {
             <StreamView streamName={tab.streamName} />
           ) : tab.kind === "service" && tab.service === "cloudwatch" ? (
             <CloudWatchServiceView />
+          ) : tab.kind === "service" && tab.service === "kms" ? (
+            <KmsServiceView />
+          ) : tab.kind === "kmsKey" && tab.keyId ? (
+            <KeyView keyId={tab.keyId} />
+          ) : tab.kind === "service" && tab.service === "acm" ? (
+            <AcmServiceView />
           ) : tab.kind === "settings" ? (
             <SettingsView />
           ) : null}

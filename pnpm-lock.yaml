@@ -109,6 +109,9 @@ importers:
 
   .:
     dependencies:
+      '@aws-sdk/client-acm':
+        specifier: ^3.1131.0
+        version: 3.1131.0
       '@aws-sdk/client-api-gateway':
         specifier: ^3.1128.0
         version: 3.1128.0
@@ -135,6 +138,9 @@ importers:
         version: 3.1128.0
       '@aws-sdk/client-kinesis':
         specifier: 3.1131.0
+        version: 3.1131.0
+      '@aws-sdk/client-kms':
+        specifier: ^3.1131.0
         version: 3.1131.0
       '@aws-sdk/client-lambda':
         specifier: ^3.1127.0
@@ -308,6 +314,10 @@ packages:
     resolution: {integrity: sha512-Dtu0gr4dnATZAPwEYbpCsG+MpLM7OAliy2gTepEFQwl1vZ6DL3QMH2FveMa3HLvPsOdhJsPRB3KtxVhph9T75A==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-acm@3.1131.0':
+    resolution: {integrity: sha512-Dr5K+JlcxM5rOFPvadvZJdEUCdNCmuO2RATRq8yoEP/YpBGIdfFGlKv0vCs5n8ytEzcQO2gcAL5Od+Xk8m6o5A==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-api-gateway@3.1128.0':
     resolution: {integrity: sha512-KRWaki0zACtBL8s3xXoRscLmN5MDTu4+9If1yboKBbOPQJVo7LmiLlgh0o55hJQQb5XTIcU/5JpNCeEITL8Etw==}
     engines: {node: '>=20.0.0'}
@@ -342,6 +352,10 @@ packages:
 
   '@aws-sdk/client-kinesis@3.1131.0':
     resolution: {integrity: sha512-IwcKOd0TgAwDWAVWfpw2okTj1OsTtt96EXrDMeXISvi0T2gM7tI+lSqrAP2nwhA/6rFNDJ5UCyPC2PS9hYWcPA==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-kms@3.1131.0':
+    resolution: {integrity: sha512-IQ5pG+aY5bM+1tyduaVa0m2AmPa/G9IZKbtAgtBP0pcM6wRkOlM3QyQEmi2UOoGd6L+ma738yOa6MmH6V3OLxw==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-lambda@3.1127.0':
@@ -2558,6 +2572,17 @@ snapshots:
       '@smithy/types': 4.18.0
       tslib: 2.8.1
 
+  '@aws-sdk/client-acm@3.1131.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.0
+      '@aws-sdk/credential-provider-node': 3.972.83
+      '@aws-sdk/types': 3.974.5
+      '@smithy/core': 3.33.3
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.18.0
+      tslib: 2.8.1
+
   '@aws-sdk/client-api-gateway@3.1128.0':
     dependencies:
       '@aws-sdk/core': 3.977.9
@@ -2653,6 +2678,17 @@ snapshots:
       tslib: 2.8.1
 
   '@aws-sdk/client-kinesis@3.1131.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.0
+      '@aws-sdk/credential-provider-node': 3.972.83
+      '@aws-sdk/types': 3.974.5
+      '@smithy/core': 3.33.3
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.18.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-kms@3.1131.0':
     dependencies:
       '@aws-sdk/core': 3.978.0
       '@aws-sdk/credential-provider-node': 3.972.83

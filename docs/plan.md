@@ -232,10 +232,11 @@ Notes:
   - STS: `@aws-sdk/client-sts`, GetCallerIdentity card (account, user ARN) alongside Home endpoint facts.
   - E2E Playwright test: put a custom metric, assert it in the browser; create a threshold alarm, assert its state renders; assert the identity card shows the LocalStack account id.
   - Notes: `Statistics`/`ComparisonOperator` are closed SDK enums — lib casts at the wire boundary. Alarm rows expand inline for detail (no per-alarm tabs); new alarms render as INSUFFICIENT_DATA until data arrives.
-- **M14 — KMS & ACM (Encryption & Certificates)** (Planned 🚧 · v1.2):
+- **M14 — KMS & ACM (Encryption & Certificates)** (Shipped ✅ · v1.2):
   - KMS: `@aws-sdk/client-kms`, key list with state and rotation, alias management, encrypt/decrypt playground (plaintext/base64 toggle), key policy viewer.
   - ACM: `@aws-sdk/client-acm`, certificate inventory, ImportCertificate (cert/key paste), RequestCertificate with DNS validation tokens, detail drawer.
-  - E2E Playwright test: create a symmetric key, alias it, round-trip encrypt→decrypt; import a self-signed certificate, assert fingerprint and detail drawer.
+  - E2E Playwright test: create a symmetric key, alias it, round-trip encrypt→decrypt; import a self-signed certificate (openssl-generated fixture), assert detail drawer.
+  - Notes: ACM exposes no certificate fingerprint via the API — the spec asserts the detail drawer (subject/issuer/CNAME token) instead. New KMS keys are ENABLED with rotation reported by `GetKeyRotationStatus`; deletion uses `ScheduleKeyDeletion` with a 7 day window.
 - **M15 — CloudFormation & Route53 Resolver (Stacks & Hybrid DNS)** (Planned 🚧 · v1.2):
   - CloudFormation: `@aws-sdk/client-cloudformation`, stack list with status, template body viewer, events timeline, resource list with drift status; deploy-from-template-file deferred to a follow-up.
   - Route53 Resolver: `@aws-sdk/client-route-53-resolver`, resolver rules and inbound/outbound endpoints with detail drawer.

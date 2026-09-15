@@ -19,6 +19,8 @@ import { SFNClient } from "@aws-sdk/client-sfn";
 import { KinesisClient } from "@aws-sdk/client-kinesis";
 import { DynamoDBStreamsClient } from "@aws-sdk/client-dynamodb-streams";
 import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
+import { KMSClient } from "@aws-sdk/client-kms";
+import { ACMClient } from "@aws-sdk/client-acm";
 import { STSClient } from "@aws-sdk/client-sts";
 import { FetchHttpHandler } from "@smithy/fetch-http-handler";
 export const ENDPOINT = process.env.LOCALSTACK_ENDPOINT || "http://127.0.0.1:4566";
@@ -81,6 +83,8 @@ export function makeClients() {
     dynamodbStreams: new DynamoDBStreamsClient(config),
     cloudwatch: new CloudWatchClient(config),
     sts: new STSClient(config),
+    kms: new KMSClient(config),
+    acm: new ACMClient(config),
   };
 }
 

@@ -46,6 +46,7 @@ const KIND_TO_SERVICE: Partial<Record<TabKind, ServiceKind>> = {
   securityGroup: "ec2",
   stateMachine: "sfn",
   stream: "kinesis",
+  kmsKey: "kms",
 };
 
 function recentIcon(tab: TabDescriptor): LucideIcon {

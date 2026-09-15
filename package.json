@@ -17,6 +17,7 @@
     "screenshots": "playwright test --grep @screenshot"
   },
   "dependencies": {
+    "@aws-sdk/client-acm": "^3.1131.0",
     "@aws-sdk/client-api-gateway": "^3.1128.0",
     "@aws-sdk/client-cloudwatch": "^3.1131.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.1127.0",
@@ -26,6 +27,7 @@
     "@aws-sdk/client-eventbridge": "^3.1128.0",
     "@aws-sdk/client-iam": "^3.1128.0",
     "@aws-sdk/client-kinesis": "3.1131.0",
+    "@aws-sdk/client-kms": "^3.1131.0",
     "@aws-sdk/client-lambda": "^3.1127.0",
     "@aws-sdk/client-route-53": "^3.1128.0",
     "@aws-sdk/client-s3": "^3.1127.0",
