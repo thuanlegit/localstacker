@@ -236,7 +236,7 @@ export function ApigatewayServiceView() {
             onClick={() => setIsCreateOpen(true)}
           >
             <Plus className="h-4 w-4" />
-            Create API
+            Create your first API
           </Button>
         </div>
       ) : (

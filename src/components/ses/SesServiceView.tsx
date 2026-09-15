@@ -399,7 +399,7 @@ export function SesServiceView() {
           <div className="mt-2 flex items-center gap-2">
             <Button size="sm" onClick={() => setIsVerifyEmailOpen(true)}>
               <Plus className="h-4 w-4" />
-              Verify email
+              Verify your first email
             </Button>
             <Button
               variant="outline"
