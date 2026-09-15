@@ -57,7 +57,15 @@ test.describe("CloudWatch e2e", () => {
 
     // 4. Alarm row renders with its state
     await expect(page.getByText(alarmName).first()).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText("INSUFFICIENT DATA").first()).toBeVisible();
+
+    // LocalStack 4.14 evaluates alarms lazily and nondeterministically: the
+    // same create flow has been observed settling on OK (missing datapoint
+    // treated as non-breaching), ALARM (breaching datapoint), or staying
+    // INSUFFICIENT_DATA past 15s. The state VALUE belongs to LocalStack's
+    // evaluator — the app contract is that the chip renders a real state.
+    await expect(page.getByText(/^(OK|ALARM|INSUFFICIENT DATA)$/).first()).toBeVisible({
+      timeout: 20_000,
+    });
 
     // 5. Home shows the STS caller identity chip
     await page.getByRole("button", { name: "Close all tabs" }).click();
