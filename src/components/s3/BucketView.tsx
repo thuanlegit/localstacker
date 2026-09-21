@@ -290,7 +290,9 @@ export function BucketView({ bucketName }: BucketViewProps) {
       ) : error ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
           <CircleAlert className="size-8 text-destructive" />
-          <p className="text-sm text-muted-foreground">{error.message}</p>
+          <p className="text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             Retry
           </Button>

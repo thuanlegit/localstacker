@@ -207,12 +207,14 @@ export function S3ServiceView() {
       ) : error ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
           <CircleAlert className="size-8 text-destructive" />
-          <p className="text-sm text-muted-foreground">{error.message}</p>
+          <p className="text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             Retry
           </Button>
         </div>
-      ) : data.length === 0 ? (
+      ) : !data || data.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
           <HardDrive className="size-10 opacity-40" />
           <p className="text-sm">No buckets yet — create one to get started</p>

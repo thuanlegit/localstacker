@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { CommandPalette } from "@/components/CommandPalette";
 import { MainArea } from "@/components/MainArea";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Onboarding } from "@/components/onboarding/Onboarding";
 import { openSettingsTab, Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
@@ -27,7 +28,9 @@ export function AppShell() {
         <>
           <Sidebar />
           <main className="min-w-0 flex-1">
-            <MainArea />
+            <ErrorBoundary>
+              <MainArea />
+            </ErrorBoundary>
           </main>
           <CommandPalette />
         </>

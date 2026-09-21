@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useTraySync } from "@/hooks/use-tray-sync";
+import { useConnectionMonitor } from "@/hooks/use-connection-monitor";
 import { applyThemeToDocument, useTheme } from "@/store/theme";
 
 function App() {
   useTraySync();
+  useConnectionMonitor();
   const mode = useTheme((s) => s.mode);
   const palette = useTheme((s) => s.palette);
 

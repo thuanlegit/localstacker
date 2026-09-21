@@ -352,7 +352,9 @@ export function LogGroupView({ logGroupName }: LogGroupViewProps) {
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-destructive p-4">
             <CircleAlert className="h-6 w-6" />
             <p className="text-sm font-medium">Failed to load log events</p>
-            <p className="text-xs text-muted-foreground">{error.message}</p>
+            <p className="text-xs text-muted-foreground">
+              {error instanceof Error ? error.message : String(error)}
+            </p>
             <Button variant="outline" size="sm" onClick={() => refresh()}>
               Retry
             </Button>

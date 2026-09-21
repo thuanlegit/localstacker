@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Cable,
   Check,
@@ -37,6 +37,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import {
   useDockerActions,
@@ -44,12 +45,13 @@ import {
   useDockerContainers,
   useDockerStatus,
 } from "@/hooks/use-docker";
+import { useProfiles } from "@/store/profiles";
 import { containerEndpoint, type ContainerSummary } from "@/lib/docker";
 import { ContainerDetailPanel } from "./ContainerDetailPanel";
 import { CreateContainerDialog } from "./CreateContainerDialog";
 
 function getContainerStateBadgeClass(state: string): string {
-  switch (state.toLowerCase()) {
+  switch ((state || "").toLowerCase()) {
     case "running":
       return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
     case "exited":
@@ -104,6 +106,11 @@ export function DockerView() {
   const [actionWarning, setActionWarning] = useState<ActionWarningState | null>(null);
   const [removeDialog, setRemoveDialog] = useState<RemoveDialogState | null>(null);
 
+  useEffect(() => {
+    if (selectedContainerId && !containers.some((c) => c.containerId === selectedContainerId)) {
+      setSelectedContainerId(null);
+    }
+  }, [containers, selectedContainerId]);
   const handleRefresh = async () => {
     await Promise.all([refetchStatus(), refetchContainers()]);
   };
@@ -283,9 +290,9 @@ export function DockerView() {
               </thead>
               <tbody className="divide-y">
                 {containers.map((c) => {
-                  const isRunning = c.state.toLowerCase() === "running";
-                  const isExited = c.state.toLowerCase() === "exited";
-                  const isCreated = c.state.toLowerCase() === "created";
+                  const isRunning = (c.state || "").toLowerCase() === "running";
+                  const isExited = (c.state || "").toLowerCase() === "exited";
+                  const isCreated = (c.state || "").toLowerCase() === "created";
                   const isStopping = stoppingId === c.containerId;
                   const endpoint = containerEndpoint(c);
                   const isSelected = selectedContainerId === c.containerId;
@@ -540,14 +547,28 @@ export function DockerView() {
                 onClick={async () => {
                   setRemoveDialog({ ...removeDialog, isRemoving: true });
                   try {
-                    await removeContainer(
+                    const ok = await removeContainer(
                       removeDialog.container.containerId,
                       removeDialog.removeVolumes,
                     );
-                    if (selectedContainerId === removeDialog.container.containerId) {
-                      setSelectedContainerId(null);
+                    if (ok) {
+                      if (selectedContainerId === removeDialog.container.containerId) {
+                        setSelectedContainerId(null);
+                      }
+                      const removedEndpoint = containerEndpoint(removeDialog.container);
+                      const activeProfile = useProfiles.getState().profiles.find(
+                        (p) => p.id === useProfiles.getState().activeProfileId,
+                      );
+                      if (removedEndpoint && activeProfile?.endpoint === removedEndpoint) {
+                        toast.info(
+                          `Active profile "${activeProfile.name}" was connected to this container. LocalStack is now unreachable.`,
+                          { duration: 5000 },
+                        );
+                      }
+                      setRemoveDialog(null);
+                    } else {
+                      setRemoveDialog({ ...removeDialog, isRemoving: false });
                     }
-                    setRemoveDialog(null);
                   } catch {
                     setRemoveDialog({ ...removeDialog, isRemoving: false });
                   }

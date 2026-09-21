@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { CircleAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -55,8 +55,57 @@ import { StackView } from "@/components/cloudformation/StackView";
 import { DockerView } from "@/components/docker/DockerView";
 import { SettingsView } from "@/components/settings/SettingsView";
 import { HomeView } from "@/components/HomeView";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useHealth } from "@/hooks/use-health";
+import type { TabDescriptor } from "@/types";
 
-
+function renderTabContent(tab: TabDescriptor) {
+  if (tab.kind === "service" && tab.service === "s3") return <S3ServiceView />;
+  if (tab.kind === "bucket" && tab.bucketName) return <BucketView bucketName={tab.bucketName} />;
+  if (tab.kind === "service" && tab.service === "sqs") return <SqsServiceView />;
+  if (tab.kind === "queue" && tab.queueName) return <QueueView queueName={tab.queueName} />;
+  if (tab.kind === "service" && tab.service === "secrets") return <SecretsServiceView />;
+  if (tab.kind === "secret" && tab.secretName) return <SecretView secretName={tab.secretName} />;
+  if (tab.kind === "service" && tab.service === "lambda") return <LambdaServiceView />;
+  if (tab.kind === "function" && tab.functionName) return <FunctionView functionName={tab.functionName} />;
+  if (tab.kind === "service" && tab.service === "dynamodb") return <DynamoServiceView />;
+  if (tab.kind === "table" && tab.tableName) return <TableView tableName={tab.tableName} />;
+  if (tab.kind === "service" && tab.service === "sns") return <SnsServiceView />;
+  if (tab.kind === "topic" && tab.topicArn) return <TopicView topicArn={tab.topicArn} />;
+  if (tab.kind === "service" && tab.service === "logs") return <LogsServiceView />;
+  if (tab.kind === "logGroup" && tab.logGroupName) return <LogGroupView logGroupName={tab.logGroupName} />;
+  if (tab.kind === "service" && tab.service === "ssm") return <SsmServiceView />;
+  if (tab.kind === "parameter" && tab.parameterName) return <ParameterView parameterName={tab.parameterName} />;
+  if (tab.kind === "service" && tab.service === "eventbridge") return <EventBridgeServiceView />;
+  if (tab.kind === "eventBus" && tab.busName) return <EventBusView busName={tab.busName} />;
+  if (tab.kind === "service" && tab.service === "scheduler") return <SchedulerServiceView />;
+  if (tab.kind === "scheduleGroup" && tab.groupName) return <ScheduleGroupView groupName={tab.groupName} />;
+  if (tab.kind === "service" && tab.service === "apigateway") return <ApigatewayServiceView />;
+  if (tab.kind === "restApi" && tab.restApiId) return <RestApiView restApiId={tab.restApiId} />;
+  if (tab.kind === "service" && tab.service === "ses") return <SesServiceView />;
+  if (tab.kind === "sesIdentity" && tab.identityName) return <IdentityView identityName={tab.identityName} />;
+  if (tab.kind === "sesMailbox") return <SesMailboxView />;
+  if (tab.kind === "service" && tab.service === "iam") return <IamServiceView />;
+  if (tab.kind === "iamRole" && tab.roleName) return <RoleView roleName={tab.roleName} />;
+  if (tab.kind === "iamUser" && tab.userName) return <UserView userName={tab.userName} />;
+  if (tab.kind === "service" && tab.service === "route53") return <Route53ServiceView />;
+  if (tab.kind === "hostedZone" && tab.zoneId) return <HostedZoneView zoneId={tab.zoneId} />;
+  if (tab.kind === "docker") return <DockerView />;
+  if (tab.kind === "service" && tab.service === "ec2") return <Ec2ServiceView />;
+  if (tab.kind === "securityGroup" && tab.securityGroupId) return <SecurityGroupDetailView groupId={tab.securityGroupId} />;
+  if (tab.kind === "service" && tab.service === "sfn") return <SfnServiceView />;
+  if (tab.kind === "stateMachine" && tab.stateMachineArn) return <StateMachineView stateMachineArn={tab.stateMachineArn} />;
+  if (tab.kind === "service" && tab.service === "kinesis") return <KinesisServiceView />;
+  if (tab.kind === "stream" && tab.streamName) return <StreamView streamName={tab.streamName} />;
+  if (tab.kind === "service" && tab.service === "cloudwatch") return <CloudWatchServiceView />;
+  if (tab.kind === "service" && tab.service === "kms") return <KmsServiceView />;
+  if (tab.kind === "kmsKey" && tab.keyId) return <KeyView keyId={tab.keyId} />;
+  if (tab.kind === "service" && tab.service === "acm") return <AcmServiceView />;
+  if (tab.kind === "service" && tab.service === "cloudformation") return <CloudFormationServiceView />;
+  if (tab.kind === "stack" && tab.stackName) return <StackView stackName={tab.stackName} />;
+  if (tab.kind === "settings") return <SettingsView />;
+  return null;
+}
 export function MainArea() {
   const tabs = useTabs((s) => s.tabs);
   const activeTabId = useTabs((s) => s.activeTabId);
@@ -64,6 +113,9 @@ export function MainArea() {
   const closeTab = useTabs((s) => s.closeTab);
   const closeAllTabs = useTabs((s) => s.closeAllTabs);
   const closeOtherTabs = useTabs((s) => s.closeOtherTabs);
+  const { data: healthData } = useHealth();
+  const isDown = healthData?.status === "down";
+  const downReason = healthData?.status === "down" ? healthData.reason : undefined;
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
@@ -176,97 +228,32 @@ export function MainArea() {
         </div>
       </div>
 
+      {/* Disconnection Warning Banner when viewing tabs while LocalStack is down */}
+      {isDown && (
+        <div
+          data-testid="connection-disconnected-banner"
+          className="flex items-center justify-between border-b bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-400 shrink-0"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <CircleAlert className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span className="truncate">
+              LocalStack is not running ({downReason || "connection refused"}). Operations will fail until LocalStack is restarted.
+            </span>
+          </div>
+          <code className="hidden sm:inline-block shrink-0 rounded bg-amber-500/15 px-2 py-0.5 font-mono text-[10px] text-amber-800 dark:text-amber-300 border border-amber-500/20">
+            docker start localstack
+          </code>
+        </div>
+      )}
       {tabs.map((tab) => (
         <TabsContent key={tab.id} value={tab.id} className="min-h-0 flex-1 overflow-auto m-0">
-          {tab.kind === "service" && tab.service === "s3" ? (
-            <S3ServiceView />
-          ) : tab.kind === "bucket" && tab.bucketName ? (
-            <BucketView bucketName={tab.bucketName} />
-          ) : tab.kind === "service" && tab.service === "sqs" ? (
-            <SqsServiceView />
-          ) : tab.kind === "queue" && tab.queueName ? (
-            <QueueView queueName={tab.queueName} />
-          ) : tab.kind === "service" && tab.service === "secrets" ? (
-            <SecretsServiceView />
-          ) : tab.kind === "secret" && tab.secretName ? (
-            <SecretView secretName={tab.secretName} />
-          ) : tab.kind === "service" && tab.service === "lambda" ? (
-            <LambdaServiceView />
-          ) : tab.kind === "function" && tab.functionName ? (
-            <FunctionView functionName={tab.functionName} />
-          ) : tab.kind === "service" && tab.service === "dynamodb" ? (
-            <DynamoServiceView />
-          ) : tab.kind === "table" && tab.tableName ? (
-            <TableView tableName={tab.tableName} />
-          ) : tab.kind === "service" && tab.service === "sns" ? (
-            <SnsServiceView />
-          ) : tab.kind === "topic" && tab.topicArn ? (
-            <TopicView topicArn={tab.topicArn} />
-          ) : tab.kind === "service" && tab.service === "logs" ? (
-            <LogsServiceView />
-          ) : tab.kind === "logGroup" && tab.logGroupName ? (
-            <LogGroupView logGroupName={tab.logGroupName} />
-          ) : tab.kind === "service" && tab.service === "ssm" ? (
-            <SsmServiceView />
-          ) : tab.kind === "parameter" && tab.parameterName ? (
-            <ParameterView parameterName={tab.parameterName} />
-          ) : tab.kind === "service" && tab.service === "eventbridge" ? (
-            <EventBridgeServiceView />
-          ) : tab.kind === "eventBus" && tab.busName ? (
-            <EventBusView busName={tab.busName} />
-          ) : tab.kind === "service" && tab.service === "scheduler" ? (
-            <SchedulerServiceView />
-          ) : tab.kind === "scheduleGroup" && tab.groupName ? (
-            <ScheduleGroupView groupName={tab.groupName} />
-          ) : tab.kind === "service" && tab.service === "apigateway" ? (
-            <ApigatewayServiceView />
-          ) : tab.kind === "restApi" && tab.restApiId ? (
-            <RestApiView restApiId={tab.restApiId} />
-          ) : tab.kind === "service" && tab.service === "ses" ? (
-            <SesServiceView />
-          ) : tab.kind === "sesIdentity" && tab.identityName ? (
-            <IdentityView identityName={tab.identityName} />
-          ) : tab.kind === "sesMailbox" ? (
-            <SesMailboxView />
-          ) : tab.kind === "service" && tab.service === "iam" ? (
-            <IamServiceView />
-          ) : tab.kind === "iamRole" && tab.roleName ? (
-            <RoleView roleName={tab.roleName} />
-          ) : tab.kind === "iamUser" && tab.userName ? (
-            <UserView userName={tab.userName} />
-          ) : tab.kind === "service" && tab.service === "route53" ? (
-            <Route53ServiceView />
-          ) : tab.kind === "hostedZone" && tab.zoneId ? (
-            <HostedZoneView zoneId={tab.zoneId} />
-          ) : tab.kind === "docker" ? (
-            <DockerView />
-          ) : tab.kind === "service" && tab.service === "ec2" ? (
-            <Ec2ServiceView />
-          ) : tab.kind === "securityGroup" && tab.securityGroupId ? (
-            <SecurityGroupDetailView groupId={tab.securityGroupId} />
-          ) : tab.kind === "service" && tab.service === "sfn" ? (
-            <SfnServiceView />
-          ) : tab.kind === "stateMachine" && tab.stateMachineArn ? (
-            <StateMachineView stateMachineArn={tab.stateMachineArn} />
-          ) : tab.kind === "service" && tab.service === "kinesis" ? (
-            <KinesisServiceView />
-          ) : tab.kind === "stream" && tab.streamName ? (
-            <StreamView streamName={tab.streamName} />
-          ) : tab.kind === "service" && tab.service === "cloudwatch" ? (
-            <CloudWatchServiceView />
-          ) : tab.kind === "service" && tab.service === "kms" ? (
-            <KmsServiceView />
-          ) : tab.kind === "kmsKey" && tab.keyId ? (
-            <KeyView keyId={tab.keyId} />
-          ) : tab.kind === "service" && tab.service === "acm" ? (
-            <AcmServiceView />
-          ) : tab.kind === "service" && tab.service === "cloudformation" ? (
-            <CloudFormationServiceView />
-          ) : tab.kind === "stack" && tab.stackName ? (
-            <StackView stackName={tab.stackName} />
-          ) : tab.kind === "settings" ? (
-            <SettingsView />
-          ) : null}
+          <ErrorBoundary
+            level="tab"
+            tabTitle={tab.title}
+            onCloseTab={() => closeTab(tab.id)}
+          >
+            {renderTabContent(tab)}
+          </ErrorBoundary>
         </TabsContent>
       ))}
     </Tabs>
