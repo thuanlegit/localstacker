@@ -10,7 +10,7 @@ browse and operate your local AWS resources without reaching for the CLI.
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](./LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ryleth-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/ryleth)
 
-![LocalStacker Queue Peek](docs/screenshots/sqs-peek.png)
+![LocalStacker Onboarding Spotlight](docs/screenshots/onboarding.png)
 
 LocalStacker delivers a fast, keyboard-driven desktop companion for local AWS development. Operating entirely on your machine, it communicates directly with `localhost:4566` without cloud accounts, telemetry, or external subscriptions.
 
@@ -54,54 +54,9 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **ACM** | Certificate inventory with status badges, DNS-validated certificate requests with **CNAME validation token display**, PEM certificate import, inline detail drawer (subject, issuer, validity, SANs) |
 | **CloudFormation** | Stack inventory with status badges, stack inspector (outputs, resources, **event timeline**, template viewer), delete stack; Route 53 Resolver endpoints & rules sections |
 
-### S3 Object Preview
-![S3 Object Preview](docs/screenshots/s3-bucket.png)
-
-### Lambda Invocation & Execution Logs
-![Lambda Invocation](docs/screenshots/lambda-invoke.png)
-
-### DynamoDB Table Browser & JSON Inspector
-![DynamoDB Table Browser](docs/screenshots/dynamodb-table.png)
-
-### SNS Topics & Subscriptions
-![SNS Topics](docs/screenshots/sns-topic.png)
-
-### CloudWatch Logs Live Tailing & Search
-![CloudWatch Logs](docs/screenshots/logs-view.png)
-
-### SSM Parameter Store Hierarchy
-![SSM Parameter Store](docs/screenshots/ssm-params.png)
-
-### EventBridge Buses & Rules
-![EventBridge Buses & Rules](docs/screenshots/eventbridge-bus.png)
-
-### EventBridge Scheduler
-![EventBridge Scheduler](docs/screenshots/scheduler-schedules.png)
-
-### API Gateway REST API & Method Inspector
-![API Gateway REST API](docs/screenshots/apigateway-api.png)
-
-### SES Captured Mailbox & HTML Email Preview
-![SES Captured Mailbox](docs/screenshots/ses-mailbox.png)
-
-### IAM Role & Inline Policy Inspector
-![IAM Role & Inline Policy Inspector](docs/screenshots/iam-role.png)
-
-### Route 53 Hosted Zone & DNS Records Grid
-![Route 53 Hosted Zone & DNS Records Grid](docs/screenshots/route53-zone.png)
-
-### EC2 Security Group Rule Matrix
-![EC2 Security Group Rule Matrix](docs/screenshots/ec2-security-group.png)
-
-### EC2 Instances & Mock State Transitions
-![EC2 Instances](docs/screenshots/ec2-instances.png)
-
-### Docker Lifecycle & Container Management
-![Docker Panel](docs/screenshots/docker-panel.png)
-
 ## Status & Roadmap
 
-**v1.1.0 shipped** ✅ · **v1.2 in development** 🚧. Core milestones implemented and verified with end-to-end coverage:
+**v1.3.1 shipped** ✅. Core milestones implemented and verified with end-to-end coverage:
 
 | Milestone | Scope | Status |
 |---|---|---|

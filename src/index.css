@@ -11,19 +11,19 @@
   --card-foreground: oklch(0.17 0.01 285);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.17 0.01 285);
-  --primary: oklch(0.51 0.19 260);
+  --primary: oklch(0.54 0.22 279);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.955 0.004 285);
   --secondary-foreground: oklch(0.24 0.01 285);
   --muted: oklch(0.955 0.004 285);
   --muted-foreground: oklch(0.52 0.015 285);
-  --accent: oklch(0.94 0.01 260);
-  --accent-foreground: oklch(0.28 0.04 260);
+  --accent: oklch(0.94 0.015 279);
+  --accent-foreground: oklch(0.28 0.04 279);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.91 0.005 285);
   --input: oklch(0.88 0.005 285);
-  --ring: oklch(0.51 0.19 260);
+  --ring: oklch(0.54 0.22 279);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -31,12 +31,12 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0.002 285);
   --sidebar-foreground: oklch(0.17 0.01 285);
-  --sidebar-primary: oklch(0.51 0.19 260);
+  --sidebar-primary: oklch(0.54 0.22 279);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.94 0.01 260);
-  --sidebar-accent-foreground: oklch(0.28 0.04 260);
+  --sidebar-accent: oklch(0.94 0.015 279);
+  --sidebar-accent-foreground: oklch(0.28 0.04 279);
   --sidebar-border: oklch(0.91 0.005 285);
-  --sidebar-ring: oklch(0.51 0.19 260);
+  --sidebar-ring: oklch(0.54 0.22 279);
 }
 
 .dark {
@@ -47,19 +47,19 @@
   --card-foreground: oklch(0.97 0.002 285);
   --popover: oklch(0.185 0.006 285);
   --popover-foreground: oklch(0.97 0.002 285);
-  --primary: oklch(0.68 0.16 258);
-  --primary-foreground: oklch(0.16 0.02 260);
+  --primary: oklch(0.58 0.21 278.5);
+  --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.25 0.008 285);
   --secondary-foreground: oklch(0.97 0.002 285);
   --muted: oklch(0.25 0.008 285);
   --muted-foreground: oklch(0.68 0.01 285);
-  --accent: oklch(0.28 0.02 260);
-  --accent-foreground: oklch(0.92 0.02 260);
+  --accent: oklch(0.28 0.025 279);
+  --accent-foreground: oklch(0.92 0.02 279);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.68 0.16 258);
+  --ring: oklch(0.58 0.21 278.5);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -67,12 +67,12 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.165 0.005 285);
   --sidebar-foreground: oklch(0.97 0.002 285);
-  --sidebar-primary: oklch(0.68 0.16 258);
-  --sidebar-primary-foreground: oklch(0.16 0.02 260);
-  --sidebar-accent: oklch(0.28 0.02 260);
-  --sidebar-accent-foreground: oklch(0.92 0.02 260);
+  --sidebar-primary: oklch(0.58 0.21 278.5);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.28 0.025 279);
+  --sidebar-accent-foreground: oklch(0.92 0.02 279);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.68 0.16 258);
+  --sidebar-ring: oklch(0.58 0.21 278.5);
 }
 
 [data-palette] {
@@ -231,4 +231,71 @@
 }
 .scrollbar-thin-sidebar::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Onboarding: entrance choreography + aurora drift. All gated behind
+   prefers-reduced-motion; elements keep final state without animation. */
+@media (prefers-reduced-motion: no-preference) {
+  .onb-rise {
+    opacity: 0;
+    animation: onb-rise 560ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes onb-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .onb-drift {
+    animation: onb-drift 14s ease-in-out infinite alternate;
+  }
+  .onb-drift-slow {
+    animation: onb-drift 20s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes onb-drift {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(48px, 32px, 0) scale(1.08);
+    }
+  }
+}
+
+.onb-indeterminate {
+  animation: onb-indeterminate 1.2s ease-in-out infinite;
+  transform-origin: left;
+}
+@keyframes onb-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .onb-indeterminate {
+    animation: none;
+  }
+}
+
+/* Onboarding brand identity: locked to LocalStacker's official logo colors
+   (#5b51e6 / #6865f5 / #8b93ff) so the first-launch console always matches
+   the application logo regardless of the active editor theme palette. */
+[data-testid="onboarding"] {
+  --primary: #5b51e6;
+  --primary-foreground: #ffffff;
+  --ring: #5b51e6;
+}
+
+.dark [data-testid="onboarding"] {
+  --primary: #6865f5;
+  --primary-foreground: #ffffff;
+  --ring: #6865f5;
 }
