@@ -54,33 +54,6 @@ LocalStacker includes a built-in auto-updater that notifies you when a new relea
 | **ACM** | Certificate inventory with status badges, DNS-validated certificate requests with **CNAME validation token display**, PEM certificate import, inline detail drawer (subject, issuer, validity, SANs) |
 | **CloudFormation** | Stack inventory with status badges, stack inspector (outputs, resources, **event timeline**, template viewer), delete stack; Route 53 Resolver endpoints & rules sections |
 
-## Status & Roadmap
-
-**v1.3.1 shipped** ✅. Core milestones implemented and verified with end-to-end coverage:
-
-| Milestone | Scope | Status |
-|---|---|---|
-| **M0** | Scaffold, app shell, connection profiles, health badge | ✅ Done |
-| **M1** | S3 — buckets/objects, upload/download, presigned URLs | ✅ Done |
-| **M2** | SQS — send, peek, purge, DLQ redrive | ✅ Done |
-| **M3** | Lambda (invoke + logs) and Secrets Manager | ✅ Done |
-| **M4** | Hardening — Playwright e2e suite, release engineering, auto-updater, v1.0.0 | ✅ Done |
-| **M5** | **DynamoDB & SNS** — table inspector, scan/query, document editor; topic pub/sub & SQS subscription helper | ✅ Done |
-| **M6** | **CloudWatch Logs & SSM Parameter Store** — log groups/streams viewer, live tailing, parameter hierarchy & SecureString decryption | ✅ Done |
-| **M7** | **EventBridge & EventBridge Scheduler** — event buses/rules, PutEvents test publisher, schedules explorer | ✅ Done |
-| **M8** | **API Gateway REST API & SES** — resource tree, method test runner, verified identities & captured mailbox viewer | ✅ Done |
-| **M9** | **IAM & Route53** — role/policy inspector, access keys, hosted zones & DNS records grid | ✅ Done |
-| **M10** | **EC2 Mock** — instance states, security groups rule matrix, key pairs | ✅ Done |
-| **v1.1** | **Docker Lifecycle** — dedicated container panel: detect/inspect LocalStack containers (incl. `localstack-persist` images), snapshot+follow logs, start/stop/restart/remove with persistence-aware warnings, create wizard with service picker, image pull & auto-connect — via Docker socket (`bollard` in the Rust backend, no CLI sidecar) | ✅ Done |
-| **v1.2** | **First-Run Onboarding** — live service lamp board on first launch, inline endpoint connect, one-click Docker create & auto-connect (`localstack/localstack:4.14.0`, persistence volume) | ✅ Done |
-| **M11** | **Step Functions** — state machine list, ASL definition viewer, execution runner + event history, visual state graph (`react-flow`) | ✅ Done |
-| **M12** | **DynamoDB Streams & Kinesis** — table stream enable + shard record peek; Kinesis streams, shard map, record peek, test publisher | ✅ Done |
-| **M13** | **CloudWatch Metrics & STS** — metric browser + alarm CRUD feeding the Home status board; caller-identity card | ✅ Done |
-| **M14** | **KMS & ACM** — key/alias management, encrypt-decrypt playground; certificate inventory with import/request | ✅ Done |
-| **M15** | **CloudFormation & Route53 Resolver** — stack inspector (template, events, resources); resolver rules & endpoints | ✅ Done |
-
-See [`docs/plan.md`](docs/plan.md) for detailed service contracts and architectural decisions.
-
 ## Development
 
 Prerequisites: Node 22+, pnpm, Rust toolchain, Docker.
@@ -131,11 +104,6 @@ docker run --rm -p 4566:4566 -v /var/run/docker.sock:/var/run/docker.sock locals
 ## Stack
 
 Tauri 2 · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui · TanStack Query · TanStack Virtual · Zustand · AWS SDK v3 · Playwright · Vitest + Testing Library
-
-## Documentation
-
-- [`docs/plan.md`](docs/plan.md) — product plan, v1 feature contract, milestones, risks
-- [`docs/decisions.md`](docs/decisions.md) — ADR-style log of foundational architectural decisions
 
 ## Support
 
