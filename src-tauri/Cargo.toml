@@ -1,6 +1,6 @@
 [package]
 name = "localstacker"
-version = "1.3.2"
+version = "1.3.3"
 description = "LocalStacker — a local-first desktop GUI for LocalStack"
 authors = ["LocalStacker contributors"]
 edition = "2021"
