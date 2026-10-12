@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
-import { CircleAlert, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Container, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { openDockerTab } from "@/components/Sidebar";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -113,10 +114,19 @@ export function MainArea() {
   const closeTab = useTabs((s) => s.closeTab);
   const closeAllTabs = useTabs((s) => s.closeAllTabs);
   const closeOtherTabs = useTabs((s) => s.closeOtherTabs);
-  const { data: healthData } = useHealth();
+  const { data: healthData, refetch: refetchHealth } = useHealth();
+  const [isProbing, setIsProbing] = useState(false);
   const isDown = healthData?.status === "down";
   const downReason = healthData?.status === "down" ? healthData.reason : undefined;
 
+  const handleManualProbe = async () => {
+    setIsProbing(true);
+    try {
+      await refetchHealth?.();
+    } finally {
+      setTimeout(() => setIsProbing(false), 500);
+    }
+  };
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
@@ -232,17 +242,47 @@ export function MainArea() {
       {isDown && (
         <div
           data-testid="connection-disconnected-banner"
-          className="flex items-center justify-between border-b bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-400 shrink-0"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-amber-500/30 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent px-4 py-2 text-xs text-amber-800 dark:text-amber-300 shrink-0"
         >
-          <div className="flex items-center gap-2 min-w-0">
-            <CircleAlert className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-            <span className="truncate">
-              LocalStack is not running ({downReason || "connection refused"}). Operations will fail until LocalStack is restarted.
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="relative flex size-2.5 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex size-2.5 rounded-full bg-amber-500" />
             </span>
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="font-semibold text-amber-950 dark:text-amber-200">
+                LocalStack Disconnected:
+              </span>
+              <span className="truncate opacity-90">
+                LocalStack is not running ({downReason || "connection refused"}). Operations will fail until LocalStack is restarted.
+              </span>
+            </div>
           </div>
-          <code className="hidden sm:inline-block shrink-0 rounded bg-amber-500/15 px-2 py-0.5 font-mono text-[10px] text-amber-800 dark:text-amber-300 border border-amber-500/20">
-            docker start localstack
-          </code>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleManualProbe}
+              disabled={isProbing}
+              className="h-6 px-2 text-[11px] gap-1 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300"
+              title="Check health probe now"
+            >
+              <RefreshCw className={`size-3 ${isProbing ? "animate-spin" : ""}`} />
+              <span>Retry</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openDockerTab}
+              className="h-6 px-2 text-[11px] gap-1 border-amber-500/30 bg-background/50 hover:bg-amber-500/15 text-amber-800 dark:text-amber-200"
+            >
+              <Container className="size-3" />
+              <span>Docker</span>
+            </Button>
+            <code className="hidden sm:inline-block shrink-0 rounded bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] text-amber-900 dark:text-amber-200 border border-amber-500/30">
+              docker start localstack
+            </code>
+          </div>
         </div>
       )}
       {tabs.map((tab) => (
